@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { formatDate } from '../../utils/formatters'
-import { ArrowUpDownIcon, EyeIcon, PencilSquareIcon } from '@heroicons/react/24/outline'
+import { ArrowsUpDownIcon, EyeIcon, PencilSquareIcon } from '@heroicons/react/24/outline'
 import StatusBadge from './StatusBadge'
 import Button from '../common/Button'
 
@@ -67,7 +67,7 @@ export default function ApplicationTable({ applications, onEdit, onView, loading
                 className="flex items-center gap-1 text-xs font-semibold text-gray-700 hover:text-gray-900 uppercase tracking-wider"
               >
                 Job Title
-                <ArrowUpDownIcon className="w-4 h-4" />
+                <ArrowsUpDownIcon className="w-4 h-4" />
               </button>
             </th>
             <th className="px-6 py-3 text-left">
@@ -76,7 +76,7 @@ export default function ApplicationTable({ applications, onEdit, onView, loading
                 className="flex items-center gap-1 text-xs font-semibold text-gray-700 hover:text-gray-900 uppercase tracking-wider"
               >
                 Company
-                <ArrowUpDownIcon className="w-4 h-4" />
+                <ArrowsUpDownIcon className="w-4 h-4" />
               </button>
             </th>
             <th className="px-6 py-3 text-left">
@@ -85,7 +85,7 @@ export default function ApplicationTable({ applications, onEdit, onView, loading
                 className="flex items-center gap-1 text-xs font-semibold text-gray-700 hover:text-gray-900 uppercase tracking-wider"
               >
                 Status
-                <ArrowUpDownIcon className="w-4 h-4" />
+                <ArrowsUpDownIcon className="w-4 h-4" />
               </button>
             </th>
             <th className="px-6 py-3 text-left">
@@ -94,7 +94,7 @@ export default function ApplicationTable({ applications, onEdit, onView, loading
                 className="flex items-center gap-1 text-xs font-semibold text-gray-700 hover:text-gray-900 uppercase tracking-wider"
               >
                 Applied Date
-                <ArrowUpDownIcon className="w-4 h-4" />
+                <ArrowsUpDownIcon className="w-4 h-4" />
               </button>
             </th>
             <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">

@@ -29,6 +29,12 @@ This is the React frontend for the JobTrack AI application. It provides an AI-po
 
    The app will be available at `http://localhost:5173` and API calls are proxied to `VITE_API_URL` (default `http://localhost:8000/api/v1`).
 
+   > **Tip for testing**: you can bypass authentication entirely by creating a `.env` file in `frontend/` with the
+   > variable `VITE_SKIP_AUTH=true` (or prefix `VITE_SKIP_AUTH=true npm run dev`). Vite only exposes vars prefixed
+   > with `VITE_`, so the older `REACT_APP_SKIP_AUTH` name will not work unless it's also present for reference.
+   > This lets you visit any route without logging in, which is handy for manual UI testing.
+
+
 3. **Build for production**
    ```bash
    npm run build

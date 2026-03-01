@@ -35,7 +35,11 @@ export const useAuth = () => {
     dispatch(clearError())
   }, [dispatch])
 
-  const isAuthenticated = !!token && !!user
+  // allow bypass for testing convenience (Vite injects vars prefixed with VITE_)
+  const skipAuth =
+    import.meta.env.VITE_SKIP_AUTH === 'true' ||
+    import.meta.env.REACT_APP_SKIP_AUTH === 'true'
+  const isAuthenticated = skipAuth || (!!token && !!user)
 
   return {
     user,

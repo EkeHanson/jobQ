@@ -8,6 +8,63 @@ import Modal from '../components/common/Modal'
 import Input from '../components/common/Input'
 import { PlusIcon } from '@heroicons/react/24/outline'
 
+const DUMMY_JOBS = [
+  {
+    id: 1,
+    title: 'Senior Frontend Developer',
+    company: { name: 'Tech Innovations Inc' },
+    location: 'San Francisco, CA',
+    description: 'We are looking for an experienced Frontend Developer with expertise in React and modern web technologies.',
+    salary: '$120,000 - $150,000',
+    jobType: 'Full-time',
+  },
+  {
+    id: 2,
+    title: 'Backend Engineer',
+    company: { name: 'Cloud Solutions Ltd' },
+    location: 'New York, NY',
+    description: 'Join our team to build scalable backend systems using Node.js and microservices architecture.',
+    salary: '$110,000 - $140,000',
+    jobType: 'Full-time',
+  },
+  {
+    id: 3,
+    title: 'DevOps Engineer',
+    company: { name: 'Digital Platforms Co' },
+    location: 'Austin, TX',
+    description: 'Seeking a DevOps specialist to manage cloud infrastructure, CI/CD pipelines, and Kubernetes deployments.',
+    salary: '$100,000 - $130,000',
+    jobType: 'Full-time',
+  },
+  {
+    id: 4,
+    title: 'Full Stack Developer',
+    company: { name: 'StartUp Ventures' },
+    location: 'Remote',
+    description: 'Build end-to-end web applications using React, Node.js, and PostgreSQL in a fast-paced startup environment.',
+    salary: '$90,000 - $120,000',
+    jobType: 'Full-time',
+  },
+  {
+    id: 5,
+    title: 'Mobile App Developer',
+    company: { name: 'AppWorks Studios' },
+    location: 'Seattle, WA',
+    description: 'Develop iOS and Android applications using React Native and latest mobile technologies.',
+    salary: '$95,000 - $125,000',
+    jobType: 'Full-time',
+  },
+  {
+    id: 6,
+    title: 'Data Scientist',
+    company: { name: 'Analytics Pro' },
+    location: 'Boston, MA',
+    description: 'Work with machine learning models, data analysis, and AI solutions to drive business insights.',
+    salary: '$105,000 - $145,000',
+    jobType: 'Full-time',
+  },
+]
+
 export default function Jobs() {
   const { jobs, loading, create, refetch } = useJobs()
   const [isJobModalOpen, setIsJobModalOpen] = useState(false)
@@ -17,6 +74,9 @@ export default function Jobs() {
     description: '',
     location: '',
   })
+
+  // Use dummy jobs if no real jobs are loaded
+  const jobsList = jobs && jobs.length > 0 ? jobs : DUMMY_JOBS
 
   const handleSaveJob = async () => {
     const payload = {
@@ -63,7 +123,7 @@ export default function Jobs() {
         ) : (
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {jobs.map((job) => (
+              {jobsList.map((job) => (
                 <JobCard key={job.id} job={job} />
               ))}
             </div>

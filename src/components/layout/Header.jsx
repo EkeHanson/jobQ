@@ -4,7 +4,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { Bars3Icon, BellIcon, UserCircleIcon } from '@heroicons/react/24/outline'
 import { useState } from 'react'
 import { useDispatch } from 'react-redux'
-import { toggleSidebar } from '../../store/uiSlice'
+import { toggleSidebar, toggleSidebarCollapse } from '../../store/uiSlice'
 import NotificationBell from '../notifications/NotificationBell'
 
 export default function Header() {
@@ -27,6 +27,14 @@ export default function Header() {
           <button
             onClick={() => dispatch(toggleSidebar())}
             className="lg:hidden p-2 text-gray-600 hover:text-gray-900"
+          >
+            <Bars3Icon className="w-6 h-6" />
+          </button>
+          {/* Desktop collapse toggle */}
+          <button
+            onClick={() => dispatch(toggleSidebarCollapse())}
+            className="hidden lg:flex p-2 text-gray-600 hover:text-gray-900"
+            title="Toggle sidebar"
           >
             <Bars3Icon className="w-6 h-6" />
           </button>

@@ -6,7 +6,7 @@ export const fetchProfiles = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await profileService.getProfiles()
-      return response.data
+      return response
     } catch (error) {
       return rejectWithValue(error.message)
     }
@@ -18,7 +18,7 @@ export const createProfile = createAsyncThunk(
   async (data, { rejectWithValue }) => {
     try {
       const response = await profileService.createProfile(data)
-      return response.data
+      return response
     } catch (error) {
       return rejectWithValue(error.message)
     }
@@ -30,7 +30,7 @@ export const updateProfile = createAsyncThunk(
   async ({ id, data }, { rejectWithValue }) => {
     try {
       const response = await profileService.updateProfile(id, data)
-      return response.data
+      return response
     } catch (error) {
       return rejectWithValue(error.message)
     }

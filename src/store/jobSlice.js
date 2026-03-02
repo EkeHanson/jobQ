@@ -6,7 +6,7 @@ export const fetchJobs = createAsyncThunk(
   async (params = {}, { rejectWithValue }) => {
     try {
       const response = await jobService.getJobs(params)
-      return response.data
+      return response
     } catch (error) {
       return rejectWithValue(error.message)
     }
@@ -18,7 +18,7 @@ export const createJob = createAsyncThunk(
   async (data, { rejectWithValue }) => {
     try {
       const response = await jobService.createJob(data)
-      return response.data
+      return response
     } catch (error) {
       return rejectWithValue(error.message)
     }
@@ -30,7 +30,7 @@ export const updateJob = createAsyncThunk(
   async ({ id, data }, { rejectWithValue }) => {
     try {
       const response = await jobService.updateJob(id, data)
-      return response.data
+      return response
     } catch (error) {
       return rejectWithValue(error.message)
     }

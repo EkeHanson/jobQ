@@ -4,6 +4,7 @@ const initialState = {
   sidebar: {
     isOpen: true,
     isMobile: false,
+    isCollapsed: true,
   },
   modals: {
     isApplicationFormOpen: false,
@@ -26,6 +27,9 @@ const uiSlice = createSlice({
     toggleSidebar: (state) => {
       state.sidebar.isOpen = !state.sidebar.isOpen
     },
+    toggleSidebarCollapse: (state) => {
+      state.sidebar.isCollapsed = !state.sidebar.isCollapsed
+    },
     setSidebarMobile: (state, action) => {
       state.sidebar.isMobile = action.payload
     },
@@ -46,6 +50,7 @@ const uiSlice = createSlice({
 
 export const {
   toggleSidebar,
+  toggleSidebarCollapse,
   setSidebarMobile,
   openModal,
   closeModal,

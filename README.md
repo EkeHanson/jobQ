@@ -27,7 +27,9 @@ This is the React frontend for the JobTrack AI application. It provides an AI-po
    npm run dev
    ```
 
-   The app will be available at `http://localhost:5173` and API calls are proxied to `VITE_API_URL` (default `http://localhost:8000/api/v1`).
+   The app will be available at `http://localhost:5173` and API calls are proxied to whatever
+   `VITE_API_URL` points to (default `http://localhost:8000/api/v1`).  Make sure the Django backend
+   is running on that URL; see `backend/README.md` for setup.
 
    > **Tip for testing**: you can bypass authentication entirely by creating a `.env` file in `frontend/` with the
    > variable `VITE_SKIP_AUTH=true` (or prefix `VITE_SKIP_AUTH=true npm run dev`). Vite only exposes vars prefixed

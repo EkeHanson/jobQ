@@ -1,9 +1,9 @@
 import apiClient from './api'
 
 const subscriptionService = {
-  // Plans
+  // Plans (list)
   getPlans: async () => {
-    return apiClient.get('/subscription/plans')
+    return apiClient.get('/subscription/')
   },
 
   // Current Subscription

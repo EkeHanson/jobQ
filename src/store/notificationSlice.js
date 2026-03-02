@@ -6,7 +6,7 @@ export const fetchNotifications = createAsyncThunk(
   async (params = {}, { rejectWithValue }) => {
     try {
       const response = await apiClient.get('/notifications', { params })
-      return response.data
+      return response
     } catch (error) {
       return rejectWithValue(error.message)
     }

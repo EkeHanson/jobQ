@@ -7,12 +7,17 @@ import Modal from '../components/common/Modal'
 import Badge from '../components/common/Badge'
 import { useAuth } from '../hooks/useAuth'
 import { useProfiles } from '../hooks/useProfiles'
+import { useToast } from '../components/common/Toast'
 
 export default function Profile() {
   const { user } = useAuth()
   const { profiles, loading, error, create, remove } = useProfiles()
   const [showModal, setShowModal] = useState(false)
   const [showSkillsModal, setShowSkillsModal] = useState(false)
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [profileToDelete, setProfileToDelete] = useState(null)
+  const { addToast } = useToast()
+  // Legacy form data (kept for backward compatibility)
   const [formData, setFormData] = useState({
     title: '',
     role: '',
@@ -21,30 +26,80 @@ export default function Profile() {
   const [skills, setSkills] = useState([])
   const [skillInput, setSkillInput] = useState('')
 
-  const profileRoles = ['Backend', 'Frontend', 'DevOps', 'Full Stack', 'Mobile', 'Data Science', 'QA']
+  // Role entries state - each entry has role title and resume file
+  const [roleEntries, setRoleEntries] = useState([
+    { id: 1, roleTitle: '', resume: null }
+  ])
 
-  const handleAddProfile = async () => {
-    if (!formData.title || !formData.role) {
-      alert('Please fill in all required fields')
+  const handleAddRoleEntry = () => {
+    setRoleEntries([...roleEntries, { id: Date.now(), roleTitle: '', resume: null }])
+  }
+
+  const handleRemoveRoleEntry = (id) => {
+    if (roleEntries.length > 1) {
+      setRoleEntries(roleEntries.filter(entry => entry.id !== id))
+    }
+  }
+
+  const handleRoleTitleChange = (id, value) => {
+    setRoleEntries(roleEntries.map(entry => 
+      entry.id === id ? { ...entry, roleTitle: value } : entry
+    ))
+  }
+
+  const handleResumeChange = (id, file) => {
+    setRoleEntries(roleEntries.map(entry => 
+      entry.id === id ? { ...entry, resume: file } : entry
+    ))
+  }
+
+  const handleCreateProfiles = async () => {
+    // Validate - check if all role entries have role title
+    const validEntries = roleEntries.filter(entry => entry.roleTitle.trim() !== '')
+    
+    if (validEntries.length === 0) {
+      addToast('Please add at least one role title', 'error')
       return
     }
+
     try {
-      await create(formData)
-      setFormData({ title: '', role: '', bio: '' })
+      // Create a profile for each entry
+      for (const entry of validEntries) {
+        const profileData = {
+          title: entry.roleTitle,
+          role: entry.roleTitle, // Using role title as the role
+          bio: '',
+          resume: entry.resume
+        }
+        await create(profileData)
+      }
+      
+      setRoleEntries([{ id: 1, roleTitle: '', resume: null }])
       setShowModal(false)
+      addToast(`${validEntries.length} profile(s) created successfully!`, 'success')
     } catch (err) {
-      console.error('Error creating profile:', err)
+      console.error('Error creating profiles:', err)
+      addToast('Failed to create profiles', 'error')
     }
   }
 
   const handleDeleteProfile = async (id) => {
-    if (window.confirm('Are you sure you want to delete this profile?')) {
+    setProfileToDelete(id)
+    setShowDeleteModal(true)
+  }
+
+  const confirmDeleteProfile = async () => {
+    if (profileToDelete) {
       try {
-        await remove(id)
+        await remove(profileToDelete)
+        addToast('Profile deleted successfully!', 'success')
       } catch (err) {
         console.error('Error deleting profile:', err)
+        addToast('Failed to delete profile', 'error')
       }
     }
+    setShowDeleteModal(false)
+    setProfileToDelete(null)
   }
 
   const handleAddSkill = () => {
@@ -62,7 +117,7 @@ export default function Profile() {
     // Skills will be saved to localStorage for now
     localStorage.setItem('userSkills', JSON.stringify(skills))
     setShowSkillsModal(false)
-    alert('Skills saved successfully!')
+    addToast('Skills saved successfully!', 'success')
   }
 
   // Load skills from localStorage on mount
@@ -179,57 +234,77 @@ export default function Profile() {
         isOpen={showModal}
         onClose={() => {
           setShowModal(false)
-          setFormData({ title: '', role: '', bio: '' })
+          setRoleEntries([{ id: 1, roleTitle: '', resume: null }])
         }}
         title="Create Developer Profile"
+        size="lg"
       >
         <div className="space-y-4">
-          <Input
-            label="Profile Title"
-            placeholder="e.g., Senior Backend Developer"
-            value={formData.title}
-            onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-          />
+          <p className="text-gray-600 text-sm">
+            Add your target roles. Each role can have its own resume uploaded.
+          </p>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
-            <select
-              value={formData.role}
-              onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">Select a role</option>
-              {profileRoles.map((role) => (
-                <option key={role} value={role}>
-                  {role}
-                </option>
-              ))}
-            </select>
-          </div>
+          {roleEntries.map((entry, index) => (
+            <div key={entry.id} className="p-4 bg-gray-50 rounded-lg space-y-3">
+              <div className="flex items-center justify-between">
+                <h4 className="font-medium text-gray-900">Role {index + 1}</h4>
+                {roleEntries.length > 1 && (
+                  <button
+                    onClick={() => handleRemoveRoleEntry(entry.id)}
+                    className="text-red-600 hover:text-red-800 text-sm"
+                  >
+                    Remove
+                  </button>
+                )}
+              </div>
+              
+              <Input
+                label="Role Title"
+                placeholder="e.g., Senior Backend Developer, Frontend Engineer"
+                value={entry.roleTitle}
+                onChange={(e) => handleRoleTitleChange(entry.id, e.target.value)}
+              />
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Bio (Optional)</label>
-            <textarea
-              placeholder="Tell us about this profile..."
-              value={formData.bio}
-              onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
-              rows={4}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Resume (PDF)
+                </label>
+                <input
+                  type="file"
+                  accept=".pdf,.doc,.docx"
+                  onChange={(e) => handleResumeChange(entry.id, e.target.files[0])}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                {entry.resume && (
+                  <p className="text-sm text-green-600 mt-1">
+                    ✓ {entry.resume.name}
+                  </p>
+                )}
+              </div>
+            </div>
+          ))}
 
-          <div className="flex gap-3 justify-end">
+          <Button 
+            type="button" 
+            variant="secondary" 
+            onClick={handleAddRoleEntry}
+            className="w-full"
+          >
+            + Add Another Role
+          </Button>
+
+          <div className="flex gap-3 justify-end pt-4 border-t">
             <Button
               variant="secondary"
               onClick={() => {
                 setShowModal(false)
-                setFormData({ title: '', role: '', bio: '' })
+                setRoleEntries([{ id: 1, roleTitle: '', resume: null }])
               }}
             >
               Cancel
             </Button>
-            <Button onClick={handleAddProfile} disabled={loading}>
-              {loading ? 'Creating...' : 'Create Profile'}
+            <Button onClick={handleCreateProfiles} disabled={loading}>
+              {loading ? 'Creating...' : 'Create Profiles'}
             </Button>
           </div>
 
@@ -297,6 +372,37 @@ export default function Profile() {
               Cancel
             </Button>
             <Button onClick={handleSaveSkills}>Save Skills</Button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        isOpen={showDeleteModal}
+        onClose={() => {
+          setShowDeleteModal(false)
+          setProfileToDelete(null)
+        }}
+        title="Delete Profile"
+        size="sm"
+      >
+        <div className="space-y-4">
+          <p className="text-gray-600">
+            Are you sure you want to delete this profile? This action cannot be undone.
+          </p>
+          <div className="flex gap-3 justify-end">
+            <Button
+              variant="secondary"
+              onClick={() => {
+                setShowDeleteModal(false)
+                setProfileToDelete(null)
+              }}
+            >
+              Cancel
+            </Button>
+            <Button variant="danger" onClick={confirmDeleteProfile}>
+              Delete
+            </Button>
           </div>
         </div>
       </Modal>

@@ -105,9 +105,11 @@ const authSlice = createSlice({
       .addCase(register.fulfilled, (state, action) => {
         state.loading = false
         state.user = action.payload.user
-        state.token = action.payload.token
+        state.token = action.payload.access
+        state.refreshToken = action.payload.refresh
         localStorage.setItem('user', JSON.stringify(action.payload.user))
-        localStorage.setItem('token', action.payload.token)
+        localStorage.setItem('token', action.payload.access)
+        localStorage.setItem('refreshToken', action.payload.refresh)
       })
       .addCase(register.rejected, (state, action) => {
         state.loading = false

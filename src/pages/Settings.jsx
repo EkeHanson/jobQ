@@ -1,9 +1,148 @@
+import { useState } from 'react'
 import DashboardLayout from '../components/layout/DashboardLayout'
 import Card from '../components/common/Card'
 import Button from '../components/common/Button'
 import Input from '../components/common/Input'
+import Modal from '../components/common/Modal'
+import { useToast } from '../components/common/Toast'
 
 export default function Settings() {
+  // Notification settings state
+  const [notifications, setNotifications] = useState({
+    email: true,
+    push: true,
+    weeklySummary: true,
+  })
+
+  // Privacy settings state
+  const [privacy, setPrivacy] = useState({
+    publicProfile: false,
+    dataCollection: true,
+  })
+
+  // Modal states
+  const [showPasswordModal, setShowPasswordModal] = useState(false)
+  const [showLoginHistoryModal, setShowLoginHistoryModal] = useState(false)
+  const [showSessionsModal, setShowSessionsModal] = useState(false)
+
+  // Password form state
+  const [passwordForm, setPasswordForm] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: '',
+  })
+
+  const [saveStatus, setSaveStatus] = useState(null) // 'saving', 'success', 'error'
+  const { addToast } = useToast()
+
+  // Mock login history data
+  const loginHistory = [
+    { id: 1, device: 'Chrome on Windows', location: 'San Francisco, CA', date: '2024-01-15 09:30 AM', current: true },
+    { id: 2, device: 'Safari on iPhone', location: 'San Francisco, CA', date: '2024-01-14 02:15 PM', current: false },
+    { id: 3, device: 'Firefox on MacOS', location: 'Los Angeles, CA', date: '2024-01-12 11:00 AM', current: false },
+  ]
+
+  // Mock sessions data
+  const sessions = [
+    { id: 1, device: 'Chrome on Windows', location: 'San Francisco, CA', lastActive: 'Now', current: true },
+    { id: 2, device: 'Safari on iPhone', location: 'San Francisco, CA', lastActive: '2 hours ago', current: false },
+    { id: 3, device: 'Mobile App', location: 'New York, NY', lastActive: '3 days ago', current: false },
+  ]
+
+  // Handlers for notification toggles
+  const handleNotificationChange = (type) => {
+    setNotifications((prev) => ({
+      ...prev,
+      [type]: !prev[type],
+    }))
+  }
+
+  // Handlers for privacy toggles
+  const handlePrivacyChange = (type) => {
+    setPrivacy((prev) => ({
+      ...prev,
+      [type]: !prev[type],
+    }))
+  }
+
+  // Save all settings
+  const handleSave = async () => {
+    setSaveStatus('saving')
+    
+    // Simulate API call
+    setTimeout(() => {
+      // Here you would typically make an API call to save settings
+      console.log('Saving settings:', { notifications, privacy })
+      setSaveStatus('success')
+      addToast('Settings saved successfully!', 'success')
+      
+      // Reset status after 2 seconds
+      setTimeout(() => setSaveStatus(null), 2000)
+    }, 1000)
+  }
+
+  // Cancel changes
+  const handleCancel = () => {
+    // Reset to defaults
+    setNotifications({
+      email: true,
+      push: true,
+      weeklySummary: true,
+    })
+    setPrivacy({
+      publicProfile: false,
+      dataCollection: true,
+    })
+    setPasswordForm({
+      currentPassword: '',
+      newPassword: '',
+      confirmPassword: '',
+    })
+  }
+
+  // Handle password change
+  const handlePasswordChange = (e) => {
+    e.preventDefault()
+    
+    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+      addToast('Passwords do not match!', 'error')
+      return
+    }
+
+    if (passwordForm.newPassword.length < 8) {
+      addToast('Password must be at least 8 characters!', 'error')
+      return
+    }
+
+    // Simulate API call
+    console.log('Changing password:', passwordForm.currentPassword)
+    setShowPasswordModal(false)
+    setPasswordForm({
+      currentPassword: '',
+      newPassword: '',
+      confirmPassword: '',
+    })
+    addToast('Password changed successfully!', 'success')
+  }
+
+  // Handle terminate session
+  const [showDeleteSessionModal, setShowDeleteSessionModal] = useState(false)
+  const [sessionToDelete, setSessionToDelete] = useState(null)
+
+  const handleTerminateSession = (sessionId) => {
+    setSessionToDelete(sessionId)
+    setShowDeleteSessionModal(true)
+  }
+
+  const confirmTerminateSession = () => {
+    if (sessionToDelete) {
+      console.log('Terminating session:', sessionToDelete)
+      addToast('Session terminated successfully!', 'success')
+    }
+    setShowDeleteSessionModal(false)
+    setSessionToDelete(null)
+  }
+
   return (
     <DashboardLayout>
       <div className="space-y-6">
@@ -23,7 +162,12 @@ export default function Settings() {
                 <p className="text-sm text-gray-600">Receive email updates about your applications</p>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" className="sr-only peer" defaultChecked />
+                <input 
+                  type="checkbox" 
+                  className="sr-only peer" 
+                  checked={notifications.email}
+                  onChange={() => handleNotificationChange('email')}
+                />
                 <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
               </label>
             </div>
@@ -34,7 +178,12 @@ export default function Settings() {
                 <p className="text-sm text-gray-600">Receive push notifications for important updates</p>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" className="sr-only peer" defaultChecked />
+                <input 
+                  type="checkbox" 
+                  className="sr-only peer" 
+                  checked={notifications.push}
+                  onChange={() => handleNotificationChange('push')}
+                />
                 <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
               </label>
             </div>
@@ -45,7 +194,12 @@ export default function Settings() {
                 <p className="text-sm text-gray-600">Get a weekly summary of your job search progress</p>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" className="sr-only peer" defaultChecked />
+                <input 
+                  type="checkbox" 
+                  className="sr-only peer" 
+                  checked={notifications.weeklySummary}
+                  onChange={() => handleNotificationChange('weeklySummary')}
+                />
                 <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
               </label>
             </div>
@@ -62,7 +216,12 @@ export default function Settings() {
                 <p className="text-sm text-gray-600">Allow others to view your profile</p>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" className="sr-only peer" />
+                <input 
+                  type="checkbox" 
+                  className="sr-only peer" 
+                  checked={privacy.publicProfile}
+                  onChange={() => handlePrivacyChange('publicProfile')}
+                />
                 <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
               </label>
             </div>
@@ -73,7 +232,12 @@ export default function Settings() {
                 <p className="text-sm text-gray-600">Allow us to collect analytics data for improvements</p>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" className="sr-only peer" defaultChecked />
+                <input 
+                  type="checkbox" 
+                  className="sr-only peer" 
+                  checked={privacy.dataCollection}
+                  onChange={() => handlePrivacyChange('dataCollection')}
+                />
                 <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
               </label>
             </div>
@@ -86,26 +250,199 @@ export default function Settings() {
           <div className="space-y-4">
             <div>
               <p className="font-medium text-gray-900 mb-2">Change Password</p>
-              <Button>Update Password</Button>
+              <Button onClick={() => setShowPasswordModal(true)}>Update Password</Button>
             </div>
 
             <div className="pt-4 border-t">
               <p className="font-medium text-gray-900 mb-2">Login History</p>
-              <Button variant="secondary">View Login History</Button>
+              <Button variant="secondary" onClick={() => setShowLoginHistoryModal(true)}>View Login History</Button>
             </div>
 
             <div className="pt-4 border-t">
               <p className="font-medium text-gray-900 mb-2">Active Sessions</p>
-              <Button variant="secondary">View Sessions</Button>
+              <Button variant="secondary" onClick={() => setShowSessionsModal(true)}>View Sessions</Button>
             </div>
           </div>
         </Card>
 
         {/* Save Button */}
         <div className="flex gap-3">
-          <Button>Save All Settings</Button>
-          <Button variant="secondary">Cancel</Button>
+          <Button 
+            onClick={handleSave}
+            disabled={saveStatus === 'saving'}
+          >
+            {saveStatus === 'saving' ? 'Saving...' : saveStatus === 'success' ? 'Saved!' : 'Save All Settings'}
+          </Button>
+          <Button variant="secondary" onClick={handleCancel}>Cancel</Button>
         </div>
+
+        {/* Password Change Modal */}
+        <Modal
+          isOpen={showPasswordModal}
+          onClose={() => setShowPasswordModal(false)}
+          title="Change Password"
+          size="md"
+        >
+          <form onSubmit={handlePasswordChange} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Current Password
+              </label>
+              <Input
+                type="password"
+                value={passwordForm.currentPassword}
+                onChange={(e) => setPasswordForm({ ...passwordForm, currentPassword: e.target.value })}
+                placeholder="Enter current password"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                New Password
+              </label>
+              <Input
+                type="password"
+                value={passwordForm.newPassword}
+                onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
+                placeholder="Enter new password"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Confirm New Password
+              </label>
+              <Input
+                type="password"
+                value={passwordForm.confirmPassword}
+                onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
+                placeholder="Confirm new password"
+                required
+              />
+            </div>
+            <div className="flex gap-3 pt-4">
+              <Button type="submit" className="flex-1">
+                Update Password
+              </Button>
+              <Button 
+                type="button" 
+                variant="secondary" 
+                onClick={() => setShowPasswordModal(false)}
+                className="flex-1"
+              >
+                Cancel
+              </Button>
+            </div>
+          </form>
+        </Modal>
+
+        {/* Login History Modal */}
+        <Modal
+          isOpen={showLoginHistoryModal}
+          onClose={() => setShowLoginHistoryModal(false)}
+          title="Login History"
+          size="lg"
+        >
+          <div className="space-y-3">
+            {loginHistory.map((login) => (
+              <div
+                key={login.id}
+                className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+              >
+                <div>
+                  <p className="font-medium text-gray-900">{login.device}</p>
+                  <p className="text-sm text-gray-600">{login.location}</p>
+                  <p className="text-xs text-gray-500">{login.date}</p>
+                </div>
+                {login.current && (
+                  <span className="px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">
+                    Current
+                  </span>
+                )}
+              </div>
+            ))}
+          </div>
+          <div className="mt-4">
+            <Button onClick={() => setShowLoginHistoryModal(false)} className="w-full">
+              Close
+            </Button>
+          </div>
+        </Modal>
+
+        {/* Sessions Modal */}
+        <Modal
+          isOpen={showSessionsModal}
+          onClose={() => setShowSessionsModal(false)}
+          title="Active Sessions"
+          size="lg"
+        >
+          <div className="space-y-3">
+            {sessions.map((session) => (
+              <div
+                key={session.id}
+                className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+              >
+                <div>
+                  <p className="font-medium text-gray-900">{session.device}</p>
+                  <p className="text-sm text-gray-600">{session.location}</p>
+                  <p className="text-xs text-gray-500">Last active: {session.lastActive}</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  {session.current && (
+                    <span className="px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">
+                      Current
+                    </span>
+                  )}
+                  {!session.current && (
+                    <Button
+                      variant="danger"
+                      size="sm"
+                      onClick={() => handleTerminateSession(session.id)}
+                    >
+                      Terminate
+                    </Button>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="mt-4">
+            <Button onClick={() => setShowSessionsModal(false)} className="w-full">
+              Close
+            </Button>
+          </div>
+        </Modal>
+
+        {/* Delete Session Confirmation Modal */}
+        <Modal
+          isOpen={showDeleteSessionModal}
+          onClose={() => {
+            setShowDeleteSessionModal(false)
+            setSessionToDelete(null)
+          }}
+          title="Terminate Session"
+          size="sm"
+        >
+          <div className="space-y-4">
+            <p className="text-gray-600">
+              Are you sure you want to terminate this session? The user will be logged out from this device.
+            </p>
+            <div className="flex gap-3 justify-end">
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  setShowDeleteSessionModal(false)
+                  setSessionToDelete(null)
+                }}
+              >
+                Cancel
+              </Button>
+              <Button variant="danger" onClick={confirmTerminateSession}>
+                Terminate
+              </Button>
+            </div>
+          </div>
+        </Modal>
       </div>
     </DashboardLayout>
   )

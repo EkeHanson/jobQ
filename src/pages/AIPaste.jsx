@@ -4,8 +4,11 @@ import JobPasteArea from '../components/ai/JobPasteArea'
 import ExtractionPreview from '../components/ai/ExtractionPreview'
 import Card from '../components/common/Card'
 import toast from 'react-hot-toast'
+import jobService from '../services/jobs'
+import { useApplications } from '../hooks/useApplications'
 
 export default function AIPaste() {
+  const { create } = useApplications()
   const [extractedData, setExtractedData] = useState(null)
   const [confidence, setConfidence] = useState(0)
   const [loading, setLoading] = useState(false)
@@ -14,30 +17,25 @@ export default function AIPaste() {
   const handleExtract = async (jobText) => {
     setLoading(true)
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 2000))
+      const { task_id } = await jobService.extractJobFromText(jobText)
 
-      // Mock extracted data
-      const mockData = {
-        company_name: 'TechCorp Solutions',
-        job_title: 'Senior Backend Engineer',
-        location: 'San Francisco, CA',
-        location_type: 'hybrid',
-        employment_type: 'full_time',
-        experience_level: 'senior',
-        salary_min: 150000,
-        salary_max: 200000,
-        salary_currency: 'USD',
-        contact_email: 'careers@techcorp.com',
-        deadline: '2024-03-15',
-        skills: ['Python', 'Django', 'PostgreSQL', 'AWS', 'Docker'],
+      // poll for completion
+      let statusResp = await jobService.getExtractionStatus(task_id)
+      while (statusResp.status !== 'completed') {
+        await new Promise((r) => setTimeout(r, 500))
+        statusResp = await jobService.getExtractionStatus(task_id)
       }
 
-      setExtractedData(mockData)
-      setConfidence(0.92)
+      const resultResp = await jobService.getExtractionResult(task_id)
+      const resultData = resultResp.result || {}
+      setExtractedData(resultData)
+
+      // simple confidence heuristic
+      setConfidence(0.9)
       setStep('preview')
       toast.success('Job details extracted successfully!')
     } catch (error) {
+      console.error(error)
       toast.error('Failed to extract job details. Please try again.')
     } finally {
       setLoading(false)
@@ -47,12 +45,23 @@ export default function AIPaste() {
   const handleSume = async (data) => {
     setLoading(true)
     try {
-      // Simulate saving
-      await new Promise((resolve) => setTimeout(resolve, 1000))
+      // build payload matching Applications page form
+      const payload = {
+        job: {
+          title: data.job_title || data.title || '',
+          company: { name: data.company_name || data.company || '' },
+        },
+        status: 'saved',
+        applied_date: data.applied_date || null,
+        deadline: data.deadline || null,
+        notes: data.notes || '',
+      }
+      await create(payload)
       toast.success('Application saved successfully!')
       setExtractedData(null)
       setStep('paste')
     } catch (error) {
+      console.error(error)
       toast.error('Failed to save application.')
     } finally {
       setLoading(false)

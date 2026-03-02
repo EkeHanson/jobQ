@@ -6,7 +6,7 @@ export const fetchApplications = createAsyncThunk(
   async (params = {}, { rejectWithValue }) => {
     try {
       const response = await apiClient.get('/applications', { params })
-      return response.data
+      return response
     } catch (error) {
       return rejectWithValue(error.message)
     }
@@ -18,7 +18,7 @@ export const fetchStats = createAsyncThunk(
   async (params = {}, { rejectWithValue }) => {
     try {
       const response = await apiClient.get('/applications/stats', { params })
-      return response.data
+      return response
     } catch (error) {
       return rejectWithValue(error.message)
     }
@@ -30,7 +30,7 @@ export const createApplication = createAsyncThunk(
   async (data, { rejectWithValue }) => {
     try {
       const response = await apiClient.post('/applications', data)
-      return response.data
+      return response
     } catch (error) {
       return rejectWithValue(error.message)
     }
@@ -42,7 +42,7 @@ export const updateApplication = createAsyncThunk(
   async ({ id, data }, { rejectWithValue }) => {
     try {
       const response = await apiClient.patch(`/applications/${id}`, data)
-      return response.data
+      return response
     } catch (error) {
       return rejectWithValue(error.message)
     }

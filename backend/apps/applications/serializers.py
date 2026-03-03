@@ -5,7 +5,7 @@ from .models import Application, StatusHistory
 class StatusHistorySerializer(serializers.ModelSerializer):
     class Meta:
         model = StatusHistory
-        fields = ['id', 'old_status', 'new_status', 'changed_at']
+        fields = ['id', 'old_status', 'new_status', 'changed_at', 'notes']
 
 
 class ApplicationSerializer(serializers.ModelSerializer):
@@ -13,8 +13,8 @@ class ApplicationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Application
-        fields = ['id', 'user', 'job', 'status', 'applied_at', 'notes', 'history']
-        read_only_fields = ['user', 'applied_at']
+        fields = ['id', 'user', 'job_title', 'company_name', 'status', 'applied_date', 'deadline', 'notes', 'history', 'created_at', 'updated_at']
+        read_only_fields = ['user', 'created_at', 'updated_at']
 
     def create(self, validated_data):
         user = self.context['request'].user

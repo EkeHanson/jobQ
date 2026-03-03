@@ -21,13 +21,13 @@ export default function ApplicationTable({ applications, onEdit, onView, loading
     let aVal = a[sortField]
     let bVal = b[sortField]
 
-    // Handle nested fields
-    if (sortField === 'job.title') {
-      aVal = a.job?.title
-      bVal = b.job?.title
-    } else if (sortField === 'job.company.name') {
-      aVal = a.job?.company?.name
-      bVal = b.job?.company?.name
+    // Handle direct fields
+    if (sortField === 'job_title') {
+      aVal = a.job_title
+      bVal = b.job_title
+    } else if (sortField === 'company_name') {
+      aVal = a.company_name
+      bVal = b.company_name
     }
 
     if (!aVal) return 1
@@ -63,7 +63,7 @@ export default function ApplicationTable({ applications, onEdit, onView, loading
           <tr>
             <th className="px-6 py-3 text-left">
               <button
-                onClick={() => handleSort('job.title')}
+                onClick={() => handleSort('job_title')}
                 className="flex items-center gap-1 text-xs font-semibold text-gray-700 hover:text-gray-900 uppercase tracking-wider"
               >
                 Job Title
@@ -72,7 +72,7 @@ export default function ApplicationTable({ applications, onEdit, onView, loading
             </th>
             <th className="px-6 py-3 text-left">
               <button
-                onClick={() => handleSort('job.company.name')}
+                onClick={() => handleSort('company_name')}
                 className="flex items-center gap-1 text-xs font-semibold text-gray-700 hover:text-gray-900 uppercase tracking-wider"
               >
                 Company
@@ -109,10 +109,10 @@ export default function ApplicationTable({ applications, onEdit, onView, loading
           {sortedApplications.map((app) => (
             <tr key={app.id} className="hover:bg-gray-50 transition-colors">
               <td className="px-6 py-4">
-                <div className="text-sm font-medium text-gray-900">{app.job?.title || 'N/A'}</div>
+                <div className="text-sm font-medium text-gray-900">{app.job_title || 'N/A'}</div>
               </td>
               <td className="px-6 py-4">
-                <div className="text-sm text-gray-600">{app.job?.company?.name || 'N/A'}</div>
+                <div className="text-sm text-gray-600">{app.company_name || 'N/A'}</div>
               </td>
               <td className="px-6 py-4">
                 <StatusBadge status={app.status} />
@@ -121,7 +121,7 @@ export default function ApplicationTable({ applications, onEdit, onView, loading
                 {formatDate(app.applied_date)}
               </td>
               <td className="px-6 py-4 text-sm text-gray-600">
-                {app.job?.deadline ? formatDate(app.job.deadline) : 'N/A'}
+                {app.deadline ? formatDate(app.deadline) : 'N/A'}
               </td>
               <td className="px-6 py-4 text-right">
                 <div className="flex justify-end gap-2">

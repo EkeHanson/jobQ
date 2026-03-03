@@ -3,9 +3,9 @@ import authService from '../services/auth'
 
 export const login = createAsyncThunk(
   'auth/login',
-  async ({ email, password }, { rejectWithValue }) => {
+  async ({ identifier, password, rememberMe = false }, { rejectWithValue }) => {
     try {
-      const response = await authService.login(email, password)
+      const response = await authService.login(identifier, password, rememberMe)
       return response
     } catch (error) {
       return rejectWithValue(error.message)

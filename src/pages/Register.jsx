@@ -84,6 +84,7 @@ export default function Register() {
             type="password"
             placeholder="••••••••"
             error={errors.password?.message}
+            showPasswordToggle
             {...register('password')}
           />
 
@@ -92,6 +93,7 @@ export default function Register() {
             type="password"
             placeholder="••••••••"
             error={errors.confirmPassword?.message}
+            showPasswordToggle
             {...register('confirmPassword')}
           />
 

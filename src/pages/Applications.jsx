@@ -60,10 +60,8 @@ export default function Applications() {
 
   const handleSaveNew = async () => {
     const payload = {
-      job: {
-        title: newData.jobTitle,
-        company: { name: newData.companyName },
-      },
+      job_title: newData.jobTitle,
+      company_name: newData.companyName,
       status: newData.status,
       applied_date: newData.appliedDate || null,
       deadline: newData.deadline || null,
@@ -230,14 +228,14 @@ export default function Applications() {
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Job Title
                 </label>
-                <p className="text-gray-900 font-medium">{currentApplication.job?.title}</p>
+                <p className="text-gray-900 font-medium">{currentApplication.job_title}</p>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Company
                 </label>
-                <p className="text-gray-900">{currentApplication.job?.company?.name}</p>
+                <p className="text-gray-900">{currentApplication.company_name}</p>
               </div>
 
               <div>

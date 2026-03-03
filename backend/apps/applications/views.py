@@ -8,7 +8,7 @@ from .serializers import ApplicationSerializer, StatusHistorySerializer
 
 
 class ApplicationViewSet(viewsets.ModelViewSet):
-    queryset = Application.objects.all().select_related('job', 'user')
+    queryset = Application.objects.all().order_by('-created_at')
     serializer_class = ApplicationSerializer
     permission_classes = [permissions.IsAuthenticated]
 
@@ -18,31 +18,30 @@ class ApplicationViewSet(viewsets.ModelViewSet):
         if not self.request.user.is_staff:
             qs = qs.filter(user=user)
         return qs
-
-
-class ApplicationStatsView(generics.GenericAPIView):
-    permission_classes = [permissions.IsAuthenticated]
-
-    def get(self, request, *args, **kwargs):
-        qs = Application.objects.filter(user=request.user).select_related('job')
+    
+    @action(detail=False, methods=['get'])
+    def stats(self, request):
+        """Get application statistics for current user"""
+        qs = Application.objects.filter(user=request.user)
         total = qs.count()
         by_status = {}
-        by_source = {}
         for app in qs:
             status = app.status or 'unknown'
             by_status[status] = by_status.get(status, 0) + 1
-            source = getattr(app.job, 'source', 'unknown')
-            by_source[source] = by_source.get(source, 0) + 1
+        
+        total_companies = qs.values('company_name').distinct().count()
+        
         interview_rate = (by_status.get('interview', 0) / total * 100) if total else 0
         offer_rate = (by_status.get('offer', 0) / total * 100) if total else 0
         response_rate = (
             (by_status.get('interview', 0) + by_status.get('offer', 0) + by_status.get('rejected', 0))
             / total * 100
         ) if total else 0
+        
         stats = {
             'total': total,
+            'total_companies': total_companies,
             'by_status': by_status,
-            'by_source': by_source,
             'response_rate': response_rate,
             'interview_rate': interview_rate,
             'offer_rate': offer_rate,

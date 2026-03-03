@@ -29,7 +29,16 @@ export const createApplication = createAsyncThunk(
   'applications/create',
   async (data, { rejectWithValue }) => {
     try {
-      const response = await apiClient.post('/applications', data)
+      // Transform frontend data to match backend structure
+      const payload = {
+        job_title: data.job_title || data.job?.title || '',
+        company_name: data.company_name || data.job?.company?.name || '',
+        status: data.status || 'saved',
+        applied_date: data.applied_date || data.appliedDate || null,
+        deadline: data.deadline || null,
+        notes: data.notes || '',
+      }
+      const response = await apiClient.post('/applications', payload)
       return response
     } catch (error) {
       return rejectWithValue(error.message)

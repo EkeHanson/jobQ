@@ -28,8 +28,8 @@ export default function RecentApplications({ applications = [] }) {
             <div key={app.id} className="py-3 hover:bg-gray-50 px-2 rounded">
               <div className="flex items-center justify-between">
                 <div className="flex-1">
-                  <p className="text-sm font-medium text-gray-900">{app.job?.title}</p>
-                  <p className="text-sm text-gray-600">{app.job?.company?.name}</p>
+                  <p className="text-sm font-medium text-gray-900">{app.job_title}</p>
+                  <p className="text-sm text-gray-600">{app.company_name}</p>
                   <p className="text-xs text-gray-400 mt-1">
                     Applied on {formatDate(app.applied_date)}
                   </p>

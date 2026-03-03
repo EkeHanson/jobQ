@@ -1,12 +1,17 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import DashboardLayout from '../components/layout/DashboardLayout'
 import Card from '../components/common/Card'
 import Button from '../components/common/Button'
 import Input from '../components/common/Input'
 import Modal from '../components/common/Modal'
 import { useToast } from '../components/common/Toast'
+import authService from '../services/auth'
 
 export default function Settings() {
+  const navigate = useNavigate()
+  const { addToast } = useToast()
+
   // Notification settings state
   const [notifications, setNotifications] = useState({
     email: true,
@@ -25,6 +30,11 @@ export default function Settings() {
   const [showLoginHistoryModal, setShowLoginHistoryModal] = useState(false)
   const [showSessionsModal, setShowSessionsModal] = useState(false)
 
+  // Delete account modal state
+  const [showDeleteAccountModal, setShowDeleteAccountModal] = useState(false)
+  const [deletePassword, setDeletePassword] = useState('')
+  const [deleteLoading, setDeleteLoading] = useState(false)
+
   // Password form state
   const [passwordForm, setPasswordForm] = useState({
     currentPassword: '',
@@ -33,7 +43,6 @@ export default function Settings() {
   })
 
   const [saveStatus, setSaveStatus] = useState(null) // 'saving', 'success', 'error'
-  const { addToast } = useToast()
 
   // Mock login history data
   const loginHistory = [
@@ -141,6 +150,34 @@ export default function Settings() {
     }
     setShowDeleteSessionModal(false)
     setSessionToDelete(null)
+  }
+
+  // Handle delete account
+  const handleDeleteAccount = async (e) => {
+    e.preventDefault()
+    
+    if (!deletePassword) {
+      addToast('Please enter your password to confirm', 'error')
+      return
+    }
+
+    setDeleteLoading(true)
+    try {
+      await authService.deleteAccount(deletePassword)
+      addToast('Account deleted successfully', 'success')
+      
+      // Clear local storage and redirect to login
+      localStorage.removeItem('accessToken')
+      localStorage.removeItem('refreshToken')
+      localStorage.removeItem('user')
+      
+      navigate('/login')
+    } catch (error) {
+      const message = error.response?.data?.detail || 'Failed to delete account. Please check your password.'
+      addToast(message, 'error')
+    } finally {
+      setDeleteLoading(false)
+    }
   }
 
   return (
@@ -275,6 +312,39 @@ export default function Settings() {
           </Button>
           <Button variant="secondary" onClick={handleCancel}>Cancel</Button>
         </div>
+
+        {/* Danger Zone */}
+        <Card className="border-2 border-red-200 bg-red-50">
+          <div className="flex items-center gap-3 mb-4">
+            <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+            <h2 className="text-2xl font-semibold text-red-900">Danger Zone</h2>
+          </div>
+          
+          <div className="bg-white rounded-lg p-4 border border-red-200">
+            <h3 className="font-medium text-gray-900 mb-2">Permanently delete your account</h3>
+            <p className="text-sm text-gray-600 mb-4">
+              This action cannot be undone. All of your data will be permanently deleted, including:
+            </p>
+            <ul className="list-disc list-inside text-sm text-gray-600 mb-4 space-y-1">
+              <li>Your profile and personal information</li>
+              <li>All job applications you've submitted</li>
+              <li>All saved jobs</li>
+              <li>All notifications</li>
+              <li>All subscription data</li>
+            </ul>
+            <p className="text-sm font-medium text-red-600 mb-4">
+              Warning: This will permanently remove your account and you will not be able to recover any of your data.
+            </p>
+            <Button 
+              variant="danger" 
+              onClick={() => setShowDeleteAccountModal(true)}
+            >
+              Delete Account
+            </Button>
+          </div>
+        </Card>
 
         {/* Password Change Modal */}
         <Modal
@@ -441,6 +511,76 @@ export default function Settings() {
                 Terminate
               </Button>
             </div>
+          </div>
+        </Modal>
+
+        {/* Delete Account Confirmation Modal */}
+        <Modal
+          isOpen={showDeleteAccountModal}
+          onClose={() => {
+            setShowDeleteAccountModal(false)
+            setDeletePassword('')
+          }}
+          title="Delete Account"
+          size="md"
+        >
+          <div className="space-y-4">
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+              <div className="flex items-center gap-2 text-red-800 font-medium mb-2">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                Warning: This action cannot be undone!
+              </div>
+              <p className="text-sm text-red-700">
+                You are about to permanently delete your account and all associated data. This includes:
+              </p>
+              <ul className="list-disc list-inside text-sm text-red-700 mt-2 space-y-1">
+                <li>Your profile and personal information</li>
+                <li>All job applications</li>
+                <li>All saved jobs</li>
+                <li>All notifications</li>
+                <li>All subscription data</li>
+              </ul>
+            </div>
+            
+            <form onSubmit={handleDeleteAccount}>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Enter your password to confirm deletion
+              </label>
+              <Input
+                type="password"
+                value={deletePassword}
+                onChange={(e) => setDeletePassword(e.target.value)}
+                placeholder="Enter your password"
+                required
+              />
+              <p className="text-xs text-gray-500 mt-2">
+                Type your password and click "Delete Account" to confirm. You will be logged out immediately.
+              </p>
+              
+              <div className="flex gap-3 mt-6">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={() => {
+                    setShowDeleteAccountModal(false)
+                    setDeletePassword('')
+                  }}
+                  className="flex-1"
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  type="submit" 
+                  variant="danger" 
+                  disabled={deleteLoading}
+                  className="flex-1"
+                >
+                  {deleteLoading ? 'Deleting...' : 'Delete Account'}
+                </Button>
+              </div>
+            </form>
           </div>
         </Modal>
       </div>

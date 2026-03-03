@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useDispatch } from 'react-redux'
 import DashboardLayout from '../components/layout/DashboardLayout'
 import Card from '../components/common/Card'
 import Button from '../components/common/Button'
@@ -8,15 +9,27 @@ import Badge from '../components/common/Badge'
 import { useAuth } from '../hooks/useAuth'
 import { useProfiles } from '../hooks/useProfiles'
 import { useToast } from '../components/common/Toast'
+import authService from '../services/auth'
+import { setUser } from '../store/authSlice'
 
 export default function Profile() {
+  const dispatch = useDispatch()
   const { user } = useAuth()
-  const { profiles, loading, error, create, remove } = useProfiles()
+  const { profiles, loading, error, create, remove, addSkill, removeSkill, getSkills } = useProfiles()
   const [showModal, setShowModal] = useState(false)
   const [showSkillsModal, setShowSkillsModal] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [profileToDelete, setProfileToDelete] = useState(null)
+  const [isUpdatingProfile, setIsUpdatingProfile] = useState(false)
   const { addToast } = useToast()
+  
+  // Personal information form state
+  const [personalInfo, setPersonalInfo] = useState({
+    first_name: '',
+    last_name: '',
+    phone: '',
+    location: ''
+  })
   // Legacy form data (kept for backward compatibility)
   const [formData, setFormData] = useState({
     title: '',
@@ -102,15 +115,71 @@ export default function Profile() {
     setProfileToDelete(null)
   }
 
-  const handleAddSkill = () => {
-    if (skillInput.trim() && !skills.includes(skillInput.trim())) {
-      setSkills([...skills, skillInput.trim()])
+  const handleAddSkill = async () => {
+    if (skillInput.trim()) {
+      const skillName = skillInput.trim()
+      
+      // Check if skill already exists in local list
+      const skillExists = skills.some(s => s.name === skillName || s === skillName)
+      if (skillExists) {
+        addToast('Skill already exists', 'error')
+        setSkillInput('')
+        return
+      }
+
+      // If profile exists, save to backend
+      if (profiles.length > 0) {
+        try {
+          const profileId = profiles[0].id
+          const newSkill = await addSkill(profileId, skillName)
+          setSkills([...skills, newSkill])
+          addToast('Skill added successfully!', 'success')
+        } catch (err) {
+          console.error('Error adding skill to backend:', err)
+          // Fall back to localStorage
+          const newSkillsList = [...skills.map(s => s.name || s), skillName]
+          setSkills(newSkillsList)
+          localStorage.setItem('userSkills', JSON.stringify(newSkillsList))
+          addToast('Skill added (offline mode)', 'success')
+        }
+      } else {
+        // No profile exists, save to localStorage
+        const newSkillsList = [...skills.map(s => s.name || s), skillName]
+        setSkills(newSkillsList)
+        localStorage.setItem('userSkills', JSON.stringify(newSkillsList))
+        addToast('Skill added! Create a profile to save skills to your account.', 'success')
+      }
+      
       setSkillInput('')
     }
   }
 
-  const handleRemoveSkill = (skillToRemove) => {
-    setSkills(skills.filter((skill) => skill !== skillToRemove))
+  const handleRemoveSkill = async (skill) => {
+    const skillId = skill.id
+    const skillName = skill.name || skill
+    
+    // If profile exists, delete from backend
+    if (profiles.length > 0 && skillId) {
+      try {
+        const profileId = profiles[0].id
+        await removeSkill(profileId, skillId)
+        setSkills(skills.filter(s => s.id !== skillId))
+        addToast('Skill removed!', 'success')
+      } catch (err) {
+        console.error('Error removing skill from backend:', err)
+        // Fall back to localStorage
+        setSkills(skills.filter(s => (s.name || s) !== skillName))
+        const newSkillsList = skills.map(s => s.name || s).filter(s => s !== skillName)
+        localStorage.setItem('userSkills', JSON.stringify(newSkillsList))
+        addToast('Skill removed!', 'success')
+      }
+    } else {
+      // No profile or no skill ID, remove from local list
+      setSkills(skills.filter(s => (s.name || s) !== skillName))
+      const newSkillsList = skills.map(s => s.name || s).filter(s => s !== skillName)
+      localStorage.setItem('userSkills', JSON.stringify(newSkillsList))
+      addToast('Skill removed!', 'success')
+    }
   }
 
   const handleSaveSkills = () => {
@@ -120,13 +189,79 @@ export default function Profile() {
     addToast('Skills saved successfully!', 'success')
   }
 
-  // Load skills from localStorage on mount
+  // Load user data into form when user data is available
+  // Load skills from backend
   useEffect(() => {
-    const savedSkills = localStorage.getItem('userSkills')
-    if (savedSkills) {
-      setSkills(JSON.parse(savedSkills))
+    if (user) {
+      setPersonalInfo({
+        first_name: user.first_name || '',
+        last_name: user.last_name || '',
+        phone: user.phone || '',
+        location: user.location || ''
+      })
+      
+      // Load skills from backend
+      const loadSkills = async () => {
+        if (profiles.length > 0) {
+          try {
+            const profileId = profiles[0].id
+            const skillsData = await getSkills(profileId)
+            setSkills(skillsData)
+          } catch (err) {
+            console.error('Error loading skills:', err)
+            // Fall back to localStorage
+            const savedSkills = localStorage.getItem('userSkills')
+            if (savedSkills) {
+              setSkills(JSON.parse(savedSkills))
+            }
+          }
+        } else {
+          // If no profile exists, fall back to localStorage
+          const savedSkills = localStorage.getItem('userSkills')
+          if (savedSkills) {
+            setSkills(JSON.parse(savedSkills))
+          }
+        }
+      }
+      loadSkills()
     }
-  }, [])
+  }, [user, profiles, getSkills])
+
+  // Handle personal info input change
+  const handlePersonalInfoChange = (e) => {
+    const { name, value } = e.target
+    setPersonalInfo(prev => ({ ...prev, [name]: value }))
+  }
+
+  // Save personal information
+  const handleSavePersonalInfo = async () => {
+    setIsUpdatingProfile(true)
+    try {
+      // Update profile on server
+      await authService.updateProfile(personalInfo)
+      // Fetch the latest user data to ensure Redux store is updated
+      const response = await authService.getCurrentUser()
+      dispatch(setUser(response))
+      addToast('Profile updated successfully!', 'success')
+    } catch (err) {
+      console.error('Error updating profile:', err)
+      addToast(err.response?.data?.message || 'Failed to update profile', 'error')
+    } finally {
+      setIsUpdatingProfile(false)
+    }
+  }
+
+  // Reset personal information to original values
+  const handleCancelPersonalInfo = () => {
+    if (user) {
+      setPersonalInfo({
+        first_name: user.first_name || '',
+        last_name: user.last_name || '',
+        phone: user.phone || '',
+        location: user.location || ''
+      })
+    }
+  }
 
   return (
     <DashboardLayout>
@@ -141,15 +276,37 @@ export default function Profile() {
         <Card>
           <h2 className="text-2xl font-semibold text-gray-900 mb-6">Personal Information</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Input label="First Name" defaultValue={user?.first_name} />
-            <Input label="Last Name" defaultValue={user?.last_name} />
+            <Input 
+              label="First Name" 
+              name="first_name"
+              value={personalInfo.first_name} 
+              onChange={handlePersonalInfoChange}
+            />
+            <Input 
+              label="Last Name" 
+              name="last_name"
+              value={personalInfo.last_name} 
+              onChange={handlePersonalInfoChange}
+            />
             <Input label="Email" type="email" defaultValue={user?.email} disabled />
-            <Input label="Phone Number" defaultValue={user?.phone} />
-            <Input label="Location" defaultValue={user?.location} />
+            <Input 
+              label="Phone Number" 
+              name="phone"
+              value={personalInfo.phone} 
+              onChange={handlePersonalInfoChange}
+            />
+            <Input 
+              label="Location" 
+              name="location"
+              value={personalInfo.location} 
+              onChange={handlePersonalInfoChange}
+            />
           </div>
           <div className="mt-6 flex gap-3">
-            <Button>Save Changes</Button>
-            <Button variant="secondary">Cancel</Button>
+            <Button onClick={handleSavePersonalInfo} disabled={isUpdatingProfile}>
+              {isUpdatingProfile ? 'Saving...' : 'Save Changes'}
+            </Button>
+            <Button variant="secondary" onClick={handleCancelPersonalInfo}>Cancel</Button>
           </div>
         </Card>
 
@@ -208,8 +365,8 @@ export default function Profile() {
               <h3 className="text-lg font-semibold text-gray-800 mb-3">Your Skills</h3>
               <div className="flex flex-wrap gap-2">
                 {skills.map((skill) => (
-                  <Badge key={skill} variant="primary">
-                    {skill}
+                  <Badge key={skill.id || skill} variant="primary">
+                    {skill.name || skill}
                   </Badge>
                 ))}
               </div>
@@ -345,10 +502,10 @@ export default function Profile() {
               <div className="flex flex-wrap gap-2">
                 {skills.map((skill) => (
                   <div
-                    key={skill}
+                    key={skill.id || skill}
                     className="inline-flex items-center gap-2 bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm"
                   >
-                    <span>{skill}</span>
+                    <span>{skill.name || skill}</span>
                     <button
                       onClick={() => handleRemoveSkill(skill)}
                       className="text-blue-600 hover:text-blue-800 font-bold cursor-pointer"

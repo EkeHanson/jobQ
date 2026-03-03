@@ -23,8 +23,6 @@ urlpatterns = [
     path('api/v1/jobs/extract/', job_views.JobExtractView.as_view(), name='job-extract'),
     path('api/v1/jobs/extract/status/<uuid:task_id>/', job_views.JobExtractStatusView.as_view(), name='job-extract-status'),
     path('api/v1/jobs/extract/result/<uuid:task_id>/', job_views.JobExtractResultView.as_view(), name='job-extract-result'),
-    path('api/v1/applications/stats/', app_views.ApplicationStatsView.as_view(), name='application-stats'),
-    path('api/v1/applications/<int:pk>/status-history/', app_views.StatusHistoryView.as_view(), name='status-history'),
     # subscription invoices
     path('api/v1/subscription/invoices/', subscription_views.InvoiceListView.as_view(), name='invoice-list'),
     path('api/v1/subscription/invoices/<int:invoice_id>/download/', subscription_views.InvoiceDownloadView.as_view(), name='invoice-download'),

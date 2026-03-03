@@ -3,7 +3,7 @@ import apiClient from './api'
 const applicationService = {
   // Applications
   getApplications: async (params) => {
-    return apiClient.get('/applications', { params })
+    return apiClient.get('/applications/', { params })
   },
 
   getApplication: async (id) => {
@@ -11,11 +11,11 @@ const applicationService = {
   },
 
   createApplication: async (data) => {
-    return apiClient.post('/applications', data)
+    return apiClient.post('/applications/', data)
   },
 
   updateApplication: async (id, data) => {
-    return apiClient.patch(`/applications/${id}`, data)
+    return apiClient.patch(`/applications/${id}/`, data)
   },
 
   deleteApplication: async (id) => {
@@ -24,12 +24,12 @@ const applicationService = {
 
   // Statistics
   getStats: async (params) => {
-    return apiClient.get('/applications/stats', { params })
+    return apiClient.get('/applications/stats/', { params })
   },
 
   // Status History
   getStatusHistory: async (applicationId) => {
-    return apiClient.get(`/applications/${applicationId}/status-history`)
+    return apiClient.get(`/applications/${applicationId}/status-history/`)
   },
 }
 

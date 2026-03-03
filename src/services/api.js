@@ -1,8 +1,17 @@
 import axios from 'axios'
 
 const apiClient = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1',
+  baseURL: (import.meta.env.VITE_API_URL || 'http://localhost:9090/api/v1') + '/',
   timeout: 10000,
+})
+
+// Add trailing slash to all request URLs
+apiClient.interceptors.request.use((config) => {
+  // Ensure the URL ends with a slash
+  if (config.url && !config.url.endsWith('/')) {
+    config.url = config.url + '/'
+  }
+  return config
 })
 
 // Request interceptor
@@ -33,7 +42,7 @@ apiClient.interceptors.response.use(
         }
 
         const response = await axios.post(
-          `${import.meta.env.VITE_API_URL}/auth/refresh`,
+          `${import.meta.env.VITE_API_URL}/auth/refresh/`,
           { refresh: refreshToken }
         )
 

@@ -6,6 +6,7 @@ import {
   updateProfile,
   deleteProfile,
 } from '../store/profileSlice'
+import profileService from '../services/profiles'
 
 export const useProfiles = () => {
   const dispatch = useDispatch()
@@ -37,6 +38,45 @@ export const useProfiles = () => {
     [dispatch]
   )
 
+  // Skill management
+  const getSkills = useCallback(
+    async (profileId) => {
+      try {
+        const response = await profileService.getSkills(profileId)
+        return response
+      } catch (error) {
+        console.error('Error getting skills:', error)
+        throw error
+      }
+    },
+    []
+  )
+
+  const addSkill = useCallback(
+    async (profileId, skillName) => {
+      try {
+        const response = await profileService.addSkill(profileId, { name: skillName })
+        return response
+      } catch (error) {
+        console.error('Error adding skill:', error)
+        throw error
+      }
+    },
+    []
+  )
+
+  const removeSkill = useCallback(
+    async (profileId, skillId) => {
+      try {
+        await profileService.deleteSkill(profileId, skillId)
+      } catch (error) {
+        console.error('Error removing skill:', error)
+        throw error
+      }
+    },
+    []
+  )
+
   return {
     profiles: profiles || [],
     loading,
@@ -45,5 +85,8 @@ export const useProfiles = () => {
     update,
     remove,
     refetch,
+    addSkill,
+    removeSkill,
+    getSkills,
   }
 }

@@ -35,47 +35,50 @@ export default function Sidebar() {
     <>
       {/* Desktop Sidebar */}
       <aside className={cn(
-        "hidden lg:flex lg:flex-col bg-gray-900 text-white transition-all duration-300",
-        isCollapsed ? "w-16" : "w-52"
+        "hidden lg:flex lg:flex-col bg-gray-900/95 backdrop-blur-xl text-white transition-all duration-300 border-r border-gray-800/50",
+        isCollapsed ? "w-20" : "w-64"
       )}>
-        <div className="flex items-center gap-2 px-4 py-4 border-b border-gray-800">
-          <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center font-bold flex-shrink-0">
+        <div className="flex items-center gap-3 px-4 py-5 border-b border-gray-800/50">
+          <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-accent-500 rounded-xl flex items-center justify-center font-bold flex-shrink-0 shadow-lg shadow-primary-500/25">
             J
           </div>
           {!isCollapsed && (
-            <span className="text-lg font-semibold whitespace-nowrap">JobTrack AI</span>
+            <span className="text-lg font-semibold whitespace-nowrap">JobTrack<span className="text-gradient">AI</span></span>
           )}
         </div>
 
-        <nav className="flex-1 px-2 py-4 space-y-2">
+        <nav className="flex-1 px-3 py-4 space-y-1.5">
           {navigation.map((item) => (
             <NavLink
               key={item.name}
               to={item.to}
               className={({ isActive }) =>
                 cn(
-                  'flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors',
+                  'flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 group',
                   isActive
-                    ? 'bg-blue-600 text-white'
-                    : 'text-gray-300 hover:bg-gray-800 hover:text-white',
-                  isCollapsed && 'justify-center px-2'
+                    ? 'bg-gradient-to-r from-primary-600 to-accent-600 text-white shadow-lg shadow-primary-500/25'
+                    : 'text-gray-400 hover:text-white hover:bg-white/5',
+                  isCollapsed && 'justify-center px-3'
                 )
               }
               title={isCollapsed ? item.name : undefined}
             >
-              <item.icon className="w-5 h-5 flex-shrink-0" />
+              <item.icon className={cn(
+                "w-5 h-5 flex-shrink-0 transition-transform duration-200",
+                !isCollapsed && "group-hover:scale-110"
+              )} />
               {!isCollapsed && <span>{item.name}</span>}
             </NavLink>
           ))}
         </nav>
 
         {/* Collapse Toggle Button */}
-        <div className="px-2 py-4 border-t border-gray-800">
+        <div className="px-3 py-4 border-t border-gray-800/50">
           <button
             onClick={() => dispatch(toggleSidebarCollapse())}
             className={cn(
-              'flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-gray-300 hover:bg-gray-800 hover:text-white w-full transition-colors',
-              isCollapsed && 'justify-center px-2'
+              'flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-gray-400 hover:text-white hover:bg-white/5 w-full transition-all duration-200',
+              isCollapsed && 'justify-center px-3'
             )}
             title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
           >
@@ -90,9 +93,9 @@ export default function Sidebar() {
           </button>
         </div>
 
-        <div className="px-3 py-4 border-t border-gray-800">
+        <div className="px-4 py-4 border-t border-gray-800/50">
           {!isCollapsed && (
-            <p className="text-xs text-gray-400">JobTrack AI v1.0.0</p>
+            <p className="text-xs text-gray-500">JobTrack AI v1.0.0</p>
           )}
         </div>
       </aside>
@@ -100,22 +103,22 @@ export default function Sidebar() {
       {/* Mobile Sidebar */}
       {sidebar.isOpen && (
         <div className="fixed inset-0 z-40 lg:hidden">
-          <div className="fixed inset-0 bg-gray-900 bg-opacity-75" onClick={() => dispatch(toggleSidebar())} />
+          <div className="fixed inset-0 bg-gray-900/80 backdrop-blur-sm" onClick={() => dispatch(toggleSidebar())} />
 
-          <aside className="fixed left-0 top-0 bottom-0 w-56 bg-gray-900 text-white flex flex-col">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-800">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center font-bold">
+          <aside className="fixed left-0 top-0 bottom-0 w-72 bg-gray-900/95 backdrop-blur-xl text-white flex flex-col border-r border-gray-800/50">
+            <div className="flex items-center justify-between px-6 py-5 border-b border-gray-800/50">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-accent-500 rounded-xl flex items-center justify-center font-bold shadow-lg shadow-primary-500/25">
                   J
                 </div>
-                <span className="text-lg font-semibold">JobTrack AI</span>
+                <span className="text-lg font-semibold">JobTrack<span className="text-gradient">AI</span></span>
               </div>
-              <button onClick={() => dispatch(toggleSidebar())}>
+              <button onClick={() => dispatch(toggleSidebar())} className="p-2 hover:bg-white/5 rounded-lg transition-colors">
                 <XMarkIcon className="w-6 h-6" />
               </button>
             </div>
 
-            <nav className="flex-1 px-3 py-4 space-y-2">
+            <nav className="flex-1 px-3 py-4 space-y-1.5">
               {navigation.map((item) => (
                 <NavLink
                   key={item.name}
@@ -123,10 +126,10 @@ export default function Sidebar() {
                   onClick={() => dispatch(toggleSidebar())}
                   className={({ isActive }) =>
                     cn(
-                      'flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors',
+                      'flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200',
                       isActive
-                        ? 'bg-blue-600 text-white'
-                        : 'text-gray-300 hover:bg-gray-800 hover:text-white'
+                        ? 'bg-gradient-to-r from-primary-600 to-accent-600 text-white shadow-lg shadow-primary-500/25'
+                        : 'text-gray-400 hover:text-white hover:bg-white/5'
                     )
                   }
                 >
@@ -136,8 +139,8 @@ export default function Sidebar() {
               ))}
             </nav>
 
-            <div className="px-3 py-4 border-t border-gray-800">
-              <p className="text-xs text-gray-400">JobTrack AI v1.0.0</p>
+            <div className="px-4 py-4 border-t border-gray-800/50">
+              <p className="text-xs text-gray-500">JobTrack AI v1.0.0</p>
             </div>
           </aside>
         </div>

@@ -15,7 +15,7 @@ const jobService = {
   },
 
   updateJob: async (id, data) => {
-    return apiClient.put(`/jobs/${id}`, data)
+    return apiClient.put(`/jobs/${id}`)
   },
 
   deleteJob: async (id) => {
@@ -28,7 +28,7 @@ const jobService = {
   },
 
   getExtractionStatus: async (taskId) => {
-    return apiClient.get(`/jobs/extract/status/${taskId}`)
+    return apiClient.get(`/jobs/extract/status/${taskId}/`)
   },
 
   getExtractionResult: async (taskId) => {

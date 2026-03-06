@@ -1,22 +1,40 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import DashboardLayout from '../components/layout/DashboardLayout'
 import JobPasteArea from '../components/ai/JobPasteArea'
 import ExtractionPreview from '../components/ai/ExtractionPreview'
 import Card from '../components/common/Card'
+import Button from '../components/common/Button'
 import toast from 'react-hot-toast'
 import jobService from '../services/jobs'
 import { useApplications } from '../hooks/useApplications'
+import useSubscription from '../hooks/useSubscription'
 
 export default function AIPaste() {
   const { create } = useApplications()
+  const { limits, canUseAIPaste, recordAIPaste, canCreateApplication } = useSubscription()
   const [extractedData, setExtractedData] = useState(null)
   const [confidence, setConfidence] = useState(0)
   const [loading, setLoading] = useState(false)
   const [step, setStep] = useState('paste') // paste, preview, done
+  const [limitError, setLimitError] = useState(null)
 
   const handleExtract = async (jobText) => {
+    setLimitError(null)
+    
+    // Check AI paste limit first
+    const aiCheck = await canUseAIPaste()
+    if (!aiCheck.allowed) {
+      setLimitError(aiCheck.reason)
+      toast.error(aiCheck.reason || 'AI paste limit reached')
+      return
+    }
+
     setLoading(true)
     try {
+      // Record AI paste usage
+      await recordAIPaste()
+
       const { task_id } = await jobService.extractJobFromText(jobText)
 
       // poll for completion
@@ -42,7 +60,17 @@ export default function AIPaste() {
     }
   }
 
-  const handleSume = async (data) => {
+  const handleSave = async (data) => {
+    setLimitError(null)
+    
+    // Check application limit before saving
+    const appCheck = await canCreateApplication()
+    if (!appCheck.allowed) {
+      setLimitError(appCheck.reason)
+      toast.error(appCheck.reason || 'Application limit reached')
+      return
+    }
+
     setLoading(true)
     try {
       // build payload matching Applications page form
@@ -68,6 +96,9 @@ export default function AIPaste() {
     }
   }
 
+  // Show usage info
+  const aiPastesRemaining = limits?.limits?.max_ai_pastes - limits?.usage?.ai_pastes_this_month || 0
+
   return (
     <DashboardLayout>
       <div className="space-y-6">
@@ -79,6 +110,44 @@ export default function AIPaste() {
           </p>
         </div>
 
+        {/* Subscription Limits Banner */}
+        {limits && (
+          <div className={`rounded-xl p-4 ${limits.subscription?.active ? 'bg-gradient-to-r from-primary-50 to-accent-50 border border-primary-200' : 'bg-gray-100 border border-gray-200'}`}>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div>
+                <p className="font-medium text-gray-900">
+                  {limits.subscription?.active 
+                    ? `Plan: ${limits.subscription?.plan_name || 'Free'}`
+                    : 'No active subscription'
+                  }
+                </p>
+                {limits.subscription?.active && (
+                  <p className="text-sm text-gray-600">
+                    AI Pastes used this month: {limits.usage?.ai_pastes_this_month || 0} / {limits.limits?.max_ai_pastes || 0}
+                  </p>
+                )}
+              </div>
+              {!limits.subscription?.active && (
+                <Link to="/subscription">
+                  <Button size="sm" className="btn-gradient">
+                    Upgrade to Unlock
+                  </Button>
+                </Link>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Limit Error */}
+        {limitError && (
+          <div className="bg-red-50 border border-red-200 rounded-xl p-4">
+            <p className="text-red-700 font-medium">{limitError}</p>
+            <Link to="/subscription" className="text-sm text-red-600 hover:underline">
+              Upgrade your plan to continue
+            </Link>
+          </div>
+        )}
+
         {/* Steps Indicator */}
         <div className="flex gap-4">
           {['paste', 'preview', 'done'].map((s) => (
@@ -86,7 +155,7 @@ export default function AIPaste() {
               key={s}
               className={`flex-1 h-2 rounded-full ${
                 step === s
-                  ? 'bg-blue-600'
+                  ? 'bg-gradient-to-r from-primary-500 to-accent-500'
                   : ['paste', 'preview'].indexOf(s) < ['paste', 'preview'].indexOf(step)
                     ? 'bg-green-500'
                     : 'bg-gray-300'
@@ -104,14 +173,14 @@ export default function AIPaste() {
           <ExtractionPreview
             data={extractedData}
             confidence={confidence}
-            onSave={handleSume}
+            onSave={handleSave}
             onEdit={() => setStep('paste')}
             loading={loading}
           />
         )}
 
         {/* Tips Card */}
-        <Card className="bg-blue-50 border border-blue-200">
+        <Card className="bg-gradient-to-br from-blue-50 to-purple-50 border border-blue-200">
           <h3 className="font-semibold text-blue-900 mb-2">💡 Pro Tips</h3>
           <ul className="text-sm text-blue-800 space-y-1">
             <li>✓ Copy the entire job posting for best results</li>

@@ -1,49 +1,51 @@
-import apiClient from './api'
+import api from './api'
 
-const subscriptionService = {
-  // Plans (list)
+// API already returns response.data due to interceptor
+// So we just return the result directly
+
+export const subscriptionService = {
+  // Get all available subscription plans
   getPlans: async () => {
-    return apiClient.get('/subscription/')
+    return api.get('/subscription/')
   },
 
-  // Current Subscription
-  getCurrentSubscription: async () => {
-    return apiClient.get('/subscription/me/')
+  // Get current user's subscription
+  getMySubscription: async () => {
+    return api.get('/subscription/me/')
   },
 
-  // Upgrade
-  upgradePlan: async (data) => {
-    return apiClient.post('/subscription/upgrade/', data)
+  // Get subscription limits and usage
+  getLimits: async () => {
+    return api.get('/subscription/limits/')
   },
 
-  // Cancel
-  cancelSubscription: async () => {
-    return apiClient.post('/subscription/cancel/')
-  },
-
-  // Resume
-  resumeSubscription: async () => {
-    return apiClient.post('/subscription/resume/')
-  },
-
-  // Payment Methods
-  getPaymentMethods: async () => {
-    return apiClient.get('/subscription/payment-methods/')
-  },
-
-  addPaymentMethod: async (data) => {
-    return apiClient.post('/subscription/payment-methods/', data)
-  },
-
-  // Invoice
-  getInvoices: async () => {
-    return apiClient.get('/subscription/invoices/')
-  },
-
-  downloadInvoice: async (invoiceId) => {
-    return apiClient.get(`/subscription/invoices/${invoiceId}/download/`, {
-      responseType: 'blob',
+  // Check if user can perform a specific action
+  checkLimit: async (actionType) => {
+    return api.post('/subscription/check_limit/', {
+      action_type: actionType,
     })
+  },
+
+  // Record AI paste usage
+  recordAIPaste: async () => {
+    return api.post('/subscription/record_ai_paste/')
+  },
+
+  // Upgrade subscription
+  upgrade: async (planId) => {
+    return api.post('/subscription/upgrade/', {
+      plan_id: planId,
+    })
+  },
+
+  // Cancel subscription
+  cancel: async () => {
+    return api.post('/subscription/cancel/')
+  },
+
+  // Resume subscription
+  resume: async () => {
+    return api.post('/subscription/resume/')
   },
 }
 

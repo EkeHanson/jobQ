@@ -1,8 +1,15 @@
 import { cn } from '../../utils/helpers'
 
-const Card = ({ children, className = '', ...props }) => {
+const Card = ({ children, className = '', hover = false, ...props }) => {
   return (
-    <div className={cn('bg-white rounded-lg shadow p-6', className)} {...props}>
+    <div 
+      className={cn(
+        'glass-card p-6', 
+        hover && 'card-hover cursor-pointer',
+        className
+      )} 
+      {...props}
+    >
       {children}
     </div>
   )

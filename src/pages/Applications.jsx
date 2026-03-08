@@ -70,8 +70,10 @@ export default function Applications() {
     setIsCreating(false)
     setCurrent(app)
     setEditData({ 
+      jobTitle: app.job_title || '',
+      companyName: app.company_name || '',
       status: app.status, 
-      notes: app.notes,
+      notes: app.notes || '',
       description: app.description || '',
       requirements: app.requirements || '',
       recruiterQuestions: app.recruiter_questions || '',
@@ -82,6 +84,8 @@ export default function Applications() {
   const handleSaveEdit = async () => {
     if (currentApplication && editData) {
       const payload = new FormData()
+      payload.append('job_title', editData.jobTitle || '')
+      payload.append('company_name', editData.companyName || '')
       payload.append('status', editData.status)
       payload.append('notes', editData.notes || '')
       payload.append('description', editData.description || '')
@@ -426,14 +430,16 @@ export default function Applications() {
             <div className="min-h-[300px]">
               {editActiveTab === 0 && (
                 <div className="space-y-4">
-                  <div className="bg-gray-50 rounded-lg p-4">
-                    <p className="text-sm font-medium text-gray-500">Job Title</p>
-                    <p className="text-gray-900 font-medium">{currentApplication.job_title}</p>
-                  </div>
-                  <div className="bg-gray-50 rounded-lg p-4">
-                    <p className="text-sm font-medium text-gray-500">Company</p>
-                    <p className="text-gray-900">{currentApplication.company_name}</p>
-                  </div>
+                  <Input 
+                    label="Job Title" 
+                    value={editData?.jobTitle || ''} 
+                    onChange={(e) => setEditData({ ...editData, jobTitle: e.target.value })} 
+                  />
+                  <Input 
+                    label="Company" 
+                    value={editData?.companyName || ''} 
+                    onChange={(e) => setEditData({ ...editData, companyName: e.target.value })} 
+                  />
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
@@ -461,23 +467,23 @@ export default function Applications() {
 
               {editActiveTab === 1 && (
                 <div className="space-y-4">
-                  {currentApplication.description && (
-                    <div className="bg-gray-50 rounded-lg p-4">
-                      <p className="text-sm font-medium text-gray-500 mb-2">Job Description</p>
-                      <div className="prose prose-sm max-w-none text-gray-600" dangerouslySetInnerHTML={{ __html: currentApplication.description }} />
-                    </div>
-                  )}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Job Description</label>
+                    <RichTextEditor
+                      value={editData?.description || ''}
+                      onChange={(value) => setEditData({ ...editData, description: value })}
+                      placeholder="Paste job description here..."
+                    />
+                  </div>
 
-                  {currentApplication.requirements && (
-                    <div className="bg-gray-50 rounded-lg p-4">
-                      <p className="text-sm font-medium text-gray-500 mb-2">Requirements</p>
-                      <div className="prose prose-sm max-w-none text-gray-600" dangerouslySetInnerHTML={{ __html: currentApplication.requirements }} />
-                    </div>
-                  )}
-
-                  {!currentApplication.description && !currentApplication.requirements && (
-                    <p className="text-gray-400 text-sm text-center py-8">No job details added yet.</p>
-                  )}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Requirements</label>
+                    <RichTextEditor
+                      value={editData?.requirements || ''}
+                      onChange={(value) => setEditData({ ...editData, requirements: value })}
+                      placeholder="Job requirements and qualifications..."
+                    />
+                  </div>
 
                   <div className="flex justify-between pt-2">
                     <Button size="sm" variant="secondary" onClick={() => setEditActiveTab(0)}><ChevronLeftIcon className="w-4 h-4 mr-1" /> Back</Button>
@@ -488,12 +494,14 @@ export default function Applications() {
 
               {editActiveTab === 2 && (
                 <div className="space-y-4">
-                  {currentApplication.recruiter_questions && (
-                    <div className="bg-gray-50 rounded-lg p-4">
-                      <p className="text-sm font-medium text-gray-500 mb-2">Recruiter Questions</p>
-                      <div className="prose prose-sm max-w-none text-gray-600" dangerouslySetInnerHTML={{ __html: currentApplication.recruiter_questions }} />
-                    </div>
-                  )}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Recruiter Questions</label>
+                    <RichTextEditor
+                      value={editData?.recruiterQuestions || ''}
+                      onChange={(value) => setEditData({ ...editData, recruiterQuestions: value })}
+                      placeholder="Questions asked by recruiter..."
+                    />
+                  </div>
 
                   {currentApplication.resume && (
                     <div className="bg-gray-50 rounded-lg p-4">

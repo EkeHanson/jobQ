@@ -10,7 +10,11 @@ const Modal = ({ isOpen, onClose, title, children, size = 'md', className = '' }
     lg: 'max-w-lg',
     xl: 'max-w-xl',
     '2xl': 'max-w-2xl',
+    '3xl': 'max-w-3xl',
+    full: 'max-w-full',
   }
+
+  const modalWidth = sizeClasses[size] || 'max-w-lg'
 
   return (
     <Transition appear show={isOpen} as={Fragment}>
@@ -41,7 +45,7 @@ const Modal = ({ isOpen, onClose, title, children, size = 'md', className = '' }
               <Dialog.Panel
                 className={cn(
                   'w-full transform rounded-lg bg-white text-left align-middle shadow-xl transition-all',
-                  sizeClasses[size],
+                  modalWidth,
                   className
                 )}
               >

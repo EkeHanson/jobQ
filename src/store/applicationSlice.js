@@ -29,6 +29,13 @@ export const createApplication = createAsyncThunk(
   'applications/create',
   async (data, { rejectWithValue }) => {
     try {
+      // Check if data is FormData (for file uploads)
+      if (data instanceof FormData) {
+        // Let the browser set the Content-Type header with boundary
+        const response = await apiClient.post('/applications', data)
+        return response
+      }
+      
       // Transform frontend data to match backend structure
       const payload = {
         job_title: data.job_title || data.job?.title || '',
@@ -37,10 +44,22 @@ export const createApplication = createAsyncThunk(
         applied_date: data.applied_date || data.appliedDate || null,
         deadline: data.deadline || null,
         notes: data.notes || '',
+        description: data.description || '',
+        requirements: data.requirements || '',
+        recruiter_questions: data.recruiter_questions || '',
       }
+      
+      // Remove empty string values for dates - let Django use default
+      if (!payload.applied_date) delete payload.applied_date
+      if (!payload.deadline) delete payload.deadline
+      
       const response = await apiClient.post('/applications', payload)
       return response
     } catch (error) {
+      // Return the full error response to show backend validation errors
+      if (error.response) {
+        return rejectWithValue(error.response.data)
+      }
       return rejectWithValue(error.message)
     }
   }
@@ -50,9 +69,20 @@ export const updateApplication = createAsyncThunk(
   'applications/update',
   async ({ id, data }, { rejectWithValue }) => {
     try {
+      // Check if data is FormData (for file uploads)
+      if (data instanceof FormData) {
+        // Let the browser set the Content-Type header with boundary
+        const response = await apiClient.patch(`/applications/${id}`, data)
+        return response
+      }
+      
       const response = await apiClient.patch(`/applications/${id}`, data)
       return response
     } catch (error) {
+      // Return the full error response to show backend validation errors
+      if (error.response) {
+        return rejectWithValue(error.response.data)
+      }
       return rejectWithValue(error.message)
     }
   }

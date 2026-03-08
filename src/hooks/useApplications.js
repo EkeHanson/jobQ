@@ -22,12 +22,24 @@ export const useApplications = (filters = {}) => {
   }, [dispatch, JSON.stringify(filters)])
 
   const create = useCallback(
-    (data) => dispatch(createApplication(data)),
+    async (data) => {
+      const result = await dispatch(createApplication(data))
+      if (createApplication.rejected.match(result)) {
+        throw result.payload
+      }
+      return result.payload
+    },
     [dispatch]
   )
 
   const update = useCallback(
-    (id, data) => dispatch(updateApplication({ id, data })),
+    async (id, data) => {
+      const result = await dispatch(updateApplication({ id, data }))
+      if (updateApplication.rejected.match(result)) {
+        throw result.payload
+      }
+      return result.payload
+    },
     [dispatch]
   )
 

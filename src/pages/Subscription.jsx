@@ -50,6 +50,20 @@ export default function Subscription() {
   }
 
   const handleUpgrade = async (plan) => {
+    // Free plan can be subscribed without payment method
+    if (plan.price_cents === 0) {
+      try {
+        await subscriptionService.upgrade(plan.id)
+        addToast(`Successfully subscribed to ${plan.name} plan!`, 'success')
+        fetchSubscriptionData()
+      } catch (err) {
+        console.error('Error subscribing:', err)
+        addToast('Failed to subscribe to plan', 'error')
+      }
+      return
+    }
+    
+    // Paid plans require payment method
     if (!paymentMethod) {
       addToast('Please add a payment method first', 'warning')
       setShowAddPaymentModal(true)
@@ -104,7 +118,9 @@ export default function Subscription() {
   }
 
   const formatPrice = (cents) => {
-    return `$${(cents / 100).toFixed(2)}`
+    // Convert from USD cents to Naira (rate: 1500 NGN per 1 USD)
+    const nairaAmount = (cents )
+    return `₦${nairaAmount.toLocaleString('en-NG')}`
   }
 
   const getPlanFeatures = (plan) => {
@@ -142,7 +158,7 @@ export default function Subscription() {
     )
   }
 
-  const currentPlanName = currentSubscription?.plan?.name || 'Free Plan'
+  const currentPlanName = currentSubscription?.plan?.name || (currentSubscription?.active ? 'Free Plan' : 'No Plan')
   const isActive = currentSubscription?.active
 
   // Check if current plan (handles both 'Free' and 'Free Plan')
@@ -150,6 +166,44 @@ export default function Subscription() {
     if (!currentPlanName) return false
     return currentPlanName.toLowerCase() === planName.toLowerCase() ||
            (currentPlanName.toLowerCase().includes('free') && planName.toLowerCase().includes('free'))
+  }
+
+  // Get plan tier level for sequential upgrades (Free=1, Basic=2, Pro=3)
+  const getPlanTier = (planName) => {
+    const name = planName.toLowerCase()
+    if (name.includes('free')) return 1
+    if (name.includes('basic')) return 2
+    if (name.includes('pro')) return 3
+    return 0
+  }
+
+  // Check if user can upgrade to a specific plan
+  const canUpgrade = (plan) => {
+    // If no current plan (not subscribed), can subscribe to any plan
+    if (!currentPlanName || currentPlanName === 'No Plan') return true
+    
+    // Get current plan tier
+    const currentTier = getPlanTier(currentPlanName)
+    const targetTier = getPlanTier(plan.name)
+    
+    // Can only upgrade to higher tier (sequential)
+    return targetTier > currentTier
+  }
+
+  // Get button text based on subscription state
+  const getButtonText = (plan) => {
+    // If no current plan or no active subscription, show "Subscribe"
+    if (!currentPlanName || currentPlanName === 'No Plan' || !isActive) {
+      return 'Subscribe'
+    }
+    
+    // If already on this plan
+    if (isCurrentPlan(plan.name)) {
+      return 'Current Plan'
+    }
+    
+    // Otherwise show "Upgrade"
+    return 'Upgrade'
   }
 
   return (
@@ -187,37 +241,45 @@ export default function Subscription() {
         </div>
 
         {/* Plans */}
-        <div>
-          <h3 className="text-xl font-bold text-gray-900 mb-6">Available Plans</h3>
-          {plans.length === 0 ? (
-            <div className="text-center py-12 bg-gray-50 rounded-2xl">
-              <svg className="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-              </svg>
-              <p className="text-gray-600 text-lg mb-2">No subscription plans available</p>
-              <p className="text-gray-500 text-sm">Please contact the administrator to set up subscription plans.</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {(plans || []).map((plan) => {
-              const isCurrentPlanFlag = isCurrentPlan(plan.name)
-              return (
-                <Card 
-                  key={plan.id} 
-                  className={`relative ${isCurrentPlanFlag ? 'ring-2 ring-primary-500' : ''}`}
-                >
-                  {isCurrentPlanFlag && (
-                    <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                      <span className="badge-gradient px-3 py-1">Current</span>
-                    </div>
-                  )}
-                  
-                  <div className="text-center mb-6">
-                    <h4 className="text-lg font-bold text-gray-900">{plan.name}</h4>
-                    <div className="mt-2">
-                      <span className="text-4xl font-bold text-gray-900">
-                        {formatPrice(plan.price_cents)}
-                      </span>
+        <div className="py-12 bg-white/50 backdrop-blur-sm -mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
+          <div className="max-w-7xl mx-auto">
+            <h3 className="text-2xl font-bold text-gray-900 mb-8 text-center">Choose Your Plan</h3>
+            {plans.length === 0 ? (
+              <div className="text-center py-12 bg-gray-50 rounded-2xl">
+                <svg className="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                </svg>
+                <p className="text-gray-600 text-lg mb-2">No subscription plans available</p>
+                <p className="text-gray-500 text-sm">Please contact the administrator to set up subscription plans.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+              {(plans || []).map((plan, index) => {
+                const isCurrentPlanFlag = isCurrentPlan(plan.name)
+                return (
+                  <div 
+                    key={plan.id} 
+                    className={`relative glass-card p-8 card-hover ${
+                      index === 1 ? 'ring-2 ring-primary-500 scale-105 z-10' : ''
+                    }`}
+                  >
+                    {index === 1 && (
+                      <div className="absolute -top-4 left-1/2 -translate-x-1/2">
+                        <span className="badge-gradient px-4 py-1">Most Popular</span>
+                      </div>
+                    )}
+                    {isCurrentPlanFlag && (
+                      <div className="absolute -top-4 left-1/2 -translate-x-1/2">
+                        <span className="badge-gradient px-4 py-1">Current</span>
+                      </div>
+                    )}
+                   
+                    <div className="text-center mb-6">
+                      <h4 className="text-2xl font-bold text-gray-900">{plan.name}</h4>
+                      <div className="mt-2">
+                        <span className="text-4xl font-bold text-gray-900">
+                          {formatPrice(plan.price_cents)}
+                        </span>
                       <span className="text-gray-500">/month</span>
                     </div>
                   </div>
@@ -241,16 +303,18 @@ export default function Subscription() {
                     <Button 
                       className="w-full btn-gradient"
                       onClick={() => handleUpgrade(plan)}
+                      disabled={!canUpgrade(plan)}
                     >
-                      {plan.price_cents === 0 ? 'Downgrade' : 'Upgrade'}
+                      {getButtonText(plan)}
                     </Button>
                   )}
-                </Card>
+                </div>
               )
             })}
             </div>
           )}
         </div>
+      </div>
 
         {/* Payment Method */}
         <div>
@@ -281,7 +345,6 @@ export default function Subscription() {
             )}
           </Card>
         </div>
-      </div>
 
       {/* Add Payment Modal */}
       <Modal
@@ -346,6 +409,7 @@ export default function Subscription() {
           </div>
         </div>
       </Modal>
+    </div>
     </DashboardLayout>
   )
 }

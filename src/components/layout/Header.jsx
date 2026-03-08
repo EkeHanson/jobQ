@@ -2,10 +2,11 @@ import { useAuth } from '../../hooks/useAuth'
 import { useNotifications } from '../../hooks/useNotifications'
 import { Link, useNavigate } from 'react-router-dom'
 import { Bars3Icon, BellIcon, UserCircleIcon, Cog6ToothIcon, CreditCardIcon } from '@heroicons/react/24/outline'
-import { useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useDispatch } from 'react-redux'
 import { toggleSidebar, toggleSidebarCollapse } from '../../store/uiSlice'
 import NotificationBell from '../notifications/NotificationBell'
+import subscriptionService from '../../services/subscription'
 
 export default function Header() {
   const { user, logout } = useAuth()
@@ -13,6 +14,32 @@ export default function Header() {
   const dispatch = useDispatch()
   const navigate = useNavigate()
   const [showMenu, setShowMenu] = useState(false)
+  const [currentSubscription, setCurrentSubscription] = useState(null)
+
+  const menuRef = useRef(null)
+
+  // Close menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setShowMenu(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
+  useEffect(() => {
+    const fetchSubscription = async () => {
+      try {
+        const subData = await subscriptionService.getMySubscription()
+        setCurrentSubscription(subData)
+      } catch (error) {
+        console.error('Failed to fetch subscription:', error)
+      }
+    }
+    fetchSubscription()
+  }, [])
 
   const handleLogout = () => {
     logout()
@@ -62,10 +89,15 @@ export default function Header() {
             </button>
 
             {showMenu && (
-              <div className="absolute right-0 mt-2 w-56 bg-white/90 backdrop-blur-xl rounded-xl shadow-xl border border-gray-100 z-50 overflow-hidden">
+              <div ref={menuRef} className="absolute right-0 mt-2 w-56 bg-white/90 backdrop-blur-xl rounded-xl shadow-xl border border-gray-100 z-50 overflow-hidden">
                 <div className="px-4 py-3 border-b border-gray-100">
                   <p className="text-sm font-medium text-gray-900">{user?.first_name} {user?.last_name}</p>
                   <p className="text-xs text-gray-500">{user?.email}</p>
+                  {currentSubscription?.plan && (
+                    <p className="text-xs text-primary-600 mt-1">
+                      {currentSubscription.plan.name} Plan {currentSubscription.active ? '(Active)' : ''}
+                    </p>
+                  )}
                 </div>
                 <div className="py-2">
                   <Link

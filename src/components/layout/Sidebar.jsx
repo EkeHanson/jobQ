@@ -1,4 +1,4 @@
-import { NavLink } from 'react-router-dom'
+import { NavLink, Link } from 'react-router-dom'
 import {
   HomeIcon,
   DocumentTextIcon,
@@ -10,12 +10,14 @@ import {
   XMarkIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
+  GlobeAltIcon,
 } from '@heroicons/react/24/outline'
 import { useSelector, useDispatch } from 'react-redux'
 import { toggleSidebar, toggleSidebarCollapse } from '../../store/uiSlice'
 import { cn } from '../../utils/helpers'
 
 const navigation = [
+  { name: 'Home', to: '/', icon: GlobeAltIcon },
   { name: 'Dashboard', to: '/dashboard', icon: HomeIcon },
   { name: 'Applications', to: '/applications', icon: DocumentTextIcon },
   { name: 'Jobs', to: '/jobs', icon: DocumentTextIcon },
@@ -39,12 +41,14 @@ export default function Sidebar() {
         isCollapsed ? "w-20" : "w-64"
       )}>
         <div className="flex items-center gap-3 px-4 py-5 border-b border-gray-800/50">
-          <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-accent-500 rounded-xl flex items-center justify-center font-bold flex-shrink-0 shadow-lg shadow-primary-500/25">
-            J
-          </div>
-          {!isCollapsed && (
-            <span className="text-lg font-semibold whitespace-nowrap">JobTrack<span className="text-gradient">AI</span></span>
-          )}
+          <Link to="/" className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-accent-500 rounded-xl flex items-center justify-center font-bold flex-shrink-0 shadow-lg shadow-primary-500/25">
+              J
+            </div>
+            {!isCollapsed && (
+              <span className="text-lg font-semibold whitespace-nowrap">JobTrack<span className="text-gradient">AI</span></span>
+            )}
+          </Link>
         </div>
 
         <nav className="flex-1 px-3 py-4 space-y-1.5">

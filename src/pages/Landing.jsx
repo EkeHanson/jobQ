@@ -1,7 +1,8 @@
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
-import { useEffect } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import Button from '../components/common/Button'
+import { subscriptionService } from '../services/subscription'
 import { 
   SparklesIcon, 
   ChartBarIcon, 
@@ -9,18 +10,68 @@ import {
   LockClosedIcon,
   ArrowRightIcon,
   CheckCircleIcon,
-  StarIcon
+  StarIcon,
+  UserCircleIcon,
+  Cog6ToothIcon,
+  CreditCardIcon,
+  ArrowLeftStartOnRectangleIcon
 } from '@heroicons/react/24/outline'
 
 export default function Landing() {
-  const { isAuthenticated } = useAuth()
+  const { isAuthenticated, user, logout } = useAuth()
   const navigate = useNavigate()
+  const [plans, setPlans] = useState([])
+  const [loadingPlans, setLoadingPlans] = useState(true)
+  const [showUserMenu, setShowUserMenu] = useState(false)
+  const [currentSubscription, setCurrentSubscription] = useState(null)
+
+  const userMenuRef = useRef(null)
+
+  // Check if plan is current subscription
+  const isCurrentPlan = (planName) => {
+    if (!currentSubscription?.plan) return false
+    return currentSubscription.plan.name.toLowerCase() === planName.toLowerCase() ||
+           (currentSubscription.plan.name.toLowerCase().includes('free') && planName.toLowerCase().includes('free'))
+  }
+
+  // Get plan tier for badge display
+  const getPlanTier = (planName) => {
+    const name = planName.toLowerCase()
+    if (name.includes('free')) return 1
+    if (name.includes('basic')) return 2
+    if (name.includes('pro')) return 3
+    return 0
+  }
+
+  const handleLogout = () => {
+    logout()
+    navigate('/')
+  }
 
   useEffect(() => {
-    if (isAuthenticated) {
-      navigate('/dashboard')
+    // Don't redirect - allow authenticated users to view landing page
+  }, [])
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // Fetch plans
+        const plansData = await subscriptionService.getPublicPlans()
+        setPlans(plansData)
+        
+        // Fetch user's subscription if authenticated
+        if (isAuthenticated) {
+          const subData = await subscriptionService.getMySubscription()
+          setCurrentSubscription(subData)
+        }
+      } catch (error) {
+        console.error('Failed to fetch data:', error)
+      } finally {
+        setLoadingPlans(false)
+      }
     }
-  }, [isAuthenticated, navigate])
+    fetchData()
+  }, [isAuthenticated])
 
   const features = [
     {
@@ -97,14 +148,88 @@ export default function Landing() {
               <span className="font-bold text-xl text-gray-900">JobTrack<span className="text-gradient">AI</span></span>
             </Link>
             <div className="flex items-center gap-4">
-              <Link to="/login" className="nav-link hidden sm:block">
-                Login
-              </Link>
-              <Link to="/register">
-                <Button className="btn-gradient px-5 py-2.5 text-sm">
-                  Get Started
-                </Button>
-              </Link>
+              {isAuthenticated ? (
+                <div className="relative">
+                  <button
+                    onClick={() => setShowUserMenu(!showUserMenu)}
+                    className="flex items-center gap-2 text-gray-700 hover:text-gray-900 focus:outline-none p-1.5 hover:bg-gray-100 rounded-lg transition-colors"
+                  >
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary-400 to-accent-400 flex items-center justify-center text-white font-medium text-sm">
+                      {user?.first_name?.charAt(0) || 'U'}
+                    </div>
+                    <span className="hidden sm:inline text-sm font-medium">{user?.first_name}</span>
+                  </button>
+
+                  {showUserMenu && (
+                    <div ref={userMenuRef} className="absolute right-0 mt-2 w-56 bg-white/90 backdrop-blur-xl rounded-xl shadow-xl border border-gray-100 z-50 overflow-hidden">
+                      <div className="px-4 py-3 border-b border-gray-100">
+                        <p className="text-sm font-medium text-gray-900">{user?.first_name} {user?.last_name}</p>
+                        <p className="text-xs text-gray-500">{user?.email}</p>
+                        {currentSubscription?.plan && (
+                          <p className="text-xs text-primary-600 mt-1">
+                            {currentSubscription.plan.name} Plan {currentSubscription.active ? '(Active)' : ''}
+                          </p>
+                        )}
+                      </div>
+                      <div className="py-2">
+                        <Link
+                          to="/dashboard"
+                          className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                          onClick={() => setShowUserMenu(false)}
+                        >
+                          <ChartBarIcon className="w-5 h-5" />
+                          Dashboard
+                        </Link>
+                        <Link
+                          to="/profile"
+                          className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                          onClick={() => setShowUserMenu(false)}
+                        >
+                          <UserCircleIcon className="w-5 h-5" />
+                          Profile
+                        </Link>
+                        <Link
+                          to="/settings"
+                          className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                          onClick={() => setShowUserMenu(false)}
+                        >
+                          <Cog6ToothIcon className="w-5 h-5" />
+                          Settings
+                        </Link>
+                        <Link
+                          to="/subscription"
+                          className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                          onClick={() => setShowUserMenu(false)}
+                        >
+                          <CreditCardIcon className="w-5 h-5" />
+                          Subscription
+                        </Link>
+                        <button
+                          onClick={() => {
+                            setShowUserMenu(false)
+                            handleLogout()
+                          }}
+                          className="flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors w-full"
+                        >
+                          <ArrowLeftStartOnRectangleIcon className="w-5 h-5" />
+                          Sign out
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <>
+                  <Link to="/login" className="nav-link hidden sm:block">
+                    Login
+                  </Link>
+                  <Link to="/register">
+                    <Button className="btn-gradient px-5 py-2.5 text-sm">
+                      Get Started
+                    </Button>
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -133,19 +258,21 @@ export default function Landing() {
 
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center animate-fade-in-up animation-delay-300">
-              <Link to="/register">
+              <Link to={isAuthenticated ? "/dashboard" : "/register"}>
                 <button className="btn-gradient px-8 py-4 text-lg rounded-xl shadow-xl shadow-primary-500/25 group">
                   <span className="flex items-center gap-2">
-                    Start Free Trial
+                    {isAuthenticated ? 'Go to Dashboard' : 'Start Free Trial'}
                     <ArrowRightIcon className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                   </span>
                 </button>
               </Link>
-              <Link to="/login">
-                <Button variant="outline" size="lg" className="px-8 py-4 rounded-xl border-2 border-gray-200 hover:border-primary-300 hover:bg-primary-50/50">
-                  Watch Demo
-                </Button>
-              </Link>
+              {!isAuthenticated && (
+                <Link to="/demo">
+                  <Button variant="outline" size="lg" className="px-8 py-4 rounded-xl border-2 border-gray-200 hover:border-primary-300 hover:bg-primary-50/50">
+                    Watch Demo
+                  </Button>
+                </Link>
+              )}
             </div>
 
             {/* Stats */}
@@ -288,64 +415,94 @@ export default function Landing() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-            {[
-              { 
-                name: 'Free', 
-                price: '$0', 
-                apps: '20 apps/month', 
-                features: ['Job tracking', 'Basic analytics', 'Manual entry'],
-                gradient: 'from-gray-500 to-gray-600',
-              },
-              { 
-                name: 'Basic', 
-                price: '$8', 
-                apps: '100 apps/month', 
-                features: ['Job tracking', 'AI extraction', 'Interview prep', 'Email support'],
-                popular: true,
-                gradient: 'from-primary-500 to-accent-500',
-              },
-              { 
-                name: 'Pro', 
-                price: '$25', 
-                apps: 'Unlimited', 
-                features: ['Everything in Basic', 'Priority support', 'Advanced analytics', 'Custom integrations'],
-                gradient: 'from-emerald-500 to-teal-500',
-              },
-            ].map((plan, index) => (
-              <div
-                key={index}
-                className={`relative glass-card p-8 card-hover ${
-                  plan.popular ? 'ring-2 ring-primary-500 scale-105 z-10' : ''
-                }`}
-              >
-                {plan.popular && (
-                  <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                    <span className="badge-gradient px-4 py-1">Most Popular</span>
-                  </div>
-                )}
-                <h3 className="text-2xl font-bold text-gray-900 mb-2">{plan.name}</h3>
-                <div className="mb-4">
-                  <span className="text-4xl font-bold text-gray-900">{plan.price}</span>
-                  <span className="text-gray-500">/month</span>
-                </div>
-                <p className="text-sm text-gray-600 mb-6">{plan.apps}</p>
-                <ul className="space-y-3 mb-8">
-                  {plan.features.map((feature, i) => (
-                    <li key={i} className="flex items-center gap-3 text-sm text-gray-600">
-                      <CheckCircleIcon className={`w-5 h-5 ${plan.popular ? 'text-primary-500' : 'text-gray-400'}`} />
-                      {feature}
-                    </li>
-                  ))}
-                </ul>
-                <button className={`w-full py-3 rounded-xl font-semibold transition-all ${
-                  plan.popular 
-                    ? 'btn-gradient shadow-lg shadow-primary-500/25' 
-                    : 'bg-gray-100 text-gray-900 hover:bg-gray-200'
-                }`}>
-                  Get Started
-                </button>
+            {loadingPlans ? (
+              <div className="col-span-3 text-center py-8">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto"></div>
+                <p className="mt-4 text-gray-500">Loading plans...</p>
               </div>
-            ))}
+            ) : plans.length > 0 ? (
+              plans.map((plan, index) => {
+                // Convert price from USD cents to Naira (rate: 1500 NGN per 1 USD)
+                const priceInNaira = plan.price_cents === 0 ? 0 : (plan.price_cents)
+                const price = plan.price_cents === 0 ? 'Free' : `₦${priceInNaira.toLocaleString('en-NG')}`
+                
+                // Build features array based on plan limits
+                const features = []
+                if (plan.max_applications > 0) {
+                  features.push(`${plan.max_applications} applications/month`)
+                } else {
+                  features.push('Unlimited applications')
+                }
+                if (plan.max_ai_pastes > 0) {
+                  features.push(`${plan.max_ai_pastes} AI extractions/month`)
+                } else {
+                  features.push('Unlimited AI extractions')
+                }
+                if (plan.max_profiles > 1) {
+                  features.push(`${plan.max_profiles} profiles`)
+                } else if (plan.max_profiles === 0) {
+                  features.push('Unlimited profiles')
+                }
+                if (plan.description) {
+                  plan.description.split('\n').forEach(line => {
+                    if (line.trim()) features.push(line.trim())
+                  })
+                }
+                
+                return (
+                  <div
+                    key={plan.id || index}
+                    className={`relative glass-card p-8 card-hover ${
+                      isCurrentPlan(plan.name) ? 'ring-2 ring-primary-500' : (index === 1 ? 'ring-2 ring-primary-500 scale-105 z-10' : '')
+                    }`}
+                  >
+                    {isCurrentPlan(plan.name) ? (
+                      <div className="absolute -top-4 left-1/2 -translate-x-1/2">
+                        <span className="badge-gradient px-4 py-1">Current</span>
+                      </div>
+                    ) : index === 1 ? (
+                      <div className="absolute -top-4 left-1/2 -translate-x-1/2">
+                        <span className="badge-gradient px-4 py-1">Most Popular</span>
+                      </div>
+                    ) : null}
+                    <h3 className="text-2xl font-bold text-gray-900 mb-2">{plan.name}</h3>
+                    <div className="mb-4">
+                      <span className="text-4xl font-bold text-gray-900">{price}</span>
+                      {plan.price_cents > 0 && <span className="text-gray-500">/month</span>}
+                    </div>
+                    <p className="text-sm text-gray-600 mb-6">
+                      {plan.max_applications > 0 ? `${plan.max_applications} applications/month` : 'Unlimited applications'}
+                    </p>
+                    <ul className="space-y-3 mb-8">
+                      {features.map((feature, i) => (
+                        <li key={i} className="flex items-center gap-3 text-sm text-gray-600">
+                          <CheckCircleIcon className={`w-5 h-5 ${index === 1 ? 'text-primary-500' : 'text-gray-400'}`} />
+                          {feature}
+                        </li>
+                      ))}
+                    </ul>
+                    <Link to={isCurrentPlan(plan.name) ? '/dashboard' : (isAuthenticated ? '/subscription' : '/register')}>
+                      <button 
+                        className={`w-full py-3 rounded-xl font-semibold transition-all ${
+                          isCurrentPlan(plan.name) 
+                            ? 'bg-gray-100 text-gray-500 cursor-default' 
+                            : (index === 1 
+                                ? 'btn-gradient shadow-lg shadow-primary-500/25' 
+                                : 'bg-gray-100 text-gray-900 hover:bg-gray-200')
+                        }`}
+                        disabled={isCurrentPlan(plan.name)}
+                      >
+                        {isCurrentPlan(plan.name) ? 'Current Plan' : (isAuthenticated ? 'Subscribe' : 'Get Started')}
+                      </button>
+                    </Link>
+                  </div>
+                )
+              })
+            ) : (
+              <div className="col-span-3 text-center py-8 text-gray-500">
+                No plans available at the moment. Please check back later.
+              </div>
+            )}
           </div>
         </div>
       </section>
@@ -355,17 +512,35 @@ export default function Landing() {
         <div className="absolute inset-0 bg-gradient-to-r from-primary-600 to-accent-600 -z-10" />
         <div className="absolute inset-0 floating-shapes -z-10 opacity-30" />
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
-            Ready to land your dream job?
-          </h2>
-          <p className="text-xl text-white/90 mb-10">
-            Join thousands of job seekers who have transformed their job search with JobTrack AI
-          </p>
-          <Link to="/register">
-            <button className="bg-white text-primary-600 px-10 py-4 rounded-xl font-bold text-lg shadow-2xl hover:scale-105 transition-transform">
-              Get Started for Free
-            </button>
-          </Link>
+          {isAuthenticated && currentSubscription?.plan && currentSubscription?.active ? (
+            <>
+              <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
+                You're on the {currentSubscription.plan.name} Plan
+              </h2>
+              <p className="text-xl text-white/90 mb-6">
+                Your subscription is active. Enjoy all the benefits!
+              </p>
+              <Link to="/dashboard">
+                <button className="bg-white text-primary-600 px-10 py-4 rounded-xl font-bold text-lg shadow-2xl hover:scale-105 transition-transform">
+                  Go to Dashboard
+                </button>
+              </Link>
+            </>
+          ) : (
+            <>
+              <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
+                Ready to land your dream job?
+              </h2>
+              <p className="text-xl text-white/90 mb-10">
+                Join thousands of job seekers who have transformed their job search with JobTrack AI
+              </p>
+              <Link to={isAuthenticated ? "/subscription" : "/register"}>
+                <button className="bg-white text-primary-600 px-10 py-4 rounded-xl font-bold text-lg shadow-2xl hover:scale-105 transition-transform">
+                  {isAuthenticated ? 'Subscribe Now' : 'Get Started for Free'}
+                </button>
+              </Link>
+            </>
+          )}
         </div>
       </section>
 
@@ -392,24 +567,24 @@ export default function Landing() {
             <div>
               <h4 className="font-semibold mb-4">Product</h4>
               <ul className="space-y-2 text-sm text-gray-400">
-                <li><Link to="#" className="hover:text-white transition-colors">Features</Link></li>
-                <li><Link to="#" className="hover:text-white transition-colors">Pricing</Link></li>
-                <li><Link to="#" className="hover:text-white transition-colors">Security</Link></li>
+                <li><Link to="/features" className="hover:text-white transition-colors">Features</Link></li>
+                <li><Link to="/subscription" className="hover:text-white transition-colors">Pricing</Link></li>
+                <li><Link to="/security" className="hover:text-white transition-colors">Security</Link></li>
               </ul>
             </div>
             <div>
               <h4 className="font-semibold mb-4">Company</h4>
               <ul className="space-y-2 text-sm text-gray-400">
-                <li><Link to="#" className="hover:text-white transition-colors">About</Link></li>
-                <li><Link to="#" className="hover:text-white transition-colors">Blog</Link></li>
-                <li><Link to="#" className="hover:text-white transition-colors">Contact</Link></li>
+                <li><Link to="/about" className="hover:text-white transition-colors">About</Link></li>
+                <li><Link to="/blog" className="hover:text-white transition-colors">Blog</Link></li>
+                <li><Link to="/contact" className="hover:text-white transition-colors">Contact</Link></li>
               </ul>
             </div>
             <div>
               <h4 className="font-semibold mb-4">Legal</h4>
               <ul className="space-y-2 text-sm text-gray-400">
-                <li><Link to="#" className="hover:text-white transition-colors">Privacy</Link></li>
-                <li><Link to="#" className="hover:text-white transition-colors">Terms</Link></li>
+                <li><Link to="/privacy" className="hover:text-white transition-colors">Privacy</Link></li>
+                <li><Link to="/terms" className="hover:text-white transition-colors">Terms</Link></li>
               </ul>
             </div>
           </div>

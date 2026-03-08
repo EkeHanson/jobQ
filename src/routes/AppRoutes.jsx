@@ -10,6 +10,16 @@ import ForgotPassword from '../pages/ForgotPassword'
 import ResetPassword from '../pages/ResetPassword'
 import NotFound from '../pages/NotFound'
 
+// Footer pages
+import Features from '../pages/Features'
+import About from '../pages/About'
+import Blog from '../pages/Blog'
+import Contact from '../pages/Contact'
+import Privacy from '../pages/Privacy'
+import Terms from '../pages/Terms'
+import Security from '../pages/Security'
+import Demo from '../pages/Demo'
+
 // Lazy loaded
 const Dashboard = lazy(() => import('../pages/Dashboard'))
 const Applications = lazy(() => import('../pages/Applications'))
@@ -38,6 +48,14 @@ export default function AppRoutes() {
       <Route path="/register" element={<Register />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
+      <Route path="/features" element={<Features />} />
+      <Route path="/about" element={<About />} />
+      <Route path="/blog" element={<Blog />} />
+      <Route path="/contact" element={<Contact />} />
+      <Route path="/privacy" element={<Privacy />} />
+      <Route path="/terms" element={<Terms />} />
+      <Route path="/security" element={<Security />} />
+      <Route path="/demo" element={<Demo />} />
 
       {/* Protected Routes */}
       <Route element={<PrivateRoute />}>

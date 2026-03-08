@@ -4,7 +4,12 @@ import api from './api'
 // So we just return the result directly
 
 export const subscriptionService = {
-  // Get all available subscription plans
+  // Get all available subscription plans (public - no auth required)
+  getPublicPlans: async () => {
+    return api.get('/subscription/plans/')
+  },
+
+  // Get all available subscription plans (requires auth)
   getPlans: async () => {
     return api.get('/subscription/')
   },

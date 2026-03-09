@@ -1,5 +1,12 @@
 import { Link } from 'react-router-dom'
 import Button from '../components/common/Button'
+import {
+  LockClosedIcon,
+  ShieldCheckIcon,
+  KeyIcon,
+  ChartBarIcon,
+  CheckIcon,
+} from '@heroicons/react/24/outline'
 
 export default function Security() {
   return (
@@ -40,7 +47,7 @@ export default function Security() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             <div className="bg-white rounded-2xl p-8 shadow-sm">
-              <div className="text-4xl mb-4">🔐</div>
+              <LockClosedIcon className="w-10 h-10 text-primary-600 mb-4" />
               <h3 className="text-xl font-bold text-gray-900 mb-3">Encryption</h3>
               <p className="text-gray-600">
                 All data is encrypted using industry-standard AES-256 encryption, both in transit and at rest.
@@ -48,7 +55,7 @@ export default function Security() {
             </div>
 
             <div className="bg-white rounded-2xl p-8 shadow-sm">
-              <div className="text-4xl mb-4">🛡️</div>
+              <ShieldCheckIcon className="w-10 h-10 text-primary-600 mb-4" />
               <h3 className="text-xl font-bold text-gray-900 mb-3">Secure Infrastructure</h3>
               <p className="text-gray-600">
                 Our servers are hosted in secure data centers with 24/7 monitoring and intrusion detection.
@@ -56,7 +63,7 @@ export default function Security() {
             </div>
 
             <div className="bg-white rounded-2xl p-8 shadow-sm">
-              <div className="text-4xl mb-4">🔒</div>
+              <KeyIcon className="w-10 h-10 text-primary-600 mb-4" />
               <h3 className="text-xl font-bold text-gray-900 mb-3">Access Controls</h3>
               <p className="text-gray-600">
                 We implement strict access controls and role-based permissions to protect your data.
@@ -64,7 +71,7 @@ export default function Security() {
             </div>
 
             <div className="bg-white rounded-2xl p-8 shadow-sm">
-              <div className="text-4xl mb-4">✅</div>
+              <CheckIcon className="w-10 h-10 text-primary-600 mb-4" />
               <h3 className="text-xl font-bold text-gray-900 mb-3">Regular Audits</h3>
               <p className="text-gray-600">
                 Our security practices are regularly audited by third-party security experts.
@@ -72,7 +79,7 @@ export default function Security() {
             </div>
 
             <div className="bg-white rounded-2xl p-8 shadow-sm">
-              <div className="text-4xl mb-4">🔑</div>
+              <KeyIcon className="w-10 h-10 text-primary-600 mb-4" />
               <h3 className="text-xl font-bold text-gray-900 mb-3">Secure Authentication</h3>
               <p className="text-gray-600">
                 We use secure authentication methods including JWT tokens and optional two-factor authentication.
@@ -80,7 +87,7 @@ export default function Security() {
             </div>
 
             <div className="bg-white rounded-2xl p-8 shadow-sm">
-              <div className="text-4xl mb-4">📊</div>
+              <ChartBarIcon className="w-10 h-10 text-primary-600 mb-4" />
               <h3 className="text-xl font-bold text-gray-900 mb-3">Data Backups</h3>
               <p className="text-gray-600">
                 Your data is regularly backed up to ensure business continuity and disaster recovery.
@@ -97,7 +104,7 @@ export default function Security() {
           <div className="space-y-8">
             <div className="flex gap-4">
               <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
-                <span className="text-green-600 font-bold">✓</span>
+                <CheckIcon className="w-5 h-5 text-green-600" />
               </div>
               <div>
                 <h3 className="font-bold text-gray-900 mb-2">SSL/TLS Encryption</h3>
@@ -107,7 +114,7 @@ export default function Security() {
 
             <div className="flex gap-4">
               <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
-                <span className="text-green-600 font-bold">✓</span>
+                <CheckIcon className="w-5 h-5 text-green-600" />
               </div>
               <div>
                 <h3 className="font-bold text-gray-900 mb-2">Input Validation</h3>
@@ -117,7 +124,7 @@ export default function Security() {
 
             <div className="flex gap-4">
               <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
-                <span className="text-green-600 font-bold">✓</span>
+                <CheckIcon className="w-5 h-5 text-green-600" />
               </div>
               <div>
                 <h3 className="font-bold text-gray-900 mb-2">Security Headers</h3>
@@ -127,7 +134,7 @@ export default function Security() {
 
             <div className="flex gap-4">
               <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
-                <span className="text-green-600 font-bold">✓</span>
+                <CheckIcon className="w-5 h-5 text-green-600" />
               </div>
               <div>
                 <h3 className="font-bold text-gray-900 mb-2">Privacy by Design</h3>

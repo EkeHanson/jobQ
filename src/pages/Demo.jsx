@@ -1,6 +1,21 @@
+import React from 'react'
 import { Link } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import Button from '../components/common/Button'
+import {
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  PlayIcon,
+  PauseIcon,
+  SparklesIcon,
+  ClipboardDocumentListIcon,
+  BoltIcon,
+  ChartBarIcon,
+  BriefcaseIcon,
+  MagnifyingGlassIcon,
+  FolderIcon,
+  CheckCircleIcon,
+} from '@heroicons/react/24/outline'
 
 export default function Demo() {
   const [currentStep, setCurrentStep] = useState(0)
@@ -10,32 +25,32 @@ export default function Demo() {
     {
       title: 'Welcome to JobTrack AI',
       description: 'Your intelligent job search companion that helps you land your dream job faster than ever before.',
-      icon: '🎯'
+      icon: SparklesIcon,
     },
     {
       title: 'Paste Job Listings',
       description: 'Simply paste any job description from any website. Our AI automatically extracts key requirements, skills, and qualifications.',
-      icon: '📋'
+      icon: ClipboardDocumentListIcon,
     },
     {
       title: 'AI-Powered Analysis',
       description: 'Our advanced AI analyzes the job posting and generates interview questions, skill assessments, and personalized recommendations.',
-      icon: '🤖'
+      icon: BoltIcon,
     },
     {
       title: 'Track All Applications',
       description: 'Keep all your job applications organized in one place. Track status, deadlines, and follow-ups effortlessly.',
-      icon: '📊'
+      icon: ChartBarIcon,
     },
     {
       title: 'Interview Preparation',
       description: 'Get AI-generated practice questions and answers tailored to each job. Prepare confidently for every interview.',
-      icon: '💼'
+      icon: BriefcaseIcon,
     },
     {
       title: 'Analytics & Insights',
       description: 'Track your job search progress with detailed analytics. Identify patterns and optimize your approach.',
-      icon: '📈'
+      icon: ChartBarIcon,
     }
   ]
 
@@ -63,6 +78,8 @@ export default function Demo() {
     setIsPlaying(false)
     setCurrentStep(index)
   }
+
+  const ActiveStepIcon = steps[currentStep].icon
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -103,8 +120,8 @@ export default function Demo() {
               <div className="text-center">
                 {/* Animated Icon */}
                 <div className="mb-8">
-                  <div className="inline-flex items-center justify-center w-24 h-24 bg-gradient-to-br from-primary-500 to-accent-500 rounded-2xl text-5xl animate-bounce">
-                    {steps[currentStep].icon}
+                  <div className="inline-flex items-center justify-center w-24 h-24 bg-gradient-to-br from-primary-500 to-accent-500 rounded-2xl animate-bounce">
+                    <ActiveStepIcon className="w-12 h-12 text-white" />
                   </div>
                 </div>
 
@@ -144,9 +161,7 @@ export default function Demo() {
               onClick={prevStep}
               className="p-4 rounded-full bg-white border border-gray-200 hover:border-primary-300 hover:bg-primary-50 transition-all shadow-sm"
             >
-              <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-              </svg>
+              <ChevronLeftIcon className="w-6 h-6 text-gray-700" />
             </button>
 
             <button
@@ -154,14 +169,9 @@ export default function Demo() {
               className="p-4 rounded-full bg-primary-600 hover:bg-primary-700 transition-all shadow-lg shadow-primary-500/25"
             >
               {isPlaying ? (
-                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
+                <PauseIcon className="w-6 h-6 text-white" />
               ) : (
-                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
+                <PlayIcon className="w-6 h-6 text-white" />
               )}
             </button>
 
@@ -169,9 +179,7 @@ export default function Demo() {
               onClick={nextStep}
               className="p-4 rounded-full bg-white border border-gray-200 hover:border-primary-300 hover:bg-primary-50 transition-all shadow-sm"
             >
-              <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
+              <ChevronRightIcon className="w-6 h-6 text-gray-700" />
             </button>
           </div>
 
@@ -189,21 +197,21 @@ export default function Demo() {
               {
                 title: 'Smart Extraction',
                 description: 'Paste any job posting and let AI do the heavy lifting',
-                icon: '🔍'
+                icon: MagnifyingGlassIcon,
               },
               {
                 title: 'Application Tracking',
                 description: 'Never lose track of where you\'ve applied',
-                icon: '📁'
+                icon: FolderIcon,
               },
               {
                 title: 'Interview Ready',
                 description: 'Be prepared for every interview with AI-generated questions',
-                icon: '✅'
+                icon: CheckCircleIcon,
               }
             ].map((feature, index) => (
               <div key={index} className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
-                <div className="text-4xl mb-4">{feature.icon}</div>
+                <feature.icon className="w-10 h-10 text-primary-600 mb-4" />
                 <h3 className="text-lg font-bold text-gray-900 mb-2">{feature.title}</h3>
                 <p className="text-gray-600">{feature.description}</p>
               </div>

@@ -100,6 +100,54 @@ export const deleteApplication = createAsyncThunk(
   }
 )
 
+export const archiveApplication = createAsyncThunk(
+  'applications/archive',
+  async (id, { rejectWithValue }) => {
+    try {
+      const response = await apiClient.post(`/applications/${id}/archive/`)
+      return { id, ...response }
+    } catch (error) {
+      return rejectWithValue(error.message)
+    }
+  }
+)
+
+export const unarchiveApplication = createAsyncThunk(
+  'applications/unarchive',
+  async (id, { rejectWithValue }) => {
+    try {
+      const response = await apiClient.post(`/applications/${id}/unarchive/`)
+      return { id, ...response }
+    } catch (error) {
+      return rejectWithValue(error.message)
+    }
+  }
+)
+
+export const softDeleteApplication = createAsyncThunk(
+  'applications/softDelete',
+  async (id, { rejectWithValue }) => {
+    try {
+      const response = await apiClient.post(`/applications/${id}/soft_delete/`)
+      return { id, ...response }
+    } catch (error) {
+      return rejectWithValue(error.message)
+    }
+  }
+)
+
+export const restoreApplication = createAsyncThunk(
+  'applications/restore',
+  async (id, { rejectWithValue }) => {
+    try {
+      const response = await apiClient.post(`/applications/${id}/restore/`)
+      return { id, ...response }
+    } catch (error) {
+      return rejectWithValue(error.message)
+    }
+  }
+)
+
 const initialState = {
   applications: [],
   stats: null,
@@ -174,6 +222,36 @@ const applicationSlice = createSlice({
       // Delete Application
       .addCase(deleteApplication.fulfilled, (state, action) => {
         state.applications = state.applications.filter(app => app.id !== action.payload)
+      })
+      // Archive Application
+      .addCase(archiveApplication.fulfilled, (state, action) => {
+        const index = state.applications.findIndex(app => app.id === action.payload.id)
+        if (index !== -1) {
+          state.applications[index].archived = true
+          state.applications[index].archived_at = action.payload.archived_at
+        }
+      })
+      // Unarchive Application
+      .addCase(unarchiveApplication.fulfilled, (state, action) => {
+        const index = state.applications.findIndex(app => app.id === action.payload.id)
+        if (index !== -1) {
+          state.applications[index].archived = false
+          state.applications[index].archived_at = null
+        }
+      })
+      // Soft Delete Application
+      .addCase(softDeleteApplication.fulfilled, (state, action) => {
+        const index = state.applications.findIndex(app => app.id === action.payload.id)
+        if (index !== -1) {
+          state.applications[index].deleted_at = action.payload.deleted_at
+        }
+      })
+      // Restore Application
+      .addCase(restoreApplication.fulfilled, (state, action) => {
+        const index = state.applications.findIndex(app => app.id === action.payload.id)
+        if (index !== -1) {
+          state.applications[index].deleted_at = null
+        }
       })
   },
 })

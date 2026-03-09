@@ -9,6 +9,7 @@ import toast from 'react-hot-toast'
 import jobService from '../services/jobs'
 import { useApplications } from '../hooks/useApplications'
 import useSubscription from '../hooks/useSubscription'
+import { LightBulbIcon, CheckIcon } from '@heroicons/react/24/outline'
 
 export default function AIPaste() {
   const { create } = useApplications()
@@ -181,12 +182,27 @@ export default function AIPaste() {
 
         {/* Tips Card */}
         <Card className="bg-gradient-to-br from-blue-50 to-purple-50 border border-blue-200">
-          <h3 className="font-semibold text-blue-900 mb-2">💡 Pro Tips</h3>
+          <h3 className="flex items-center gap-2 font-semibold text-blue-900 mb-2">
+            <LightBulbIcon className="w-5 h-5 text-blue-600" />
+            Pro Tips
+          </h3>
           <ul className="text-sm text-blue-800 space-y-1">
-            <li>✓ Copy the entire job posting for best results</li>
-            <li>✓ Include job title, company, location, and requirements</li>
-            <li>✓ The more complete the job description, the better the extraction</li>
-            <li>✓ Always review extracted information before saving</li>
+            <li className="flex items-start gap-2">
+              <CheckIcon className="w-4 h-4 mt-1 text-blue-600" />
+              Copy the entire job posting for best results
+            </li>
+            <li className="flex items-start gap-2">
+              <CheckIcon className="w-4 h-4 mt-1 text-blue-600" />
+              Include job title, company, location, and requirements
+            </li>
+            <li className="flex items-start gap-2">
+              <CheckIcon className="w-4 h-4 mt-1 text-blue-600" />
+              The more complete the job description, the better the extraction
+            </li>
+            <li className="flex items-start gap-2">
+              <CheckIcon className="w-4 h-4 mt-1 text-blue-600" />
+              Always review extracted information before saving
+            </li>
           </ul>
         </Card>
       </div>

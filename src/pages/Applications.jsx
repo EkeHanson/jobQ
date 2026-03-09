@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import DashboardLayout from '../components/layout/DashboardLayout'
 import { useApplications } from '../hooks/useApplications'
@@ -8,7 +8,7 @@ import ApplicationFilters from '../components/applications/ApplicationFilters'
 import Button from '../components/common/Button'
 import Modal from '../components/common/Modal'
 import { filterApplications } from '../utils/helpers'
-import { PlusIcon, ChevronLeftIcon, ChevronRightIcon, DocumentIcon, CloudArrowUpIcon } from '@heroicons/react/24/outline'
+import { PlusIcon, ChevronLeftIcon, ChevronRightIcon, DocumentIcon, CloudArrowUpIcon, ArchiveBoxIcon, EyeIcon, ClipboardDocumentListIcon, PencilSquareIcon, BookmarkIcon, ExclamationTriangleIcon, TrashIcon } from '@heroicons/react/24/outline'
 import Input from '../components/common/Input'
 import Spinner from '../components/common/Spinner'
 import toast from 'react-hot-toast'
@@ -25,31 +25,108 @@ export default function Applications() {
     update,
     create,
     refetch,
+    archive,
+    unarchive,
+    softDelete,
   } = useApplications()
   const { limits, canCreateApplication, refresh } = useSubscription()
   const filters = useSelector((state) => state.ui.filters)
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
+  const [applicationToDelete, setApplicationToDelete] = useState(null)
   const [isCreating, setIsCreating] = useState(false)
   const [editData, setEditData] = useState(null)
   const [editResumeFile, setEditResumeFile] = useState(null)
   const [limitError, setLimitError] = useState(null)
+  const [activeView, setActiveView] = useState('active') // 'active' or 'archived'
+  const [archivingId, setArchivingId] = useState(null)
+  
+  // Filter applications based on active view
+  const filteredApps = useMemo(() => {
+    let apps = applications
+    if (activeView === 'active') {
+      apps = applications.filter(app => !app.archived)
+    } else {
+      apps = applications.filter(app => app.archived)
+    }
+    return filterApplications(apps, filters)
+  }, [applications, filters, activeView])
+
+  // Stats
+  const stats = useMemo(() => {
+    const active = applications.filter(app => !app.archived).length
+    const archived = applications.filter(app => app.archived).length
+    return { active, archived, total: applications.length }
+  }, [applications])
+
+  const handleArchive = async (app) => {
+    try {
+      setArchivingId(app.id)
+      await archive(app.id)
+      toast.success('Application archived')
+      refetch()
+    } catch (error) {
+      toast.error('Failed to archive application')
+    } finally {
+      setArchivingId(null)
+    }
+  }
+
+  const handleUnarchive = async (app) => {
+    try {
+      setArchivingId(app.id)
+      await unarchive(app.id)
+      toast.success('Application restored')
+      refetch()
+    } catch (error) {
+      toast.error('Failed to restore application')
+    } finally {
+      setArchivingId(null)
+    }
+  }
+
+  const handleDelete = (app) => {
+    setApplicationToDelete(app)
+    setIsDeleteModalOpen(true)
+  }
+
+  const confirmDelete = async () => {
+    if (!applicationToDelete) return
+    try {
+      setArchivingId(applicationToDelete.id)
+      await softDelete(applicationToDelete.id)
+      toast.success('Application deleted')
+      refetch()
+    } catch (error) {
+      toast.error('Failed to delete application')
+    } finally {
+      setArchivingId(null)
+      setIsDeleteModalOpen(false)
+      setApplicationToDelete(null)
+    }
+  }
+
+  const cancelDelete = () => {
+    setIsDeleteModalOpen(false)
+    setApplicationToDelete(null)
+  }
   
   // Tab state for create modal
   const [activeTab, setActiveTab] = useState(0)
   const createTabs = [
-    { name: 'Basic Info', icon: '📋' },
-    { name: 'Job Details', icon: '📝' },
-    { name: 'Documents', icon: '📄' },
-    { name: 'Notes', icon: '📌' },
+    { name: 'Basic Info', icon: ClipboardDocumentListIcon },
+    { name: 'Job Details', icon: PencilSquareIcon },
+    { name: 'Documents', icon: DocumentIcon },
+    { name: 'Notes', icon: BookmarkIcon },
   ]
   
   // Tab state for edit modal
   const [editActiveTab, setEditActiveTab] = useState(0)
   const editTabs = [
-    { name: 'Basic Info', icon: '📋' },
-    { name: 'Job Details', icon: '📝' },
-    { name: 'Documents', icon: '📄' },
-    { name: 'Notes', icon: '📌' },
+    { name: 'Basic Info', icon: ClipboardDocumentListIcon },
+    { name: 'Job Details', icon: PencilSquareIcon },
+    { name: 'Documents', icon: DocumentIcon },
+    { name: 'Notes', icon: BookmarkIcon },
   ]
   const [newData, setNewData] = useState({
     jobTitle: '',
@@ -64,7 +141,6 @@ export default function Applications() {
     resumeFile: null,
   })
 
-  const filteredApps = filterApplications(applications, filters)
 
   const handleEdit = (app) => {
     setIsCreating(false)
@@ -235,6 +311,42 @@ export default function Applications() {
 
         <ApplicationFilters />
 
+        {/* View Tabs - Active/Archived */}
+        <div className="flex items-center gap-2 mb-4">
+          <button
+            onClick={() => setActiveView('active')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
+              activeView === 'active'
+                ? 'bg-primary-600 text-white shadow-md'
+                : 'bg-white text-gray-600 border border-gray-200 hover:border-primary-300'
+            }`}
+          >
+            <EyeIcon className="w-5 h-5" />
+            Active
+            <span className={`ml-1 px-2 py-0.5 text-xs rounded-full ${
+              activeView === 'active' ? 'bg-white/20' : 'bg-gray-100'
+            }`}>
+              {stats.active}
+            </span>
+          </button>
+          <button
+            onClick={() => setActiveView('archived')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
+              activeView === 'archived'
+                ? 'bg-primary-600 text-white shadow-md'
+                : 'bg-white text-gray-600 border border-gray-200 hover:border-primary-300'
+            }`}
+          >
+            <ArchiveBoxIcon className="w-5 h-5" />
+            Archived
+            <span className={`ml-1 px-2 py-0.5 text-xs rounded-full ${
+              activeView === 'archived' ? 'bg-white/20' : 'bg-gray-100'
+            }`}>
+              {stats.archived}
+            </span>
+          </button>
+        </div>
+
         <div className="glass-card">
           {loading ? (
             <div className="flex items-center justify-center py-12">
@@ -243,9 +355,24 @@ export default function Applications() {
           ) : (
             <>
               <div className="p-4 border-b border-gray-100">
-                <p className="text-sm text-gray-600">Showing {filteredApps.length} of {applications.length} applications</p>
+                <p className="text-sm text-gray-600">
+                  {activeView === 'active' 
+                    ? `Showing ${filteredApps.length} of ${stats.active} active applications`
+                    : `Showing ${filteredApps.length} of ${stats.archived} archived applications`
+                  }
+                </p>
               </div>
-              <ApplicationTable applications={filteredApps} onEdit={handleEdit} onView={handleView} loading={loading} />
+              <ApplicationTable 
+                applications={filteredApps} 
+                onEdit={handleEdit} 
+                onView={handleView} 
+                onArchive={handleArchive}
+                onUnarchive={handleUnarchive}
+                onDelete={handleDelete}
+                archivingId={archivingId}
+                showArchived={activeView === 'archived'}
+                loading={loading} 
+              />
             </>
           )}
         </div>
@@ -271,7 +398,7 @@ export default function Applications() {
                       : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                   }`}
                 >
-                  <span className="text-base">{tab.icon}</span>
+                  <tab.icon className="w-5 h-5" />
                   <span>{tab.name}</span>
                 </button>
               ))}
@@ -421,7 +548,7 @@ export default function Applications() {
                       : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                   }`}
                 >
-                  <span className="text-base">{tab.icon}</span>
+                  <tab.icon className="w-5 h-5" />
                   <span>{tab.name}</span>
                 </button>
               ))}
@@ -565,6 +692,60 @@ export default function Applications() {
             </div>
           </>
         ) : null}
+      </Modal>
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        isOpen={isDeleteModalOpen}
+        onClose={cancelDelete}
+        title="Delete Application"
+        size="md"
+      >
+        <div className="text-center">
+          {/* Warning Icon */}
+          <div className="mx-auto w-16 h-16 rounded-full bg-red-100 flex items-center justify-center mb-4">
+            <ExclamationTriangleIcon className="w-8 h-8 text-red-600" />
+          </div>
+          
+          {/* Warning Title */}
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">
+            Delete Application?
+          </h3>
+          
+          {/* Application Info */}
+          <p className="text-gray-600 mb-4">
+            You're about to delete <span className="font-semibold text-gray-900">{applicationToDelete?.job_title || applicationToDelete?.company_name || 'this application'}</span>
+          </p>
+          
+          {/* Warnings */}
+          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6 text-left">
+            <p className="text-sm text-amber-800 font-medium mb-2">⚠️ Please note:</p>
+            <ul className="text-sm text-amber-700 space-y-1">
+              <li>• This application will be permanently removed from your active list</li>
+              <li>• All associated data (notes, status history) will be hidden</li>
+              <li>• You can restore this application later if needed</li>
+            </ul>
+          </div>
+          
+          {/* Actions */}
+          <div className="flex gap-3 justify-center">
+            <Button 
+              variant="secondary" 
+              onClick={cancelDelete}
+              className="flex-1"
+            >
+              Cancel
+            </Button>
+            <Button 
+              onClick={confirmDelete}
+              disabled={archivingId !== null}
+              className="flex-1 bg-red-600 hover:bg-red-700 border-red-600 hover:border-red-700"
+            >
+              <TrashIcon className="w-4 h-4 mr-2" />
+              {archivingId === applicationToDelete?.id ? 'Deleting...' : 'Delete'}
+            </Button>
+          </div>
+        </div>
       </Modal>
     </DashboardLayout>
   )

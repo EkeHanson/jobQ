@@ -12,7 +12,7 @@ export const passwordSchema = z
 
 export const phoneSchema = z
   .string()
-  .regex(/^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/, 'Invalid phone number')
+  .regex(/^[+]?[(]?[0-9]{3}[)]?[-\s.]?[0-9]{3}[-\s.]?[0-9]{4,6}$/, 'Invalid phone number')
 
 export const urlSchema = z.string().url('Invalid URL')
 

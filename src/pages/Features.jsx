@@ -1,37 +1,45 @@
 import { Link } from 'react-router-dom'
 import Button from '../components/common/Button'
+import {
+  BoltIcon,
+  ClipboardDocumentListIcon,
+  ClockIcon,
+  SparklesIcon,
+  ChartBarIcon,
+  LockClosedIcon,
+} from '@heroicons/react/24/outline'
 
 export default function Features() {
   const features = [
     {
       title: 'AI-Powered Job Extraction',
       description: 'Our advanced AI automatically parses job descriptions from any website, extracting key requirements, skills, and qualifications in seconds.',
-      icon: '🤖'
+      icon: BoltIcon,
     },
     {
       title: 'Application Tracking',
       description: 'Track every job application in one place. Never lose track of where you\'ve applied or the status of your applications.',
-      icon: '📋'
+      icon: ClipboardDocumentListIcon,
     },
     {
       title: 'Smart Reminders',
       description: 'Never miss a follow-up deadline. Get intelligent reminders based on company response times and application timelines.',
-      icon: '⏰'
+      icon: ClockIcon,
     },
     {
       title: 'Interview Preparation',
       description: 'AI-generated interview questions and answers based on the job description and your profile.',
-      icon: '🎯'
+      icon: SparklesIcon,
     },
     {
       title: 'Analytics Dashboard',
       description: 'Get insights into your job search. Track response rates, identify patterns, and optimize your approach.',
-      icon: '📊'
+      icon: ChartBarIcon,
     },
     {
       title: 'Secure & Private',
       description: 'Your data is encrypted and secure. We never share your personal information with third parties.',
-      icon: '🔒'
+      icon: LockClosedIcon,
     }
   ]
 
@@ -74,7 +82,7 @@ export default function Features() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {features.map((feature, index) => (
               <div key={index} className="bg-white rounded-2xl p-8 shadow-sm hover:shadow-md transition-shadow">
-                <div className="text-4xl mb-4">{feature.icon}</div>
+              <feature.icon className="w-10 h-10 text-primary-600 mb-4" />
                 <h3 className="text-xl font-bold text-gray-900 mb-3">{feature.title}</h3>
                 <p className="text-gray-600">{feature.description}</p>
               </div>

@@ -6,6 +6,10 @@ import {
   createApplication,
   updateApplication,
   deleteApplication,
+  archiveApplication,
+  unarchiveApplication,
+  softDeleteApplication,
+  restoreApplication,
   setCurrentApplication,
   clearCurrentApplication,
 } from '../store/applicationSlice'
@@ -48,6 +52,50 @@ export const useApplications = (filters = {}) => {
     [dispatch]
   )
 
+  const archive = useCallback(
+    async (id) => {
+      const result = await dispatch(archiveApplication(id))
+      if (archiveApplication.rejected.match(result)) {
+        throw result.payload
+      }
+      return result.payload
+    },
+    [dispatch]
+  )
+
+  const unarchive = useCallback(
+    async (id) => {
+      const result = await dispatch(unarchiveApplication(id))
+      if (unarchiveApplication.rejected.match(result)) {
+        throw result.payload
+      }
+      return result.payload
+    },
+    [dispatch]
+  )
+
+  const softDelete = useCallback(
+    async (id) => {
+      const result = await dispatch(softDeleteApplication(id))
+      if (softDeleteApplication.rejected.match(result)) {
+        throw result.payload
+      }
+      return result.payload
+    },
+    [dispatch]
+  )
+
+  const restore = useCallback(
+    async (id) => {
+      const result = await dispatch(restoreApplication(id))
+      if (restoreApplication.rejected.match(result)) {
+        throw result.payload
+      }
+      return result.payload
+    },
+    [dispatch]
+  )
+
   const setCurrent = useCallback(
     (app) => dispatch(setCurrentApplication(app)),
     [dispatch]
@@ -75,6 +123,10 @@ export const useApplications = (filters = {}) => {
     create,
     update,
     remove,
+    archive,
+    unarchive,
+    softDelete,
+    restore,
     setCurrent,
     clearCurrent,
     refetch,

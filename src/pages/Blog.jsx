@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import Button from '../components/common/Button'
+import { DocumentTextIcon, ChevronRightIcon } from '@heroicons/react/24/outline'
 
 export default function Blog() {
   const posts = [
@@ -87,7 +88,7 @@ export default function Blog() {
             {posts.map((post) => (
               <article key={post.id} className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
                 <div className="h-48 bg-gradient-to-br from-primary-100 to-accent-100 flex items-center justify-center">
-                  <span className="text-6xl">📝</span>
+                  <DocumentTextIcon className="w-14 h-14 text-primary-500" />
                 </div>
                 <div className="p-6">
                   <div className="flex items-center gap-3 text-sm text-gray-500 mb-3">
@@ -98,8 +99,9 @@ export default function Blog() {
                   </div>
                   <h3 className="text-xl font-bold text-gray-900 mb-3">{post.title}</h3>
                   <p className="text-gray-600 mb-4">{post.excerpt}</p>
-                  <button className="text-primary-600 font-medium hover:text-primary-700">
-                    Read More →
+                  <button className="flex items-center gap-2 text-primary-600 font-medium hover:text-primary-700">
+                    <span>Read More</span>
+                    <ChevronRightIcon className="w-4 h-4" />
                   </button>
                 </div>
               </article>

@@ -1,6 +1,14 @@
 import { Link } from 'react-router-dom'
 import Button from '../components/common/Button'
 import { useState } from 'react'
+import {
+  EnvelopeIcon,
+  MapPinIcon,
+  ClockIcon,
+  XMarkIcon,
+  LinkIcon,
+  CameraIcon,
+} from '@heroicons/react/24/outline'
 
 export default function Contact() {
   const [formData, setFormData] = useState({
@@ -124,8 +132,8 @@ export default function Contact() {
                 <h3 className="text-xl font-bold text-gray-900 mb-4">Contact Information</h3>
                 <div className="space-y-4">
                   <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 bg-primary-100 rounded-xl flex items-center justify-center text-2xl">
-                      📧
+                    <div className="w-12 h-12 bg-primary-100 rounded-xl flex items-center justify-center">
+                      <EnvelopeIcon className="w-6 h-6 text-primary-600" />
                     </div>
                     <div>
                       <p className="font-medium text-gray-900">Email</p>
@@ -133,8 +141,8 @@ export default function Contact() {
                     </div>
                   </div>
                   <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 bg-accent-100 rounded-xl flex items-center justify-center text-2xl">
-                      📍
+                    <div className="w-12 h-12 bg-accent-100 rounded-xl flex items-center justify-center">
+                      <MapPinIcon className="w-6 h-6 text-accent-600" />
                     </div>
                     <div>
                       <p className="font-medium text-gray-900">Location</p>
@@ -142,8 +150,8 @@ export default function Contact() {
                     </div>
                   </div>
                   <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center text-2xl">
-                      ⏰
+                    <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
+                      <ClockIcon className="w-6 h-6 text-green-600" />
                     </div>
                     <div>
                       <p className="font-medium text-gray-900">Business Hours</p>
@@ -156,14 +164,14 @@ export default function Contact() {
               <div className="bg-white rounded-2xl p-8 shadow-sm">
                 <h3 className="text-xl font-bold text-gray-900 mb-4">Follow Us</h3>
                 <div className="flex gap-4">
-                  <a href="#" className="w-12 h-12 bg-primary-100 rounded-xl flex items-center justify-center text-2xl hover:scale-110 transition-transform">
-                    𝕏
+                  <a href="#" className="w-12 h-12 bg-primary-100 rounded-xl flex items-center justify-center hover:scale-110 transition-transform">
+                    <XMarkIcon className="w-6 h-6 text-primary-600" />
                   </a>
-                  <a href="#" className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center text-2xl hover:scale-110 transition-transform">
-                    in
+                  <a href="#" className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center hover:scale-110 transition-transform">
+                    <LinkIcon className="w-6 h-6 text-blue-600" />
                   </a>
-                  <a href="#" className="w-12 h-12 bg-pink-100 rounded-xl flex items-center justify-center text-2xl hover:scale-110 transition-transform">
-                    📷
+                  <a href="#" className="w-12 h-12 bg-pink-100 rounded-xl flex items-center justify-center hover:scale-110 transition-transform">
+                    <CameraIcon className="w-6 h-6 text-pink-600" />
                   </a>
                 </div>
               </div>

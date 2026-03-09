@@ -1,30 +1,36 @@
 import Card from '../common/Card'
 import Spinner from '../common/Spinner'
+import {
+  ClipboardDocumentListIcon,
+  CalendarDaysIcon,
+  CheckCircleIcon,
+  ChartBarIcon,
+} from '@heroicons/react/24/outline'
 
 export default function StatsCards({ stats, loading = false }) {
   const cards = [
     {
       title: 'Total Applications',
       value: stats?.total || 0,
-      icon: '📝',
+      icon: ClipboardDocumentListIcon,
       color: 'bg-blue-50 text-blue-600',
     },
     {
       title: 'Interviews',
       value: stats?.by_status?.interview || 0,
-      icon: '🎯',
+      icon: CalendarDaysIcon,
       color: 'bg-green-50 text-green-600',
     },
     {
       title: 'Offers',
       value: stats?.by_status?.offer || 0,
-      icon: '🎉',
+      icon: CheckCircleIcon,
       color: 'bg-purple-50 text-purple-600',
     },
     {
       title: 'Response Rate',
       value: stats?.response_rate ? `${stats.response_rate.toFixed(1)}%` : '0%',
-      icon: '📊',
+      icon: ChartBarIcon,
       color: 'bg-orange-50 text-orange-600',
     },
   ]
@@ -42,7 +48,9 @@ export default function StatsCards({ stats, loading = false }) {
                 <p className="text-3xl font-bold mt-2">{card.value}</p>
               )}
             </div>
-            <div className="text-4xl">{card.icon}</div>
+            <div>
+              <card.icon className="w-10 h-10" />
+            </div>
           </div>
         </Card>
       ))}

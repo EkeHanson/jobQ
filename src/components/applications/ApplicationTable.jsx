@@ -1,10 +1,20 @@
 import { useState } from 'react'
 import { formatDate } from '../../utils/formatters'
-import { ArrowsUpDownIcon, EyeIcon, PencilSquareIcon } from '@heroicons/react/24/outline'
+import { ArrowsUpDownIcon, EyeIcon, PencilSquareIcon, ArchiveBoxIcon, ArrowUturnDownIcon, TrashIcon } from '@heroicons/react/24/outline'
 import StatusBadge from './StatusBadge'
 import Button from '../common/Button'
 
-export default function ApplicationTable({ applications, onEdit, onView, loading = false }) {
+export default function ApplicationTable({ 
+  applications, 
+  onEdit, 
+  onView, 
+  onArchive, 
+  onUnarchive,
+  onDelete,
+  archivingId,
+  showArchived = false,
+  loading = false 
+}) {
   const [sortField, setSortField] = useState('applied_date')
   const [sortDirection, setSortDirection] = useState('desc')
 
@@ -51,7 +61,17 @@ export default function ApplicationTable({ applications, onEdit, onView, loading
   if (applications.length === 0) {
     return (
       <div className="text-center py-12">
-        <p className="text-gray-500">No applications yet. Start by adding your first application!</p>
+        {showArchived ? (
+          <div>
+            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
+              <ArchiveBoxIcon className="w-8 h-8 text-gray-400" />
+            </div>
+            <p className="text-gray-500">No archived applications yet.</p>
+            <p className="text-sm text-gray-400 mt-1">Archive applications to hide them from your main list.</p>
+          </div>
+        ) : (
+          <p className="text-gray-500">No applications yet. Start by adding your first application!</p>
+        )}
       </div>
     )
   }
@@ -107,7 +127,7 @@ export default function ApplicationTable({ applications, onEdit, onView, loading
         </thead>
         <tbody className="divide-y divide-gray-200">
           {sortedApplications.map((app) => (
-            <tr key={app.id} className="hover:bg-gray-50 transition-colors">
+            <tr key={app.id} className={`hover:bg-gray-50 transition-colors ${app.archived ? 'bg-gray-50/50' : ''}`}>
               <td className="px-6 py-4">
                 <div className="text-sm font-medium text-gray-900">{app.job_title || 'N/A'}</div>
               </td>
@@ -127,17 +147,49 @@ export default function ApplicationTable({ applications, onEdit, onView, loading
                 <div className="flex justify-end gap-2">
                   <button
                     onClick={() => onView(app)}
-                    className="p-1 text-blue-600 hover:text-blue-800"
+                    className="p-1.5 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-colors"
                     title="View"
                   >
                     <EyeIcon className="w-5 h-5" />
                   </button>
+                  
+                  {!showArchived && (
+                    <button
+                      onClick={() => onEdit(app)}
+                      className="p-1.5 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
+                      title="Edit"
+                    >
+                      <PencilSquareIcon className="w-5 h-5" />
+                    </button>
+                  )}
+                  
+                  {showArchived ? (
+                    <button
+                      onClick={() => onUnarchive(app)}
+                      disabled={archivingId === app.id}
+                      className="p-1.5 text-green-600 hover:text-green-800 hover:bg-green-50 rounded-lg transition-colors disabled:opacity-50"
+                      title="Unarchive"
+                    >
+                      <ArrowUturnDownIcon className="w-5 h-5" />
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => onArchive(app)}
+                      disabled={archivingId === app.id}
+                      className="p-1.5 text-amber-600 hover:text-amber-800 hover:bg-amber-50 rounded-lg transition-colors disabled:opacity-50"
+                      title="Archive"
+                    >
+                      <ArchiveBoxIcon className="w-5 h-5" />
+                    </button>
+                  )}
+                  
                   <button
-                    onClick={() => onEdit(app)}
-                    className="p-1 text-gray-600 hover:text-gray-800"
-                    title="Edit"
+                    onClick={() => onDelete(app)}
+                    disabled={archivingId === app.id}
+                    className="p-1.5 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
+                    title="Delete"
                   >
-                    <PencilSquareIcon className="w-5 h-5" />
+                    <TrashIcon className="w-5 h-5" />
                   </button>
                 </div>
               </td>

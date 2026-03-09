@@ -5,6 +5,7 @@ import DashboardLayout from '../components/layout/DashboardLayout'
 import jobService from '../services/jobs'
 import Spinner from '../components/common/Spinner'
 import Button from '../components/common/Button'
+import toast from 'react-hot-toast'
 import { 
   ArrowLeftIcon,
   MapPinIcon,
@@ -62,7 +63,7 @@ Join our dynamic team of engineers and help build the next generation of our pro
     status: 'active',
     posted_date: '2026-02-15',
     deadline: '2026-03-30',
-    application_url: 'https://techinnovations.com/careers/apply/frontend-dev',
+    application_link: 'https://techinnovations.com/careers/apply/frontend-dev',
     skills: ['React', 'TypeScript', 'Redux', 'Tailwind CSS', 'Jest', 'Webpack'],
     benefits: ['Health Insurance', '401k Matching', 'Remote Work', 'Unlimited PTO', 'Learning Budget', 'Stock Options'],
     company_size: '500-1000',
@@ -140,7 +141,7 @@ We're looking for a Backend Engineer to help us scale our platform and build rob
     status: 'active',
     posted_date: '2026-02-18',
     deadline: '2026-04-01',
-    application_url: 'https://jobs.digitalplatforms.io/devops-engineer',
+    application_link: 'https://jobs.digitalplatforms.io/devops-engineer',
     skills: ['Kubernetes', 'Terraform', 'Jenkins', 'GCP', 'AWS', 'Linux'],
     benefits: ['Health Insurance', 'Remote Work', 'Stock Options', 'Unlimited PTO'],
     company_size: '100-200',
@@ -362,13 +363,37 @@ export default function JobDetails() {
                       </button>
                       {showShareMenu && (
                         <div className="absolute right-0 top-12 bg-white rounded-xl shadow-lg border border-gray-100 py-2 min-w-[160px] z-10">
-                          <button className="w-full px-4 py-2 text-left text-sm text-gray-600 hover:bg-gray-50">
+                          <button 
+                            onClick={() => {
+                              const linkToCopy = job.application_link || job.application_email || window.location.href
+                              navigator.clipboard.writeText(linkToCopy)
+                              toast.success('Application link copied!')
+                              setShowShareMenu(false)
+                            }}
+                            className="w-full px-4 py-2 text-left text-sm text-gray-600 hover:bg-gray-50"
+                          >
                             Copy Link
                           </button>
-                          <button className="w-full px-4 py-2 text-left text-sm text-gray-600 hover:bg-gray-50">
+                          <button 
+                            onClick={() => {
+                              const url = encodeURIComponent(job.application_link || window.location.href)
+                              const title = encodeURIComponent(job.title)
+                              window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${url}`, '_blank')
+                              setShowShareMenu(false)
+                            }}
+                            className="w-full px-4 py-2 text-left text-sm text-gray-600 hover:bg-gray-50"
+                          >
                             Share on LinkedIn
                           </button>
-                          <button className="w-full px-4 py-2 text-left text-sm text-gray-600 hover:bg-gray-50">
+                          <button 
+                            onClick={() => {
+                              const url = encodeURIComponent(job.application_link || window.location.href)
+                              const text = encodeURIComponent(`Check out this job: ${job.title}`)
+                              window.open(`https://twitter.com/intent/tweet?url=${url}&text=${text}`, '_blank')
+                              setShowShareMenu(false)
+                            }}
+                            className="w-full px-4 py-2 text-left text-sm text-gray-600 hover:bg-gray-50"
+                          >
                             Share on Twitter
                           </button>
                         </div>
@@ -400,6 +425,12 @@ export default function JobDetails() {
                     value={job.experience_level || 'Mid-Level'} 
                   />
                 </div>
+                {job.industry && (
+                  <div className="mt-3 flex items-center gap-2 text-sm text-gray-500">
+                    <BuildingOfficeIcon className="w-4 h-4" />
+                    <span>Industry: <span className="font-medium text-gray-900">{job.industry}</span></span>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -473,10 +504,10 @@ export default function JobDetails() {
 
               {/* Apply Button Card */}
               <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-                {job.application_url ? (
+                {job.application_link ? (
                   <>
                     <a
-                      href={job.application_url}
+                      href={job.application_link}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="w-full btn-gradient py-3 px-6 rounded-xl font-semibold text-center block mb-4"
@@ -537,6 +568,15 @@ export default function JobDetails() {
                       <div>
                         <p className="text-sm text-gray-500">Industry</p>
                         <p className="font-medium text-gray-900">{job.company_industry}</p>
+                      </div>
+                    </div>
+                  )}
+                  {job.industry && !job.company_industry && (
+                    <div className="flex items-start gap-3">
+                      <SparklesIcon className="w-5 h-5 text-gray-400 mt-0.5" />
+                      <div>
+                        <p className="text-sm text-gray-500">Industry</p>
+                        <p className="font-medium text-gray-900">{job.industry}</p>
                       </div>
                     </div>
                   )}

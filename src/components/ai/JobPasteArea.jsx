@@ -3,6 +3,7 @@ import Card from '../common/Card'
 import Button from '../common/Button'
 import Spinner from '../common/Spinner'
 import toast from 'react-hot-toast'
+import { LightBulbIcon, CheckIcon } from '@heroicons/react/24/outline'
 
 export default function JobPasteArea({ onExtract, loading = false }) {
   const [jobText, setJobText] = useState('')
@@ -73,12 +74,27 @@ export default function JobPasteArea({ onExtract, loading = false }) {
       </div>
 
       <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
-        <h3 className="font-semibold text-blue-900 mb-2">✨ What happens next?</h3>
+        <h3 className="flex items-center gap-2 font-semibold text-blue-900 mb-2">
+          <LightBulbIcon className="w-5 h-5 text-blue-600" />
+          What happens next?
+        </h3>
         <ul className="text-sm text-blue-800 space-y-1">
-          <li>✓ AI automatically extracts job title, company, requirements, and more</li>
-          <li>✓ Information is structured and ready to save</li>
-          <li>✓ You can review and edit before saving</li>
-          <li>✓ Application is added to your tracker</li>
+          <li className="flex items-start gap-2">
+            <CheckIcon className="w-4 h-4 mt-1 text-blue-600" />
+            AI automatically extracts job title, company, requirements, and more
+          </li>
+          <li className="flex items-start gap-2">
+            <CheckIcon className="w-4 h-4 mt-1 text-blue-600" />
+            Information is structured and ready to save
+          </li>
+          <li className="flex items-start gap-2">
+            <CheckIcon className="w-4 h-4 mt-1 text-blue-600" />
+            You can review and edit before saving
+          </li>
+          <li className="flex items-start gap-2">
+            <CheckIcon className="w-4 h-4 mt-1 text-blue-600" />
+            Application is added to your tracker
+          </li>
         </ul>
       </div>
     </Card>

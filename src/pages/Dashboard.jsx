@@ -6,7 +6,7 @@ import RecentApplications from '../components/dashboard/RecentApplications'
 import Spinner from '../components/common/Spinner'
 import Button from '../components/common/Button'
 import { Link } from 'react-router-dom'
-import { SparklesIcon, ArrowTrendingUpIcon, CalendarDaysIcon } from '@heroicons/react/24/outline'
+import { SparklesIcon, ArrowUpTrayIcon, CalendarDaysIcon } from '@heroicons/react/24/outline'
 
 export default function Dashboard() {
   const { applications, stats, loading } = useApplications()
@@ -37,7 +37,7 @@ export default function Dashboard() {
             <div className="glass-card p-6 card-hover">
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center shadow-lg shadow-blue-500/25 group-hover:scale-110 transition-transform">
-                  <ArrowTrendingUpIcon className="w-6 h-6 text-white" />
+                  <ArrowUpTrayIcon className="w-6 h-6 text-white" />
                 </div>
                 <div>
                   <h3 className="font-semibold text-gray-900">Track Applications</h3>

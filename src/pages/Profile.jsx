@@ -6,6 +6,7 @@ import Button from '../components/common/Button'
 import Input from '../components/common/Input'
 import Modal from '../components/common/Modal'
 import Badge from '../components/common/Badge'
+import { CheckIcon } from '@heroicons/react/24/outline'
 import { useAuth } from '../hooks/useAuth'
 import { useProfiles } from '../hooks/useProfiles'
 import { useToast } from '../components/common/Toast'
@@ -433,8 +434,9 @@ export default function Profile() {
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
                 {entry.resume && (
-                  <p className="text-sm text-green-600 mt-1">
-                    ✓ {entry.resume.name}
+                  <p className="flex items-center gap-2 text-sm text-green-600 mt-1">
+                    <CheckIcon className="w-4 h-4" />
+                    {entry.resume.name}
                   </p>
                 )}
               </div>

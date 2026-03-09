@@ -31,6 +31,24 @@ const applicationService = {
   getStatusHistory: async (applicationId) => {
     return apiClient.get(`/applications/${applicationId}/status-history/`)
   },
+
+  // Archive
+  archiveApplication: async (id) => {
+    return apiClient.post(`/applications/${id}/archive/`)
+  },
+
+  unarchiveApplication: async (id) => {
+    return apiClient.post(`/applications/${id}/unarchive/`)
+  },
+
+  // Soft Delete
+  softDeleteApplication: async (id) => {
+    return apiClient.post(`/applications/${id}/soft_delete/`)
+  },
+
+  restoreApplication: async (id) => {
+    return apiClient.post(`/applications/${id}/restore/`)
+  },
 }
 
 export default applicationService

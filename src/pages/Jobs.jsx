@@ -4,6 +4,7 @@ import DashboardLayout from '../components/layout/DashboardLayout'
 import { useJobs } from '../hooks/useJobs'
 import Spinner from '../components/common/Spinner'
 import Button from '../components/common/Button'
+import { formatSalaryRange } from '../utils/formatters'
 import { 
   MagnifyingGlassIcon,
   AdjustmentsHorizontalIcon,
@@ -17,100 +18,125 @@ import {
   ArrowRightIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
-  ArrowsRightLeftIcon
+  ArrowsRightLeftIcon,
+  BuildingOfficeIcon
 } from '@heroicons/react/24/outline'
 
 const ITEMS_PER_PAGE = 12
 
-const DUMMY_JOBS = [
-  {
-    id: 1,
-    title: 'Senior Frontend Developer',
-    company: { name: 'Tech Innovations Inc', logo: null },
-    location: 'San Francisco, CA',
-    description: 'We are looking for an experienced Frontend Developer with expertise in React and modern web technologies.',
-    salary: '$120,000 - $150,000',
-    jobType: 'Full-time',
-    experience_level: 'Senior',
-    posted_date: '2026-02-15',
-    skills: ['React', 'TypeScript', 'Redux', 'Tailwind'],
-  },
-  {
-    id: 2,
-    title: 'Backend Engineer',
-    company: { name: 'Cloud Solutions Ltd', logo: null },
-    location: 'New York, NY',
-    description: 'Join our team to build scalable backend systems using Node.js and microservices architecture.',
-    salary: '$110,000 - $140,000',
-    jobType: 'Full-time',
-    experience_level: 'Mid-Level',
-    posted_date: '2026-02-20',
-    skills: ['Node.js', 'PostgreSQL', 'Docker', 'AWS'],
-  },
-  {
-    id: 3,
-    title: 'DevOps Engineer',
-    company: { name: 'Digital Platforms Co', logo: null },
-    location: 'Austin, TX',
-    description: 'Seeking a DevOps specialist to manage cloud infrastructure, CI/CD pipelines, and Kubernetes deployments.',
-    salary: '$100,000 - $130,000',
-    jobType: 'Full-time',
-    experience_level: 'Mid-Level',
-    posted_date: '2026-02-18',
-    skills: ['Kubernetes', 'Terraform', 'Jenkins', 'GCP'],
-  },
-  {
-    id: 4,
-    title: 'Full Stack Developer',
-    company: { name: 'StartUp Ventures', logo: null },
-    location: 'Remote',
-    description: 'Build end-to-end web applications using React, Node.js, and PostgreSQL in a fast-paced startup environment.',
-    salary: '$90,000 - $120,000',
-    jobType: 'Full-time',
-    experience_level: 'Mid-Level',
-    posted_date: '2026-02-22',
-    skills: ['React', 'Node.js', 'PostgreSQL', 'GraphQL'],
-  },
-  {
-    id: 5,
-    title: 'Mobile App Developer',
-    company: { name: 'AppWorks Studios', logo: null },
-    location: 'Seattle, WA',
-    description: 'Develop iOS and Android applications using React Native and latest mobile technologies.',
-    salary: '$95,000 - $125,000',
-    jobType: 'Full-time',
-    experience_level: 'Mid-Level',
-    posted_date: '2026-02-19',
-    skills: ['React Native', 'iOS', 'Android', 'Firebase'],
-  },
-  {
-    id: 6,
-    title: 'Data Scientist',
-    company: { name: 'Analytics Pro', logo: null },
-    location: 'Boston, MA',
-    description: 'Work with machine learning models, data analysis, and AI solutions to drive business insights.',
-    salary: '$105,000 - $145,000',
-    jobType: 'Full-time',
-    experience_level: 'Mid-Level',
-    posted_date: '2026-02-21',
-    skills: ['Python', 'TensorFlow', 'SQL', 'Tableau'],
-  },
-]
+// const DUMMY_JOBS = [
+//   {
+//     id: 1,
+//     title: 'Senior Frontend Developer',
+//     company: { name: 'Tech Innovations Inc', logo: null },
+//     location: 'San Francisco, CA',
+//     description: 'We are looking for an experienced Frontend Developer with expertise in React and modern web technologies.',
+//     salary: '$120,000 - $150,000',
+//     jobType: 'Full-time',
+//     experience_level: 'Senior',
+//     posted_date: '2026-02-15',
+//     skills: ['React', 'TypeScript', 'Redux', 'Tailwind'],
+//   },
+//   {
+//     id: 2,
+//     title: 'Backend Engineer',
+//     company: { name: 'Cloud Solutions Ltd', logo: null },
+//     location: 'New York, NY',
+//     description: 'Join our team to build scalable backend systems using Node.js and microservices architecture.',
+//     salary: '$110,000 - $140,000',
+//     jobType: 'Full-time',
+//     experience_level: 'Mid-Level',
+//     posted_date: '2026-02-20',
+//     skills: ['Node.js', 'PostgreSQL', 'Docker', 'AWS'],
+//   },
+//   {
+//     id: 3,
+//     title: 'DevOps Engineer',
+//     company: { name: 'Digital Platforms Co', logo: null },
+//     location: 'Austin, TX',
+//     description: 'Seeking a DevOps specialist to manage cloud infrastructure, CI/CD pipelines, and Kubernetes deployments.',
+//     salary: '$100,000 - $130,000',
+//     jobType: 'Full-time',
+//     experience_level: 'Mid-Level',
+//     posted_date: '2026-02-18',
+//     skills: ['Kubernetes', 'Terraform', 'Jenkins', 'GCP'],
+//   },
+//   {
+//     id: 4,
+//     title: 'Full Stack Developer',
+//     company: { name: 'StartUp Ventures', logo: null },
+//     location: 'Remote',
+//     description: 'Build end-to-end web applications using React, Node.js, and PostgreSQL in a fast-paced startup environment.',
+//     salary: '$90,000 - $120,000',
+//     jobType: 'Full-time',
+//     experience_level: 'Mid-Level',
+//     posted_date: '2026-02-22',
+//     skills: ['React', 'Node.js', 'PostgreSQL', 'GraphQL'],
+//   },
+//   {
+//     id: 5,
+//     title: 'Mobile App Developer',
+//     company: { name: 'AppWorks Studios', logo: null },
+//     location: 'Seattle, WA',
+//     description: 'Develop iOS and Android applications using React Native and latest mobile technologies.',
+//     salary: '$95,000 - $125,000',
+//     jobType: 'Full-time',
+//     experience_level: 'Mid-Level',
+//     posted_date: '2026-02-19',
+//     skills: ['React Native', 'iOS', 'Android', 'Firebase'],
+//   },
+//   {
+//     id: 6,
+//     title: 'Data Scientist',
+//     company: { name: 'Analytics Pro', logo: null },
+//     location: 'Boston, MA',
+//     description: 'Work with machine learning models, data analysis, and AI solutions to drive business insights.',
+//     salary: '$105,000 - $145,000',
+//     jobType: 'Full-time',
+//     experience_level: 'Mid-Level',
+//     posted_date: '2026-02-21',
+//     skills: ['Python', 'TensorFlow', 'SQL', 'Tableau'],
+//   },
+// ]
 
 const JOB_TYPES = ['All', 'Full-time', 'Part-time', 'Contract', 'Internship']
 const EXPERIENCE_LEVELS = ['All', 'Entry', 'Mid-Level', 'Senior', 'Lead', 'Executive']
+const INDUSTRIES = [
+  'All',
+  'Technology',
+  'Healthcare',
+  'Finance',
+  'Manufacturing',
+  'Security',
+  'Retail',
+  'Education',
+  'Construction',
+  'Transportation',
+  'Hospitality',
+  'Media',
+  'Consulting',
+  'Legal',
+  'Real Estate',
+  'Energy',
+  'Telecommunications',
+  'Government',
+  'Non-Profit',
+  'Other'
+]
 
 function JobCard({ job, onView }) {
   const [isHovered, setIsHovered] = useState(false)
   const [isSaved, setIsSaved] = useState(false)
   
   const daysAgo = useMemo(() => {
-    const posted = new Date(job.posted_date)
+    const postedDate = job.posted_date || job.posted_at
+    if (!postedDate) return 0
+    const posted = new Date(postedDate)
     const now = new Date()
     const diffTime = Math.abs(now - posted)
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
     return diffDays
-  }, [job.posted_date])
+  }, [job.posted_date, job.posted_at])
 
   return (
     <div 
@@ -174,12 +200,18 @@ function JobCard({ job, onView }) {
           </div>
           <div className="flex items-center gap-1">
             <CurrencyDollarIcon className="w-4 h-4" />
-            <span>{job.salary}</span>
+            <span>{job.salary || formatSalaryRange(job.salary_min, job.salary_max, job.salary_currency)}</span>
           </div>
           <div className="flex items-center gap-1">
             <BriefcaseIcon className="w-4 h-4" />
             <span>{job.jobType}</span>
           </div>
+          {job.industry && (
+            <div className="flex items-center gap-1">
+              <BuildingOfficeIcon className="w-4 h-4" />
+              <span>{job.industry}</span>
+            </div>
+          )}
         </div>
 
         {/* Footer */}
@@ -349,6 +381,7 @@ export default function Jobs() {
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedJobType, setSelectedJobType] = useState('All')
   const [selectedExperience, setSelectedExperience] = useState('All')
+  const [selectedIndustry, setSelectedIndustry] = useState('All')
   const [showFilters, setShowFilters] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
   
@@ -360,12 +393,13 @@ export default function Jobs() {
     search: searchQuery || undefined,
     job_type: selectedJobType !== 'All' ? selectedJobType : undefined,
     experience_level: selectedExperience !== 'All' ? selectedExperience : undefined,
-  }), [currentPage, searchQuery, selectedJobType, selectedExperience])
+    industry: selectedIndustry !== 'All' ? selectedIndustry : undefined,
+  }), [currentPage, searchQuery, selectedJobType, selectedExperience, selectedIndustry])
 
   const { jobs, loading, pagination } = useJobs(jobFilters)
 
-  // Fallback to dummy data if no jobs loaded
-  const jobsList = jobs && jobs.length > 0 ? jobs : DUMMY_JOBS
+  // Use API results (or empty list if none)
+  const jobsList = jobs || []
 
   // Calculate pagination for dummy data
   const totalItems = pagination?.count || jobsList.length
@@ -374,14 +408,15 @@ export default function Jobs() {
   // Reset to page 1 when filters change
   useEffect(() => {
     setCurrentPage(1)
-  }, [searchQuery, selectedJobType, selectedExperience])
+  }, [searchQuery, selectedJobType, selectedExperience, selectedIndustry])
 
-  const hasActiveFilters = searchQuery || selectedJobType !== 'All' || selectedExperience !== 'All'
+  const hasActiveFilters = searchQuery || selectedJobType !== 'All' || selectedExperience !== 'All' || selectedIndustry !== 'All'
 
   const handleClearFilters = () => {
     setSearchQuery('')
     setSelectedJobType('All')
     setSelectedExperience('All')
+    setSelectedIndustry('All')
     setCurrentPage(1)
   }
 
@@ -400,10 +435,11 @@ export default function Jobs() {
       
       const matchesJobType = selectedJobType === 'All' || job.jobType === selectedJobType
       const matchesExperience = selectedExperience === 'All' || job.experience_level === selectedExperience
+      const matchesIndustry = selectedIndustry === 'All' || job.industry === selectedIndustry
       
-      return matchesSearch && matchesJobType && matchesExperience
+      return matchesSearch && matchesJobType && matchesExperience && matchesIndustry
     })
-  }, [jobsList, searchQuery, selectedJobType, selectedExperience])
+  }, [jobsList, searchQuery, selectedJobType, selectedExperience, selectedIndustry])
 
   // Paginate dummy data
   const paginatedJobs = useMemo(() => {
@@ -463,7 +499,7 @@ export default function Jobs() {
               Filters
               {hasActiveFilters && (
                 <span className="ml-2 px-2 py-0.5 text-xs bg-primary-600 text-white rounded-full">
-                  {[searchQuery, selectedJobType !== 'All', selectedExperience !== 'All'].filter(Boolean).length}
+                  {[searchQuery, selectedJobType !== 'All', selectedExperience !== 'All', selectedIndustry !== 'All'].filter(Boolean).length}
                 </span>
               )}
             </Button>
@@ -498,6 +534,21 @@ export default function Jobs() {
                         label={level}
                         isActive={selectedExperience === level}
                         onClick={() => setSelectedExperience(level)}
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                {/* Industry Filter */}
+                <div className="flex-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Industry</label>
+                  <div className="flex flex-wrap gap-2">
+                    {INDUSTRIES.slice(0, 10).map((industry) => (
+                      <FilterChip
+                        key={industry}
+                        label={industry}
+                        isActive={selectedIndustry === industry}
+                        onClick={() => setSelectedIndustry(industry)}
                       />
                     ))}
                   </div>

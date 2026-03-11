@@ -1,9 +1,13 @@
 import { useState, useMemo, useEffect, useCallback } from 'react'
 import { Link } from 'react-router-dom'
+import { useDispatch } from 'react-redux'
 import DashboardLayout from '../components/layout/DashboardLayout'
 import { useJobs } from '../hooks/useJobs'
+import { fetchJobs } from '../store/jobSlice'
+import jobService from '../services/jobs'
 import Spinner from '../components/common/Spinner'
 import Button from '../components/common/Button'
+import toast from 'react-hot-toast'
 import { formatSalaryRange } from '../utils/formatters'
 import { 
   MagnifyingGlassIcon,
@@ -24,80 +28,7 @@ import {
 
 const ITEMS_PER_PAGE = 12
 
-// const DUMMY_JOBS = [
-//   {
-//     id: 1,
-//     title: 'Senior Frontend Developer',
-//     company: { name: 'Tech Innovations Inc', logo: null },
-//     location: 'San Francisco, CA',
-//     description: 'We are looking for an experienced Frontend Developer with expertise in React and modern web technologies.',
-//     salary: '$120,000 - $150,000',
-//     jobType: 'Full-time',
-//     experience_level: 'Senior',
-//     posted_date: '2026-02-15',
-//     skills: ['React', 'TypeScript', 'Redux', 'Tailwind'],
-//   },
-//   {
-//     id: 2,
-//     title: 'Backend Engineer',
-//     company: { name: 'Cloud Solutions Ltd', logo: null },
-//     location: 'New York, NY',
-//     description: 'Join our team to build scalable backend systems using Node.js and microservices architecture.',
-//     salary: '$110,000 - $140,000',
-//     jobType: 'Full-time',
-//     experience_level: 'Mid-Level',
-//     posted_date: '2026-02-20',
-//     skills: ['Node.js', 'PostgreSQL', 'Docker', 'AWS'],
-//   },
-//   {
-//     id: 3,
-//     title: 'DevOps Engineer',
-//     company: { name: 'Digital Platforms Co', logo: null },
-//     location: 'Austin, TX',
-//     description: 'Seeking a DevOps specialist to manage cloud infrastructure, CI/CD pipelines, and Kubernetes deployments.',
-//     salary: '$100,000 - $130,000',
-//     jobType: 'Full-time',
-//     experience_level: 'Mid-Level',
-//     posted_date: '2026-02-18',
-//     skills: ['Kubernetes', 'Terraform', 'Jenkins', 'GCP'],
-//   },
-//   {
-//     id: 4,
-//     title: 'Full Stack Developer',
-//     company: { name: 'StartUp Ventures', logo: null },
-//     location: 'Remote',
-//     description: 'Build end-to-end web applications using React, Node.js, and PostgreSQL in a fast-paced startup environment.',
-//     salary: '$90,000 - $120,000',
-//     jobType: 'Full-time',
-//     experience_level: 'Mid-Level',
-//     posted_date: '2026-02-22',
-//     skills: ['React', 'Node.js', 'PostgreSQL', 'GraphQL'],
-//   },
-//   {
-//     id: 5,
-//     title: 'Mobile App Developer',
-//     company: { name: 'AppWorks Studios', logo: null },
-//     location: 'Seattle, WA',
-//     description: 'Develop iOS and Android applications using React Native and latest mobile technologies.',
-//     salary: '$95,000 - $125,000',
-//     jobType: 'Full-time',
-//     experience_level: 'Mid-Level',
-//     posted_date: '2026-02-19',
-//     skills: ['React Native', 'iOS', 'Android', 'Firebase'],
-//   },
-//   {
-//     id: 6,
-//     title: 'Data Scientist',
-//     company: { name: 'Analytics Pro', logo: null },
-//     location: 'Boston, MA',
-//     description: 'Work with machine learning models, data analysis, and AI solutions to drive business insights.',
-//     salary: '$105,000 - $145,000',
-//     jobType: 'Full-time',
-//     experience_level: 'Mid-Level',
-//     posted_date: '2026-02-21',
-//     skills: ['Python', 'TensorFlow', 'SQL', 'Tableau'],
-//   },
-// ]
+
 
 const JOB_TYPES = ['All', 'Full-time', 'Part-time', 'Contract', 'Internship']
 const EXPERIENCE_LEVELS = ['All', 'Entry', 'Mid-Level', 'Senior', 'Lead', 'Executive']
@@ -124,9 +55,9 @@ const INDUSTRIES = [
   'Other'
 ]
 
-function JobCard({ job, onView }) {
+function JobCard({ job, onView, onToggleBookmark }) {
   const [isHovered, setIsHovered] = useState(false)
-  const [isSaved, setIsSaved] = useState(false)
+  const isSaved = job.is_bookmarked || false
   
   const daysAgo = useMemo(() => {
     const postedDate = job.posted_date || job.posted_at
@@ -163,7 +94,7 @@ function JobCard({ job, onView }) {
             </div>
           </div>
           <button 
-            onClick={(e) => { e.stopPropagation(); setIsSaved(!isSaved) }}
+            onClick={(e) => { e.stopPropagation(); onToggleBookmark?.(job) }}
             className={`p-2 rounded-lg transition-colors ${isSaved ? 'bg-primary-100 text-primary-600' : 'text-gray-400 hover:text-primary-500 hover:bg-primary-50'}`}
           >
             <BookmarkIcon className={`w-5 h-5 ${isSaved ? 'fill-current' : ''}`} />
@@ -230,7 +161,7 @@ function JobCard({ job, onView }) {
               <EyeIcon className="w-4 h-4 mr-1" />
               View
             </Button>
-            <Link to={`/jobs/${job.id}`}>
+            <Link to={`/jobs/${job.id}`} state={{ job }}>
               <Button size="sm" className="bg-primary-600 hover:bg-primary-700">
                 Details
                 <ArrowRightIcon className="w-4 h-4 ml-1" />
@@ -378,6 +309,7 @@ function Pagination({
 }
 
 export default function Jobs() {
+  const dispatch = useDispatch()
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedJobType, setSelectedJobType] = useState('All')
   const [selectedExperience, setSelectedExperience] = useState('All')
@@ -424,6 +356,23 @@ export default function Jobs() {
     setCurrentPage(page)
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }, [])
+
+  const handleToggleBookmark = useCallback(async (jobId, isCurrentlyBookmarked) => {
+    try {
+      if (isCurrentlyBookmarked) {
+        await jobService.unbookmarkJob(jobId)
+        toast.success('Job removed from bookmarks')
+      } else {
+        await jobService.bookmarkJob(jobId)
+        toast.success('Job added to bookmarks')
+      }
+      // Refresh the jobs list to get updated bookmark status
+      dispatch(fetchJobs({ page: currentPage, page_size: ITEMS_PER_PAGE }))
+    } catch (error) {
+      console.error('Bookmark error:', error)
+      toast.error('Failed to update bookmark')
+    }
+  }, [currentPage, dispatch])
 
   // Filter jobs (client-side for dummy data)
   const filteredJobs = useMemo(() => {
@@ -592,7 +541,11 @@ export default function Jobs() {
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
               {paginatedJobs.map((job) => (
-                <JobCard key={job.id} job={job} />
+                <JobCard 
+                  key={job.id} 
+                  job={job} 
+                  onToggleBookmark={handleToggleBookmark}
+                />
               ))}
             </div>
             

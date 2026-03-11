@@ -27,11 +27,6 @@ const authService = {
     return apiClient.post('/auth/logout/')
   },
 
-  refreshToken: async () => {
-    const refreshToken = localStorage.getItem('refreshToken')
-    return apiClient.post('/auth/refresh/', { refresh: refreshToken })
-  },
-
   getCurrentUser: async () => {
     return apiClient.get('/auth/me')
   },
@@ -57,6 +52,21 @@ const authService = {
       email,
       token,
       new_password: newPassword,
+    })
+  },
+
+  verifyTwoFactor: async (email, token, rememberMe = false) => {
+    return apiClient.post('/auth/two-factor/verify/', {
+      email,
+      token,
+      remember_me: rememberMe,
+    })
+  },
+
+  manageTwoFactor: async (enable, password) => {
+    return apiClient.post('/auth/two-factor/manage/', {
+      enable,
+      password,
     })
   },
 }

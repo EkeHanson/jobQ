@@ -1,18 +1,19 @@
 import { useAuth } from '../../hooks/useAuth'
 import { useNotifications } from '../../hooks/useNotifications'
 import { Link, useNavigate } from 'react-router-dom'
-import { Bars3Icon, BellIcon, UserCircleIcon, Cog6ToothIcon, CreditCardIcon, ArrowRightOnRectangleIcon } from '@heroicons/react/24/outline'
+import { Bars3Icon, BellIcon, UserCircleIcon, Cog6ToothIcon, CreditCardIcon, StarIcon, ArrowRightOnRectangleIcon } from '@heroicons/react/24/outline'
 import { useEffect, useState, useRef } from 'react'
 import { useDispatch } from 'react-redux'
 import { toggleSidebar, toggleSidebarCollapse } from '../../store/uiSlice'
 import NotificationBell from '../notifications/NotificationBell'
 import subscriptionService from '../../services/subscription'
+import { APP_NAME } from '../../utils/config'
 
 export default function Header() {
   const { user, logout } = useAuth()
   const { unreadCount } = useNotifications()
   const dispatch = useDispatch()
-  const navigate = useNavigate()
+  const navigatecls = useNavigate()
   const [showMenu, setShowMenu] = useState(false)
   const [currentSubscription, setCurrentSubscription] = useState(null)
 
@@ -69,7 +70,7 @@ export default function Header() {
             <div className="w-9 h-9 bg-gradient-to-br from-primary-500 to-accent-500 rounded-xl flex items-center justify-center text-white font-bold shadow-lg shadow-primary-500/25 group-hover:scale-105 transition-transform">
               J
             </div>
-            <span className="hidden sm:inline font-semibold text-gray-900">JobTrack<span className="text-gradient">AI</span></span>
+            <span className="hidden sm:inline font-semibold text-gray-900">{APP_NAME}</span>
           </Link>
         </div>
 
@@ -115,6 +116,14 @@ export default function Header() {
                   >
                     <Cog6ToothIcon className="w-5 h-5" />
                     Settings
+                  </Link>
+                  <Link
+                    to="/reviews"
+                    className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                    onClick={() => setShowMenu(false)}
+                  >
+                    <StarIcon className="w-5 h-5" />
+                    Reviews
                   </Link>
                   <Link
                     to="/subscription"

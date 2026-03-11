@@ -3,6 +3,7 @@ import { useAuth } from '../hooks/useAuth'
 import { useEffect, useState, useRef } from 'react'
 import Button from '../components/common/Button'
 import { subscriptionService } from '../services/subscription'
+import { APP_NAME } from '../utils/config'
 import { 
   SparklesIcon, 
   ChartBarIcon, 
@@ -145,7 +146,7 @@ export default function Landing() {
               <div className="w-10 h-10 bg-gradient-to-br from-primary-600 to-accent-500 rounded-xl flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-primary-500/25 group-hover:scale-105 transition-transform">
                 J
               </div>
-              <span className="font-bold text-xl text-gray-900">JobTrack<span className="text-gradient">AI</span></span>
+              <span className="font-bold text-xl text-gray-900">{APP_NAME}</span>
             </Link>
             <div className="flex items-center gap-4">
               {isAuthenticated ? (
@@ -242,7 +243,7 @@ export default function Landing() {
             {/* Badge */}
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/60 backdrop-blur-sm border border-gray-200/50 shadow-sm mb-8 animate-fade-in-down">
               <span className="flex h-2 w-2 rounded-full bg-green-500 animate-pulse"></span>
-              <span className="text-sm font-medium text-gray-600">Over 50,000+ job seekers trust JobTrack AI</span>
+              <span className="text-sm font-medium text-gray-600">Over 50,000+ job seekers trust {APP_NAME}</span>
             </div>
 
             {/* Main Heading */}
@@ -532,7 +533,7 @@ export default function Landing() {
                 Ready to land your dream job?
               </h2>
               <p className="text-xl text-white/90 mb-10">
-                Join thousands of job seekers who have transformed their job search with JobTrack AI
+                Join thousands of job seekers who have transformed their job search with {APP_NAME}
               </p>
               <Link to={isAuthenticated ? "/subscription" : "/register"}>
                 <button className="bg-white text-primary-600 px-10 py-4 rounded-xl font-bold text-lg shadow-2xl hover:scale-105 transition-transform">
@@ -558,7 +559,7 @@ export default function Landing() {
                 <div className="w-8 h-8 bg-gradient-to-br from-primary-500 to-accent-500 rounded-lg flex items-center justify-center text-white font-bold">
                   J
                 </div>
-                <span className="font-bold text-lg">JobTrack AI</span>
+                <span className="font-bold text-lg">{APP_NAME}</span>
               </Link>
               <p className="text-gray-400 text-sm">
                 The intelligent job search companion that helps you land your dream job.
@@ -590,7 +591,7 @@ export default function Landing() {
           </div>
           <div className="divider-gradient mb-8" />
           <div className="text-center text-sm text-gray-400">
-            <p>&copy; 2024 JobTrack AI. All rights reserved.</p>
+            <p>&copy; 2024 {APP_NAME}. All rights reserved.</p>
           </div>
         </div>
       </footer>

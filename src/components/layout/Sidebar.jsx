@@ -1,4 +1,5 @@
 import { NavLink, Link } from 'react-router-dom'
+import { APP_NAME, APP_VERSION } from '../../utils/config'
 import {
   HomeIcon,
   DocumentTextIcon,
@@ -46,7 +47,7 @@ export default function Sidebar() {
               J
             </div>
             {!isCollapsed && (
-              <span className="text-lg font-semibold whitespace-nowrap">JobTrack<span className="text-gradient">AI</span></span>
+              <span className="text-lg font-semibold whitespace-nowrap">{APP_NAME}</span>
             )}
           </Link>
         </div>
@@ -99,7 +100,7 @@ export default function Sidebar() {
 
         <div className="px-4 py-4 border-t border-gray-800/50">
           {!isCollapsed && (
-            <p className="text-xs text-gray-500">JobTrack AI v1.0.0</p>
+            <p className="text-xs text-gray-500">{APP_NAME} v{APP_VERSION}</p>
           )}
         </div>
       </aside>
@@ -115,7 +116,7 @@ export default function Sidebar() {
                 <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-accent-500 rounded-xl flex items-center justify-center font-bold shadow-lg shadow-primary-500/25">
                   J
                 </div>
-                <span className="text-lg font-semibold">JobTrack<span className="text-gradient">AI</span></span>
+                <span className="text-lg font-semibold">{APP_NAME}</span>
               </div>
               <button onClick={() => dispatch(toggleSidebar())} className="p-2 hover:bg-white/5 rounded-lg transition-colors">
                 <XMarkIcon className="w-6 h-6" />
@@ -144,7 +145,7 @@ export default function Sidebar() {
             </nav>
 
             <div className="px-4 py-4 border-t border-gray-800/50">
-              <p className="text-xs text-gray-500">JobTrack AI v1.0.0</p>
+              <p className="text-xs text-gray-500">{APP_NAME} v{APP_VERSION}</p>
             </div>
           </aside>
         </div>

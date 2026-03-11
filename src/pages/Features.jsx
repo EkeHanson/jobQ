@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import Button from '../components/common/Button'
+import { APP_NAME } from '../utils/config'
 import {
   BoltIcon,
   ClipboardDocumentListIcon,
@@ -53,7 +54,7 @@ export default function Features() {
               <div className="w-10 h-10 bg-gradient-to-br from-primary-600 to-accent-500 rounded-xl flex items-center justify-center text-white font-bold text-lg">
                 J
               </div>
-              <span className="font-bold text-xl text-gray-900">JobTrack<span className="text-gradient">AI</span></span>
+              <span className="font-bold text-xl text-gray-900">{APP_NAME}</span>
             </Link>
             <Link to="/register">
               <Button className="btn-gradient px-5 py-2.5 text-sm">
@@ -98,7 +99,7 @@ export default function Features() {
             Ready to Transform Your Job Search?
           </h2>
           <p className="text-xl text-white/90 mb-8">
-            Join thousands of job seekers who have landed their dream jobs with JobTrack AI.
+            Join thousands of job seekers who have landed their dream jobs with {APP_NAME}.
           </p>
           <Link to="/register">
             <button className="bg-white text-primary-600 px-8 py-3 rounded-xl font-bold text-lg hover:scale-105 transition-transform">
@@ -122,7 +123,7 @@ export default function Features() {
                 <div className="w-8 h-8 bg-gradient-to-br from-primary-500 to-accent-500 rounded-lg flex items-center justify-center text-white font-bold">
                   J
                 </div>
-                <span className="font-bold text-lg">JobTrack AI</span>
+                <span className="font-bold text-lg">{APP_NAME}</span>
               </Link>
               <p className="text-gray-400 text-sm">
                 The intelligent job search companion that helps you land your dream job.
@@ -154,7 +155,7 @@ export default function Features() {
           </div>
           <div className="divider-gradient mb-8" />
           <div className="text-center text-sm text-gray-400">
-            <p>&copy; 2024 JobTrack AI. All rights reserved.</p>
+            <p>&copy; 2024 {APP_NAME}. All rights reserved.</p>
           </div>
         </div>
       </footer>

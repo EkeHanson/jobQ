@@ -30,6 +30,7 @@ const Profile = lazy(() => import('../pages/Profile'))
 const Settings = lazy(() => import('../pages/Settings'))
 const Subscription = lazy(() => import('../pages/Subscription'))
 const Analytics = lazy(() => import('../pages/Analytics'))
+const Reviews = lazy(() => import('../pages/Reviews'))
 
 const Loading = () => (
   <div className="flex items-center justify-center min-h-screen">
@@ -128,6 +129,14 @@ export default function AppRoutes() {
           element={
             <Suspense fallback={<Loading />}>
               <Subscription />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/reviews"
+          element={
+            <Suspense fallback={<Loading />}>
+              <Reviews />
             </Suspense>
           }
         />

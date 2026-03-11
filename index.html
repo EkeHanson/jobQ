@@ -4,11 +4,30 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>JobTrack AI - Intelligent Job Application Tracker</title>
+    <title>%VITE_APP_NAME% - Intelligent Job Application Tracker</title>
     <meta name="description" content="Track, manage, and prepare for your job applications with AI-powered insights" />
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <!-- Fallback HTML in case React fails to render -->
+      <div style="min-height: 100vh; display: flex; align-items: center; justify-content: center; background: #f9fafb; font-family: system-ui, -apple-system, sans-serif;">
+        <div style="text-align: center; padding: 2rem;">
+          <div style="width: 48px; height: 48px; border: 4px solid #e5e7eb; border-top-color: #4f46e5; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 1rem;"></div>
+          <p style="color: #6b7280; margin-bottom: 1rem;">Loading %VITE_APP_NAME%...</p>
+          <button onclick="window.location.reload()" style="background: #4f46e5; color: white; padding: 0.5rem 1rem; border-radius: 0.5rem; border: none; cursor: pointer;">Reload Page</button>
+        </div>
+      </div>
+      <style>
+        @keyframes spin { to { transform: rotate(360deg); } }
+      </style>
+    </div>
     <script type="module" src="/src/main.jsx"></script>
+    <!-- Fallback if JS fails completely -->
+    <noscript>
+      <div style="padding: 2rem; text-align: center; font-family: system-ui;">
+        <h1>JavaScript Required</h1>
+        <p>Please enable JavaScript to use this application.</p>
+      </div>
+    </noscript>
   </body>
 </html>

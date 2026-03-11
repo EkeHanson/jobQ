@@ -47,6 +47,19 @@ const jobService = {
   createCompany: async (data) => {
     return apiClient.post('/companies/', data)
   },
+
+  // Bookmarks
+  bookmarkJob: async (jobId) => {
+    return apiClient.post(`/jobs/${jobId}/bookmark/`)
+  },
+
+  unbookmarkJob: async (jobId) => {
+    return apiClient.delete(`/jobs/${jobId}/unbookmark/`)
+  },
+
+  getBookmarkedJobs: async () => {
+    return apiClient.get('/jobs/bookmarks/')
+  },
 }
 
 export default jobService

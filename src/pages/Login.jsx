@@ -8,8 +8,10 @@ import Button from '../components/common/Button'
 import Input from '../components/common/Input'
 import Spinner from '../components/common/Spinner'
 import toast from 'react-hot-toast'
+import { APP_NAME } from '../utils/config'
 import { CheckIcon, ArrowLeftIcon } from '@heroicons/react/24/outline'
 import { FaLinkedin } from 'react-icons/fa'
+import authService from '../services/auth'
 
 // Google OAuth configuration
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '773400491834-4nm9tdgvh2ghehj1di55gpcmten1coqg.apps.googleusercontent.com'
@@ -18,6 +20,9 @@ export default function Login() {
   const navigate = useNavigate()
   const { login, loginWithGoogle, loading, error } = useAuth()
   const [googleLoading, setGoogleLoading] = useState(false)
+  const [twoFactorRequired, setTwoFactorRequired] = useState(false)
+  const [twoFactorEmail, setTwoFactorEmail] = useState('')
+  const [twoFactorLoading, setTwoFactorLoading] = useState(false)
   const googleButtonRef = useRef(null)
   const {
     register,
@@ -26,6 +31,12 @@ export default function Login() {
   } = useForm({
     resolver: zodResolver(loginSchema),
   })
+
+  const {
+    register: register2FA,
+    handleSubmit: handleSubmit2FA,
+    formState: { errors: errors2FA },
+  } = useForm()
 
   // Initialize Google OAuth button
   useEffect(() => {
@@ -82,12 +93,42 @@ export default function Login() {
 
   const onSubmit = async (data) => {
     try {
-      await login({ identifier: data.identifier, password: data.password, rememberMe: data.rememberMe })
+      const response = await login({ identifier: data.identifier, password: data.password, rememberMe: data.rememberMe })
+      
+      // Check if 2FA is required
+      if (response?.require_2fa) {
+        setTwoFactorRequired(true)
+        setTwoFactorEmail(response.email)
+        toast.success(response.message || 'Verification code sent to your email')
+        return
+      }
+      
       toast.success('Login successful!')
       navigate('/dashboard')
     } catch (err) {
-      toast.error(error || 'Login failed. Please try again.')
+      // Check if error is due to account suspension
+      const errorMessage = err?.response?.data?.detail || 'Login failed. Please try again.'
+      toast.error(errorMessage)
     }
+  }
+
+  const onVerifyTwoFactor = async (data) => {
+    try {
+      setTwoFactorLoading(true)
+      await authService.verifyTwoFactor(twoFactorEmail, data.token, data.rememberMe)
+      toast.success('Login successful!')
+      navigate('/dashboard')
+    } catch (err) {
+      const errorMessage = err?.response?.data?.detail || 'Invalid verification code. Please try again.'
+      toast.error(errorMessage)
+    } finally {
+      setTwoFactorLoading(false)
+    }
+  }
+
+  const handleBackToLogin = () => {
+    setTwoFactorRequired(false)
+    setTwoFactorEmail('')
   }
 
   return (
@@ -149,7 +190,7 @@ export default function Login() {
               <div className="w-12 h-12 bg-gradient-to-br from-primary-600 to-accent-500 rounded-xl flex items-center justify-center text-white font-bold text-xl shadow-lg">
                 J
               </div>
-              <span className="font-bold text-2xl text-gray-900">JobTrack<span className="text-gradient">AI</span></span>
+              <span className="font-bold text-2xl text-gray-900">{APP_NAME}</span>
             </Link>
           </div>
 
@@ -165,7 +206,74 @@ export default function Login() {
           </div>
 
           {/* Form */}
-          <form className="space-y-5" onSubmit={handleSubmit(onSubmit)}>
+          {twoFactorRequired ? (
+            <form className="space-y-5" onSubmit={handleSubmit2FA(onVerifyTwoFactor)}>
+              {/* Back Button */}
+              <button
+                type="button"
+                onClick={handleBackToLogin}
+                className="flex items-center gap-2 text-gray-600 hover:text-primary-600 transition-colors mb-4"
+              >
+                <ArrowLeftIcon className="w-5 h-5" />
+                Back to login
+              </button>
+
+              {/* 2FA Header */}
+              <div className="text-center mb-6">
+                <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <CheckIcon className="w-8 h-8 text-primary-600" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900">Two-Factor Authentication</h3>
+                <p className="mt-2 text-gray-600">
+                  Enter the 6-digit code sent to your email
+                </p>
+                <p className="text-sm text-gray-500 mt-1">
+                  {twoFactorEmail}
+                </p>
+              </div>
+
+              <div className="space-y-1">
+                <Input
+                  label="Verification Code"
+                  type="text"
+                  placeholder="000000"
+                  maxLength={6}
+                  {...register2FA('token')}
+                  error={errors2FA?.token?.message}
+                />
+              </div>
+
+              {/* Remember Me */}
+              <div className="flex items-center">
+                <input
+                  id="remember-me-2fa"
+                  name="rememberMe"
+                  type="checkbox"
+                  {...register2FA('rememberMe')}
+                  className="h-5 w-5 text-primary-600 border-gray-300 rounded focus:ring-primary-500/20"
+                />
+                <label htmlFor="remember-me-2fa" className="ml-2 block text-sm text-gray-700">
+                  Remember this device
+                </label>
+              </div>
+
+              <button
+                type="submit"
+                disabled={twoFactorLoading}
+                className="btn-gradient w-full py-4 rounded-xl font-semibold text-lg shadow-xl shadow-primary-500/25"
+              >
+                {twoFactorLoading ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <Spinner size="sm" className="text-white" />
+                    Verifying...
+                  </span>
+                ) : (
+                  'Verify'
+                )}
+              </button>
+            </form>
+          ) : (
+            <form className="space-y-5" onSubmit={handleSubmit(onSubmit)}>
             <div className="space-y-1">
               <Input
                 label="Email or Username"
@@ -250,6 +358,7 @@ export default function Login() {
               </button>
             </div>
           </form>
+          )}
         </div>
       </div>
     </div>

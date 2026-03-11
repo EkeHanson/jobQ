@@ -1,6 +1,7 @@
 import { useDispatch, useSelector } from 'react-redux'
 import { useCallback } from 'react'
 import { login, register, logout, clearError, loginWithGoogle } from '../store/authSlice'
+import authService from '../services/auth'
 
 export const useAuth = () => {
   const dispatch = useDispatch()
@@ -27,7 +28,12 @@ export const useAuth = () => {
     [dispatch]
   )
 
-  const handleLogout = useCallback(() => {
+  const handleLogout = useCallback(async () => {
+    try {
+      await authService.logout()
+    } catch {
+      // ignore
+    }
     dispatch(logout())
   }, [dispatch])
 
@@ -39,7 +45,7 @@ export const useAuth = () => {
   const skipAuth =
     import.meta.env.VITE_SKIP_AUTH === 'true' ||
     import.meta.env.REACT_APP_SKIP_AUTH === 'true'
-  const isAuthenticated = skipAuth || (!!token && !!user)
+  const isAuthenticated = skipAuth || !!user
 
   return {
     user,

@@ -8,6 +8,7 @@ import Button from '../components/common/Button'
 import Input from '../components/common/Input'
 import Spinner from '../components/common/Spinner'
 import toast from 'react-hot-toast'
+import { APP_NAME } from '../utils/config'
 import { CheckIcon, ArrowLeftIcon } from '@heroicons/react/24/outline'
 import { FaGoogle, FaLinkedin } from 'react-icons/fa'
 
@@ -112,7 +113,7 @@ export default function Register() {
               <div className="w-12 h-12 bg-gradient-to-br from-primary-600 to-accent-500 rounded-xl flex items-center justify-center text-white font-bold text-xl shadow-lg">
                 J
               </div>
-              <span className="font-bold text-2xl text-gray-900">JobTrack<span className="text-gradient">AI</span></span>
+              <span className="font-bold text-2xl text-gray-900">{APP_NAME}</span>
             </Link>
           </div>
 

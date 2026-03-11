@@ -1,27 +1,42 @@
 import { Link } from 'react-router-dom'
 import Button from '../components/common/Button'
 import { useState } from 'react'
+import { useToast } from '../components/common/Toast'
+import contactService from '../services/contact'
+import { APP_NAME, SOCIAL_GITHUB, SOCIAL_LINKEDIN } from '../utils/config'
 import {
   EnvelopeIcon,
   MapPinIcon,
   ClockIcon,
-  XMarkIcon,
-  LinkIcon,
-  CameraIcon,
 } from '@heroicons/react/24/outline'
+import { FaGithub, FaLinkedin } from 'react-icons/fa'
 
 export default function Contact() {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     subject: '',
-    message: ''
+    message: '',
   })
+  const [sending, setSending] = useState(false)
+  const { addToast } = useToast()
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    // Handle form submission
-    console.log('Form submitted:', formData)
+    setSending(true)
+
+    try {
+      await contactService.sendMessage(formData)
+      addToast('Message sent! We will get back to you soon.', 'success')
+      setFormData({ name: '', email: '', subject: '', message: '' })
+    } catch (err) {
+      addToast(
+        err?.response?.data?.detail || 'Failed to send your message. Please try again.',
+        'error'
+      )
+    } finally {
+      setSending(false)
+    }
   }
 
   const handleChange = (e) => {
@@ -41,7 +56,7 @@ export default function Contact() {
               <div className="w-10 h-10 bg-gradient-to-br from-primary-600 to-accent-500 rounded-xl flex items-center justify-center text-white font-bold text-lg">
                 J
               </div>
-              <span className="font-bold text-xl text-gray-900">JobTrack<span className="text-gradient">AI</span></span>
+              <span className="font-bold text-xl text-gray-900">{APP_NAME}</span>
             </Link>
             <Link to="/register">
               <Button className="btn-gradient px-5 py-2.5 text-sm">
@@ -120,8 +135,8 @@ export default function Contact() {
                     required
                   ></textarea>
                 </div>
-                <Button type="submit" className="btn-gradient w-full py-3">
-                  Send Message
+                <Button type="submit" className="btn-gradient w-full py-3" disabled={sending}>
+                  {sending ? 'Sending…' : 'Send Message'}
                 </Button>
               </form>
             </div>
@@ -164,14 +179,21 @@ export default function Contact() {
               <div className="bg-white rounded-2xl p-8 shadow-sm">
                 <h3 className="text-xl font-bold text-gray-900 mb-4">Follow Us</h3>
                 <div className="flex gap-4">
-                  <a href="#" className="w-12 h-12 bg-primary-100 rounded-xl flex items-center justify-center hover:scale-110 transition-transform">
-                    <XMarkIcon className="w-6 h-6 text-primary-600" />
+                  <a
+                    href={SOCIAL_GITHUB}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="w-12 h-12 bg-slate-900 rounded-xl flex items-center justify-center hover:scale-110 transition-transform"
+                  >
+                    <FaGithub className="w-6 h-6 text-white" />
                   </a>
-                  <a href="#" className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center hover:scale-110 transition-transform">
-                    <LinkIcon className="w-6 h-6 text-blue-600" />
-                  </a>
-                  <a href="#" className="w-12 h-12 bg-pink-100 rounded-xl flex items-center justify-center hover:scale-110 transition-transform">
-                    <CameraIcon className="w-6 h-6 text-pink-600" />
+                  <a
+                    href={SOCIAL_LINKEDIN}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center hover:scale-110 transition-transform"
+                  >
+                    <FaLinkedin className="w-6 h-6 text-white" />
                   </a>
                 </div>
               </div>
@@ -194,7 +216,7 @@ export default function Contact() {
                 <div className="w-8 h-8 bg-gradient-to-br from-primary-500 to-accent-500 rounded-lg flex items-center justify-center text-white font-bold">
                   J
                 </div>
-                <span className="font-bold text-lg">JobTrack AI</span>
+                <span className="font-bold text-lg">{APP_NAME}</span>
               </Link>
               <p className="text-gray-400 text-sm">
                 The intelligent job search companion that helps you land your dream job.
@@ -226,7 +248,7 @@ export default function Contact() {
           </div>
           <div className="divider-gradient mb-8" />
           <div className="text-center text-sm text-gray-400">
-            <p>&copy; 2024 JobTrack AI. All rights reserved.</p>
+            <p>&copy; 2024 {APP_NAME}. All rights reserved.</p>
           </div>
         </div>
       </footer>

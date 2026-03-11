@@ -33,35 +33,7 @@ apiClient.interceptors.request.use(
 // Response interceptor
 apiClient.interceptors.response.use(
   (response) => response.data,
-  async (error) => {
-    const originalRequest = error.config
-
-    // Handle 401 Unauthorized - Try to refresh token
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true
-      try {
-        const refreshToken = localStorage.getItem('refreshToken')
-        if (!refreshToken) {
-          return Promise.reject(error)
-        }
-
-        const response = await axios.post(
-          `${import.meta.env.VITE_API_URL}/auth/refresh/`,
-          { refresh: refreshToken }
-        )
-
-        localStorage.setItem('token', response.data.access)
-        originalRequest.headers.Authorization = `Bearer ${response.data.access}`
-        return apiClient(originalRequest)
-      } catch (refreshError) {
-        // Clear auth and redirect to login
-        localStorage.removeItem('token')
-        localStorage.removeItem('refreshToken')
-        window.location.href = '/login'
-        return Promise.reject(refreshError)
-      }
-    }
-
+  (error) => {
     // Handle 403 Forbidden - Subscription limit reached
     if (error.response?.status === 403) {
       const errorData = error.response.data

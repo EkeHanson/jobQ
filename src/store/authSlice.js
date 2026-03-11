@@ -6,9 +6,19 @@ export const login = createAsyncThunk(
   async ({ identifier, password, rememberMe = false }, { rejectWithValue }) => {
     try {
       const response = await authService.login(identifier, password, rememberMe)
+      
+      // Check if 2FA is required - return special response instead of storing tokens
+      if (response?.require_2fa) {
+        return response  // Will have require_2fa: true
+      }
+      
       return response
     } catch (error) {
-      return rejectWithValue(error.message)
+      // Handle API error response
+      if (error.response?.data?.detail) {
+        return rejectWithValue(error.response.data.detail)
+      }
+      return rejectWithValue(error.message || 'Login failed')
     }
   }
 )
@@ -30,18 +40,6 @@ export const loginWithGoogle = createAsyncThunk(
   async (token, { rejectWithValue }) => {
     try {
       const response = await authService.loginWithGoogle(token)
-      return response
-    } catch (error) {
-      return rejectWithValue(error.message)
-    }
-  }
-)
-
-export const refreshToken = createAsyncThunk(
-  'auth/refresh',
-  async (_, { rejectWithValue }) => {
-    try {
-      const response = await authService.refreshToken()
       return response
     } catch (error) {
       return rejectWithValue(error.message)
@@ -74,7 +72,6 @@ const authSlice = createSlice({
     },
     setUser: (state, action) => {
       state.user = action.payload
-      localStorage.setItem('user', JSON.stringify(action.payload))
     },
   },
   extraReducers: (builder) => {
@@ -86,6 +83,12 @@ const authSlice = createSlice({
       })
       .addCase(login.fulfilled, (state, action) => {
         state.loading = false
+        
+        // Check if 2FA is required - don't store tokens yet
+        if (action.payload?.require_2fa) {
+          return  // Just return, don't set tokens
+        }
+        
         state.user = action.payload.user
         state.token = action.payload.access
         state.refreshToken = action.payload.refresh
@@ -105,11 +108,6 @@ const authSlice = createSlice({
       .addCase(register.fulfilled, (state, action) => {
         state.loading = false
         state.user = action.payload.user
-        state.token = action.payload.access
-        state.refreshToken = action.payload.refresh
-        localStorage.setItem('user', JSON.stringify(action.payload.user))
-        localStorage.setItem('token', action.payload.access)
-        localStorage.setItem('refreshToken', action.payload.refresh)
       })
       .addCase(register.rejected, (state, action) => {
         state.loading = false
@@ -123,21 +121,12 @@ const authSlice = createSlice({
       .addCase(loginWithGoogle.fulfilled, (state, action) => {
         state.loading = false
         state.user = action.payload.user
-        state.token = action.payload.access
-        state.refreshToken = action.payload.refresh
-        localStorage.setItem('user', JSON.stringify(action.payload.user))
-        localStorage.setItem('token', action.payload.access)
-        localStorage.setItem('refreshToken', action.payload.refresh)
       })
       .addCase(loginWithGoogle.rejected, (state, action) => {
         state.loading = false
         state.error = action.payload
       })
-      // Refresh Token
-      .addCase(refreshToken.fulfilled, (state, action) => {
-        state.token = action.payload.access
-        localStorage.setItem('token', action.payload.access)
-      })
+
   },
 })
 

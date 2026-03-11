@@ -6,12 +6,14 @@ import Button from '../components/common/Button'
 import Input from '../components/common/Input'
 import Modal from '../components/common/Modal'
 import { useToast } from '../components/common/Toast'
-import { ExclamationTriangleIcon } from '@heroicons/react/24/outline'
+import { ExclamationTriangleIcon, ShieldCheckIcon } from '@heroicons/react/24/outline'
 import authService from '../services/auth'
+import { useAuth } from '../hooks/useAuth'
 
 export default function Settings() {
   const navigate = useNavigate()
   const { addToast } = useToast()
+  const { user } = useAuth()
 
   // Notification settings state
   const [notifications, setNotifications] = useState({
@@ -30,6 +32,7 @@ export default function Settings() {
   const [showPasswordModal, setShowPasswordModal] = useState(false)
   const [showLoginHistoryModal, setShowLoginHistoryModal] = useState(false)
   const [showSessionsModal, setShowSessionsModal] = useState(false)
+  const [showTwoFactorModal, setShowTwoFactorModal] = useState(false)
 
   // Delete account modal state
   const [showDeleteAccountModal, setShowDeleteAccountModal] = useState(false)
@@ -42,6 +45,10 @@ export default function Settings() {
     newPassword: '',
     confirmPassword: '',
   })
+
+  // Two-Factor Authentication state
+  const [twoFactorPassword, setTwoFactorPassword] = useState('')
+  const [twoFactorLoading, setTwoFactorLoading] = useState(false)
 
   const [saveStatus, setSaveStatus] = useState(null) // 'saving', 'success', 'error'
 
@@ -110,6 +117,27 @@ export default function Settings() {
     })
   }
 
+  // Handle 2FA toggle
+  const handleTwoFactorToggle = async (enable) => {
+    if (!twoFactorPassword) {
+      addToast('Please enter your password to enable/disable 2FA', 'error')
+      return
+    }
+    
+    setTwoFactorLoading(true)
+    try {
+      await authService.manageTwoFactor(enable, twoFactorPassword)
+      addToast(enable ? 'Two-factor authentication enabled!' : 'Two-factor authentication disabled!', 'success')
+      setShowTwoFactorModal(false)
+      setTwoFactorPassword('')
+    } catch (error) {
+      const message = error.response?.data?.detail || 'Failed to update 2FA settings'
+      addToast(message, 'error')
+    } finally {
+      setTwoFactorLoading(false)
+    }
+  }
+
   // Handle password change
   const handlePasswordChange = (e) => {
     e.preventDefault()
@@ -167,11 +195,7 @@ export default function Settings() {
       await authService.deleteAccount(deletePassword)
       addToast('Account deleted successfully', 'success')
       
-      // Clear local storage and redirect to login
-      localStorage.removeItem('accessToken')
-      localStorage.removeItem('refreshToken')
-      localStorage.removeItem('user')
-      
+      // Redirect to login (auth cookies are cleared server-side)
       navigate('/login')
     } catch (error) {
       const message = error.response?.data?.detail || 'Failed to delete account. Please check your password.'
@@ -289,6 +313,30 @@ export default function Settings() {
             <div>
               <p className="font-medium text-gray-900 mb-2">Change Password</p>
               <Button onClick={() => setShowPasswordModal(true)}>Update Password</Button>
+            </div>
+
+            {/* Two-Factor Authentication */}
+            <div className="pt-4 border-t">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <ShieldCheckIcon className="w-6 h-6 text-primary-600" />
+                  <div>
+                    <p className="font-medium text-gray-900">Two-Factor Authentication</p>
+                    <p className="text-sm text-gray-500">
+                      {user?.is_2fa_enabled ? 'Enabled - You will receive a code via email on login' : 'Disabled - Add an extra layer of security to your account'}
+                    </p>
+                  </div>
+                </div>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input 
+                    type="checkbox" 
+                    className="sr-only peer" 
+                    checked={user?.is_2fa_enabled || false}
+                    onChange={() => setShowTwoFactorModal(true)}
+                  />
+                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
+                </label>
+              </div>
             </div>
 
             <div className="pt-4 border-t">
@@ -578,6 +626,69 @@ export default function Settings() {
                 </Button>
               </div>
             </form>
+          </div>
+        </Modal>
+
+        {/* Two-Factor Authentication Modal */}
+        <Modal
+          isOpen={showTwoFactorModal}
+          onClose={() => {
+            setShowTwoFactorModal(false)
+            setTwoFactorPassword('')
+          }}
+          title="Two-Factor Authentication"
+          size="md"
+        >
+          <div className="space-y-4">
+            <div className="flex items-center gap-3 mb-4">
+              <ShieldCheckIcon className="w-8 h-8 text-primary-600" />
+              <div>
+                <p className="font-medium text-gray-900">
+                  {user?.is_2fa_enabled ? 'Disable Two-Factor Authentication' : 'Enable Two-Factor Authentication'}
+                </p>
+                <p className="text-sm text-gray-500">
+                  {user?.is_2fa_enabled 
+                    ? 'You will no longer receive verification codes via email when logging in.'
+                    : 'You will receive a 6-digit code via email when logging in for extra security.'}
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Enter your password to confirm
+              </label>
+              <Input
+                type="password"
+                value={twoFactorPassword}
+                onChange={(e) => setTwoFactorPassword(e.target.value)}
+                placeholder="Enter your password"
+                required
+              />
+            </div>
+
+            <div className="flex gap-3 mt-6">
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => {
+                  setShowTwoFactorModal(false)
+                  setTwoFactorPassword('')
+                }}
+                className="flex-1"
+              >
+                Cancel
+              </Button>
+              <Button 
+                type="button" 
+                variant={user?.is_2fa_enabled ? 'danger' : 'primary'}
+                onClick={() => handleTwoFactorToggle(!user?.is_2fa_enabled)}
+                disabled={twoFactorLoading}
+                className="flex-1"
+              >
+                {twoFactorLoading ? 'Processing...' : user?.is_2fa_enabled ? 'Disable 2FA' : 'Enable 2FA'}
+              </Button>
+            </div>
           </div>
         </Modal>
       </div>

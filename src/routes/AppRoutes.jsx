@@ -13,7 +13,7 @@ import NotFound from '../pages/NotFound'
 // Footer pages
 import Features from '../pages/Features'
 import About from '../pages/About'
-import Blog from '../pages/Blog'
+import Insights from '../pages/Insights'
 import Contact from '../pages/Contact'
 import Privacy from '../pages/Privacy'
 import Terms from '../pages/Terms'
@@ -31,6 +31,7 @@ const Settings = lazy(() => import('../pages/Settings'))
 const Subscription = lazy(() => import('../pages/Subscription'))
 const Analytics = lazy(() => import('../pages/Analytics'))
 const Reviews = lazy(() => import('../pages/Reviews'))
+const InterviewPrep = lazy(() => import('../pages/InterviewPrep'))
 
 const Loading = () => (
   <div className="flex items-center justify-center min-h-screen">
@@ -51,7 +52,8 @@ export default function AppRoutes() {
       <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/features" element={<Features />} />
       <Route path="/about" element={<About />} />
-      <Route path="/blog" element={<Blog />} />
+      <Route path="/insights" element={<Insights />} />
+      <Route path="/insights/:slug" element={<Insights />} />
       <Route path="/contact" element={<Contact />} />
       <Route path="/privacy" element={<Privacy />} />
       <Route path="/terms" element={<Terms />} />
@@ -137,6 +139,22 @@ export default function AppRoutes() {
           element={
             <Suspense fallback={<Loading />}>
               <Reviews />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/interview-prep"
+          element={
+            <Suspense fallback={<Loading />}>
+              <InterviewPrep />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/interview-prep/:id"
+          element={
+            <Suspense fallback={<Loading />}>
+              <InterviewPrep />
             </Suspense>
           }
         />

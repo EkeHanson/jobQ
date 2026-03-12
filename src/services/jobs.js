@@ -60,6 +60,11 @@ const jobService = {
   getBookmarkedJobs: async () => {
     return apiClient.get('/jobs/bookmarks/')
   },
+
+  // Save job as application
+  saveApplication: async (jobId, status = 'saved') => {
+    return apiClient.post(`/jobs/${jobId}/save_application/`, { status })
+  },
 }
 
 export default jobService

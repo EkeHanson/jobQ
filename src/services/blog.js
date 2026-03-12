@@ -1,56 +1,56 @@
 import apiClient from './api'
 
 const blogService = {
-  // Blog Posts
+  // Insights Posts
   getPosts: async (params) => {
-    return apiClient.get('/blog/posts/', { params })
+    return apiClient.get('/insights/posts/', { params })
   },
 
   getPost: async (slug) => {
-    return apiClient.get(`/blog/posts/${slug}/`)
+    return apiClient.get(`/insights/posts/${slug}/`)
   },
 
   getFeaturedPosts: async () => {
-    return apiClient.get('/blog/featured/')
+    return apiClient.get('/insights/featured/')
   },
 
   getLatestPosts: async (limit = 10) => {
-    return apiClient.get('/blog/latest/', { params: { limit } })
+    return apiClient.get('/insights/latest/', { params: { limit } })
   },
 
   // Create/Update/Delete posts (admin only)
   createPost: async (data) => {
-    return apiClient.post('/blog/posts/', data)
+    return apiClient.post('/insights/posts/', data)
   },
 
   updatePost: async (slug, data) => {
-    return apiClient.put(`/blog/posts/${slug}/`, data)
+    return apiClient.put(`/insights/posts/${slug}/`, data)
   },
 
   deletePost: async (slug) => {
-    return apiClient.delete(`/blog/posts/${slug}/`)
+    return apiClient.delete(`/insights/posts/${slug}/`)
   },
 
   // Subscriptions
   subscribe: async (email, source = 'website') => {
-    return apiClient.post('/blog/subscribers/subscribe/', { email, source })
+    return apiClient.post('/insights/subscribers/subscribe/', { email, source })
   },
 
   unsubscribe: async (email) => {
-    return apiClient.post('/blog/subscribers/unsubscribe/', { email })
+    return apiClient.post('/insights/subscribers/unsubscribe/', { email })
   },
 
   checkSubscriptionStatus: async (email) => {
-    return apiClient.get('/blog/subscribers/status/', { params: { email } })
+    return apiClient.get('/insights/subscribers/status/', { params: { email } })
   },
 
   // Comments
   getComments: async (postSlug) => {
-    return apiClient.get(`/blog/posts/${postSlug}/comments/`)
+    return apiClient.get(`/insights/posts/${postSlug}/comments/`)
   },
 
   addComment: async (postSlug, data) => {
-    return apiClient.post(`/blog/posts/${postSlug}/comments/`, data)
+    return apiClient.post(`/insights/posts/${postSlug}/comments/`, data)
   },
 }
 

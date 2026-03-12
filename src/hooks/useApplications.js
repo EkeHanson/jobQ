@@ -1,5 +1,5 @@
 import { useDispatch, useSelector } from 'react-redux'
-import { useEffect, useCallback } from 'react'
+import { useEffect, useCallback, useRef } from 'react'
 import {
   fetchApplications,
   fetchStats,
@@ -14,16 +14,40 @@ import {
   clearCurrentApplication,
 } from '../store/applicationSlice'
 
+// Custom hook for deep comparison of dependencies
+function useDeepCompareEffect(callback, dependencies) {
+  const ref = useRef()
+  
+  if (!ref.current || !dependenciesAreEqual(dependencies, ref.current)) {
+    ref.current = dependencies
+  }
+  
+  useEffect(callback, ref.current)
+}
+
+function dependenciesAreEqual(a, b) {
+  if (a === b) return true
+  if (!a || !b) return false
+  if (typeof a !== 'object' || typeof b !== 'object') return false
+  
+  const keysA = Object.keys(a)
+  const keysB = Object.keys(b)
+  
+  if (keysA.length !== keysB.length) return false
+  
+  return keysA.every(key => dependenciesAreEqual(a[key], b[key]))
+}
+
 export const useApplications = (filters = {}) => {
   const dispatch = useDispatch()
   const { applications, stats, loading, error, currentApplication } = useSelector(
     (state) => state.applications
   )
 
-  useEffect(() => {
+  useDeepCompareEffect(() => {
     dispatch(fetchApplications(filters))
     dispatch(fetchStats(filters))
-  }, [dispatch, JSON.stringify(filters)])
+  }, [dispatch, filters])
 
   const create = useCallback(
     async (data) => {
@@ -111,7 +135,7 @@ export const useApplications = (filters = {}) => {
       dispatch(fetchApplications(filters))
       dispatch(fetchStats(filters))
     },
-    [dispatch, JSON.stringify(filters)]
+    [dispatch, filters]
   )
 
   return {

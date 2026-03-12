@@ -22,6 +22,7 @@ export default function Profile() {
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [profileToDelete, setProfileToDelete] = useState(null)
   const [isUpdatingProfile, setIsUpdatingProfile] = useState(false)
+  const [selectedProfile, setSelectedProfile] = useState(null)
   const { addToast } = useToast()
   
   // Personal information form state
@@ -318,7 +319,7 @@ export default function Profile() {
             Create separate profiles for different roles (Backend, Frontend, DevOps, etc.)
           </p>
 
-          {/* Existing Profiles */}
+          {/* Existing Profiles with Skills */}
           {profiles.length > 0 && (
             <div className="mb-6">
               <h3 className="text-lg font-semibold text-gray-800 mb-3">Your Profiles</h3>
@@ -333,15 +334,46 @@ export default function Profile() {
                         <h4 className="font-semibold text-gray-900">{profile.title}</h4>
                         <Badge variant="primary">{profile.role}</Badge>
                       </div>
-                      <Button
-                        variant="danger"
-                        size="sm"
-                        onClick={() => handleDeleteProfile(profile.id)}
-                      >
-                        Delete
-                      </Button>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          onClick={() => {
+                            // Set the profile as active for editing
+                            setSelectedProfile(profile.id)
+                          }}
+                        >
+                          Edit
+                        </Button>
+                        <Button
+                          variant="danger"
+                          size="sm"
+                          onClick={() => handleDeleteProfile(profile.id)}
+                        >
+                          Delete
+                        </Button>
+                      </div>
                     </div>
                     {profile.bio && <p className="text-gray-600 text-sm mt-2">{profile.bio}</p>}
+                    
+                    {/* Skills for this profile */}
+                    <div className="mt-3 pt-3 border-t border-gray-100">
+                      <p className="text-xs text-gray-500 mb-2">Skills</p>
+                      <div className="flex flex-wrap gap-1">
+                        {profile.skills && profile.skills.length > 0 ? (
+                          profile.skills.map((skill) => (
+                            <span 
+                              key={skill.id || skill}
+                              className="px-2 py-0.5 text-xs font-medium bg-primary-50 text-primary-700 rounded-full"
+                            >
+                              {skill.name || skill}
+                            </span>
+                          ))
+                        ) : (
+                          <span className="text-xs text-gray-400">No skills added</span>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 ))}
               </div>

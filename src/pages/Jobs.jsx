@@ -108,19 +108,27 @@ function JobCard({ job, onView, onToggleBookmark }) {
 
         {/* Skills */}
         <div className="flex flex-wrap gap-2 mb-4">
-          {job.skills?.slice(0, 4).map((skill, index) => (
-            <span 
-              key={index}
-              className="px-2.5 py-1 text-xs font-medium bg-gray-50 text-gray-600 rounded-full border border-gray-100"
-            >
-              {skill}
+          {Array.isArray(job.skills) ? (
+            <>
+              {job.skills.slice(0, 4).map((skill, index) => (
+                <span 
+                  key={index}
+                  className="px-2.5 py-1 text-xs font-medium bg-gray-50 text-gray-600 rounded-full border border-gray-100"
+                >
+                  {skill}
+                </span>
+              ))}
+              {job.skills.length > 4 && (
+                <span className="px-2.5 py-1 text-xs font-medium bg-gray-50 text-gray-500 rounded-full">
+                  +{job.skills.length - 4}
+                </span>
+              )}
+            </>
+          ) : job.skills ? (
+            <span className="text-xs text-gray-500 line-clamp-2">
+              {job.skills}
             </span>
-          ))}
-          {job.skills?.length > 4 && (
-            <span className="px-2.5 py-1 text-xs font-medium bg-gray-50 text-gray-500 rounded-full">
-              +{job.skills.length - 4}
-            </span>
-          )}
+          ) : null}
         </div>
 
         {/* Meta Info */}

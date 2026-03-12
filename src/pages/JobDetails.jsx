@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react'
-import { Link, useParams, useLocation } from 'react-router-dom'
+import { Link, useParams, useLocation, useNavigate } from 'react-router-dom'
 import { useEffect } from 'react'
 import DashboardLayout from '../components/layout/DashboardLayout'
 import jobService from '../services/jobs'
@@ -74,6 +74,22 @@ function BenefitItem({ benefit }) {
 }
 
 function JobDescription({ description }) {
+  // Handle both plain text (legacy) and HTML-formatted content
+  if (!description) return null
+  
+  // Check if it contains HTML tags
+  const containsHtml = /<[a-z][\s\S]*>/i.test(description)
+  
+  if (containsHtml) {
+    return (
+      <div 
+        className="prose prose-sm sm:prose-lg max-w-none text-gray-600"
+        dangerouslySetInnerHTML={{ __html: description }}
+      />
+    )
+  }
+  
+  // Fallback: parse plain text with markdown-like formatting
   const sections = description?.split('\n\n') || []
   
   return (
@@ -118,10 +134,12 @@ function JobDescription({ description }) {
 export default function JobDetails() {
   const { id } = useParams()
   const location = useLocation()
+  const navigate = useNavigate()
   const [job, setJob] = useState(null)
   const [loading, setLoading] = useState(true)
   const [isSaved, setIsSaved] = useState(false)
   const [showShareMenu, setShowShareMenu] = useState(false)
+  const [savingToApplications, setSavingToApplications] = useState(false)
 
   useEffect(() => {
     if (location.state?.job) {
@@ -159,6 +177,30 @@ export default function JobDetails() {
     } catch (error) {
       console.error('Bookmark error:', error)
       toast.error('Failed to update bookmark')
+    }
+  }
+
+  const handleSaveToApplications = async (apply = false) => {
+    try {
+      setSavingToApplications(true)
+      const status = apply ? 'applied' : 'saved'
+      await jobService.saveApplication(id, status)
+      if (apply) {
+        toast.success('Application saved and marked as applied!')
+      } else {
+        toast.success('Job saved to your applications')
+      }
+      // Navigate to applications page after successful save
+      navigate('/applications')
+    } catch (error) {
+      console.error('Save to applications error:', error)
+      if (error.response?.data?.detail) {
+        toast.error(error.response.data.detail)
+      } else {
+        toast.error('Failed to save application')
+      }
+    } finally {
+      setSavingToApplications(false)
     }
   }
 
@@ -319,14 +361,17 @@ export default function JobDetails() {
                 <JobDescription description={job.description} />
               </SectionCard>
 
+              {/* Requirements */}
+              {job.requirements && (
+                <SectionCard icon={CheckCircleIcon} title="Requirements">
+                  <JobDescription description={job.requirements} />
+                </SectionCard>
+              )}
+
               {/* Skills */}
-              {job.skills && job.skills.length > 0 && (
+              {(job.skills) && (
                 <SectionCard icon={SparklesIcon} title="Required Skills">
-                  <div className="flex flex-wrap gap-1.5 sm:gap-2">
-                    {job.skills.map((skill, index) => (
-                      <SkillTag key={index} skill={skill} />
-                    ))}
-                  </div>
+                  <JobDescription description={job.skills} />
                 </SectionCard>
               )}
 
@@ -400,6 +445,27 @@ export default function JobDetails() {
                       Apply for this Job
                     </Button>
                   )}
+                  
+                  {/* Save to Applications Section */}
+                  <div className="mt-3">
+                    <p className="text-xs text-gray-500 text-center mb-2">Save to your applications</p>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => handleSaveToApplications(false)}
+                        disabled={savingToApplications}
+                        className="flex-1 py-2 px-3 text-xs sm:text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors disabled:opacity-50"
+                      >
+                        Save
+                      </button>
+                      <button
+                        onClick={() => handleSaveToApplications(true)}
+                        disabled={savingToApplications}
+                        className="flex-1 py-2 px-3 text-xs sm:text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded-lg transition-colors disabled:opacity-50"
+                      >
+                        Save & Apply
+                      </button>
+                    </div>
+                  </div>
                   
                   <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-gray-100">
                     <button 

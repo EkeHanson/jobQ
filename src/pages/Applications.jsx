@@ -4,11 +4,12 @@ import DashboardLayout from '../components/layout/DashboardLayout'
 import { useApplications } from '../hooks/useApplications'
 import { useSelector } from 'react-redux'
 import ApplicationTable from '../components/applications/ApplicationTable'
+import ApplicationKanbanBoard from '../components/applications/ApplicationKanbanBoard'
 import ApplicationFilters from '../components/applications/ApplicationFilters'
 import Button from '../components/common/Button'
 import Modal from '../components/common/Modal'
 import { filterApplications } from '../utils/helpers'
-import { PlusIcon, ChevronLeftIcon, ChevronRightIcon, DocumentIcon, CloudArrowUpIcon, ArchiveBoxIcon, EyeIcon, ClipboardDocumentListIcon, PencilSquareIcon, BookmarkIcon, ExclamationTriangleIcon, TrashIcon } from '@heroicons/react/24/outline'
+import { PlusIcon, ChevronLeftIcon, ChevronRightIcon, DocumentIcon, CloudArrowUpIcon, ArchiveBoxIcon, EyeIcon, ClipboardDocumentListIcon, PencilSquareIcon, BookmarkIcon, ExclamationTriangleIcon, TrashIcon, TableCellsIcon, ViewColumnsIcon } from '@heroicons/react/24/outline'
 import Input from '../components/common/Input'
 import Spinner from '../components/common/Spinner'
 import toast from 'react-hot-toast'
@@ -39,6 +40,7 @@ export default function Applications() {
   const [editResumeFile, setEditResumeFile] = useState(null)
   const [limitError, setLimitError] = useState(null)
   const [activeView, setActiveView] = useState('active') // 'active' or 'archived'
+  const [viewMode, setViewMode] = useState('table') // 'table' or 'kanban'
   const [archivingId, setArchivingId] = useState(null)
   
   // Filter applications based on active view
@@ -132,8 +134,10 @@ export default function Applications() {
     jobTitle: '',
     companyName: '',
     status: 'saved',
+    source: '',
     appliedDate: '',
     deadline: '',
+    followUpDate: '',
     notes: '',
     description: '',
     requirements: '',
@@ -149,6 +153,8 @@ export default function Applications() {
       jobTitle: app.job_title || '',
       companyName: app.company_name || '',
       status: app.status, 
+      source: app.source || '',
+      followUpDate: app.follow_up_date || '',
       notes: app.notes || '',
       description: app.description || '',
       requirements: app.requirements || '',
@@ -163,6 +169,8 @@ export default function Applications() {
       payload.append('job_title', editData.jobTitle || '')
       payload.append('company_name', editData.companyName || '')
       payload.append('status', editData.status)
+      payload.append('source', editData.source || '')
+      payload.append('follow_up_date', editData.followUpDate || '')
       payload.append('notes', editData.notes || '')
       payload.append('description', editData.description || '')
       payload.append('requirements', editData.requirements || '')
@@ -199,6 +207,8 @@ export default function Applications() {
       jobTitle: '',
       companyName: '',
       status: 'saved',
+      source: '',
+      followUpDate: '',
       appliedDate: '',
       deadline: '',
       notes: '',
@@ -222,6 +232,7 @@ export default function Applications() {
     payload.append('job_title', newData.jobTitle)
     payload.append('company_name', newData.companyName)
     payload.append('status', newData.status)
+    payload.append('source', newData.source || '')
     
     // Only append dates if they have valid values
     if (newData.appliedDate && newData.appliedDate.trim()) {
@@ -229,6 +240,9 @@ export default function Applications() {
     }
     if (newData.deadline && newData.deadline.trim()) {
       payload.append('deadline', newData.deadline)
+    }
+    if (newData.followUpDate && newData.followUpDate.trim()) {
+      payload.append('follow_up_date', newData.followUpDate)
     }
     
     payload.append('notes', newData.notes)
@@ -345,6 +359,32 @@ export default function Applications() {
               {stats.archived}
             </span>
           </button>
+          
+          {/* View Mode Toggle - Table/Kanban */}
+          <div className="ml-auto flex items-center gap-1 bg-gray-100 rounded-lg p-1">
+            <button
+              onClick={() => setViewMode('table')}
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
+                viewMode === 'table'
+                  ? 'bg-white text-gray-900 shadow-sm'
+                  : 'text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              <TableCellsIcon className="w-4 h-4" />
+              Table
+            </button>
+            <button
+              onClick={() => setViewMode('kanban')}
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
+                viewMode === 'kanban'
+                  ? 'bg-white text-gray-900 shadow-sm'
+                  : 'text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              <ViewColumnsIcon className="w-4 h-4" />
+              Kanban
+            </button>
+          </div>
         </div>
 
         <div className="glass-card">
@@ -362,17 +402,28 @@ export default function Applications() {
                   }
                 </p>
               </div>
-              <ApplicationTable 
-                applications={filteredApps} 
-                onEdit={handleEdit} 
-                onView={handleView} 
-                onArchive={handleArchive}
-                onUnarchive={handleUnarchive}
-                onDelete={handleDelete}
-                archivingId={archivingId}
-                showArchived={activeView === 'archived'}
-                loading={loading} 
-              />
+              
+              {viewMode === 'kanban' ? (
+                <div className="p-4">
+                  <ApplicationKanbanBoard 
+                    applications={filteredApps} 
+                    update={update} 
+                    loading={loading}
+                  />
+                </div>
+              ) : (
+                <ApplicationTable 
+                  applications={filteredApps} 
+                  onEdit={handleEdit} 
+                  onView={handleView} 
+                  onArchive={handleArchive}
+                  onUnarchive={handleUnarchive}
+                  onDelete={handleDelete}
+                  archivingId={archivingId}
+                  showArchived={activeView === 'archived'}
+                  loading={loading} 
+                />
+              )}
             </>
           )}
         </div>
@@ -412,6 +463,23 @@ export default function Applications() {
                   <Input label="Company" required value={newData.companyName} onChange={(e) => setNewData({ ...newData, companyName: e.target.value })} />
                   
                   <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Source</label>
+                    <select
+                      value={newData.source}
+                      onChange={(e) => setNewData({ ...newData, source: e.target.value })}
+                      className="w-full px-3 py-2.5 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 text-sm"
+                    >
+                      <option value="">Select source...</option>
+                      <option value="linkedin">LinkedIn</option>
+                      <option value="indeed">Indeed</option>
+                      <option value="company_website">Company Website</option>
+                      <option value="referral">Referral</option>
+                      <option value="recruiter">Recruiter</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </div>
+
+                  <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
                     <select
                       value={newData.status}
@@ -433,6 +501,8 @@ export default function Applications() {
                     <Input type="date" label="Applied Date" value={newData.appliedDate} onChange={(e) => setNewData({ ...newData, appliedDate: e.target.value })} />
                     <Input type="date" label="Deadline" value={newData.deadline} onChange={(e) => setNewData({ ...newData, deadline: e.target.value })} />
                   </div>
+
+                  <Input type="date" label="Follow-up Date" value={newData.followUpDate} onChange={(e) => setNewData({ ...newData, followUpDate: e.target.value })} placeholder="When to follow up" />
 
                   <div className="flex justify-end pt-2">
                     <Button size="sm" onClick={() => setActiveTab(1)}>Next <ChevronRightIcon className="w-4 h-4 ml-1" /></Button>

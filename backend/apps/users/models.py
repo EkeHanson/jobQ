@@ -17,6 +17,12 @@ class User(AbstractUser):
     suspended_at = models.DateTimeField(null=True, blank=True, help_text='When the user was suspended')
     # Two-Factor Authentication
     is_2fa_enabled = models.BooleanField(default=False, help_text='Whether 2FA is enabled for this account')
+    # Notification settings
+    email_notifications = models.BooleanField(default=True, help_text='Receive email notifications')
+    push_notifications = models.BooleanField(default=True, help_text='Receive push notifications')
+    weekly_summary = models.BooleanField(default=True, help_text='Receive weekly summary emails')
+    # Privacy settings
+    allow_data_collection = models.BooleanField(default=True, help_text='Allow analytics data collection')
 
 
 class PublicProfile(models.Model):

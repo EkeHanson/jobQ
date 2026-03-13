@@ -108,9 +108,9 @@ class EmailImportService:
         """Extract company name from email content"""
         # Common patterns for company identification
         patterns = [
-            r'from:\\s*([^\\n]+)',  # "From: Company Name"
-            r'at\\s+([^,\\n]+)',     # "at Company Name"
-            r'company:\\s*([^\\n]+)', # "Company: Name"
+            r'from:\s*([^\n]+)',  # "From: Company Name"
+            r'at\s+([^,\n]+)',     # "at Company Name"
+            r'company:\s*([^\n]+)', # "Company: Name"
         ]
         
         for pattern in patterns:
@@ -125,9 +125,9 @@ class EmailImportService:
         """Extract job title from email content"""
         # Look for job title in subject line
         title_patterns = [
-            r'job:\\s*([^\\n]+)',
-            r'position:\\s*([^\\n]+)',
-            r'role:\\s*([^\\n]+)',
+            r'job:\s*([^\n]+)',
+            r'position:\s*([^\n]+)',
+            r'role:\s*([^\n]+)',
         ]
         
         for pattern in title_patterns:
@@ -138,7 +138,7 @@ class EmailImportService:
         # Look in subject
         if subject:
             # Try to extract from subject patterns like "Job Title at Company"
-            match = re.match(r'^(.+?)\\s+at\\s+', subject)
+            match = re.match(r'^(.+?)\s+at\s+', subject)
             if match:
                 return match.group(1).strip()
         
@@ -173,13 +173,18 @@ class EmailImportService:
         
         status = status_map.get(email_type, 'applied')
         
+        # Build notes string
+        raw_content = email_data.get('raw_content', '') or ''
+        next_action = email_data.get('next_action', 'N/A') or 'N/A'
+        notes = f"Email Import: {raw_content}\n\nNext Action: {next_action}"
+        
         # Create the application
         application = Application.objects.create(
             user=user,
             job_title=email_data.get('job_title', 'Unknown Position'),
             company_name=email_data.get('company_name', 'Unknown Company'),
             status=status,
-            notes=f\"Email Import: {email_data.get('raw_content', '')}\\n\\nNext Action: {email_data.get('next_action', 'N/A')}\",
+            notes=notes,
             source='email_import'
         )
         

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import DashboardLayout from '../components/layout/DashboardLayout'
 import Card from '../components/common/Card'
@@ -8,6 +8,7 @@ import Modal from '../components/common/Modal'
 import { useToast } from '../components/common/Toast'
 import { ExclamationTriangleIcon, ShieldCheckIcon } from '@heroicons/react/24/outline'
 import authService from '../services/auth'
+import usersService from '../services/users'
 import { useAuth } from '../hooks/useAuth'
 
 export default function Settings() {
@@ -17,15 +18,15 @@ export default function Settings() {
 
   // Notification settings state
   const [notifications, setNotifications] = useState({
-    email: true,
-    push: true,
-    weeklySummary: true,
+    email: user?.email_notifications ?? true,
+    push: user?.push_notifications ?? true,
+    weeklySummary: user?.weekly_summary ?? true,
   })
 
   // Privacy settings state
   const [privacy, setPrivacy] = useState({
     publicProfile: false,
-    dataCollection: true,
+    dataCollection: user?.allow_data_collection ?? true,
   })
 
   // Modal states
@@ -52,6 +53,27 @@ export default function Settings() {
 
   const [saveStatus, setSaveStatus] = useState(null) // 'saving', 'success', 'error'
 
+  // Fetch initial settings
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const userData = await authService.getCurrentUser()
+        setNotifications({
+          email: userData.email_notifications ?? true,
+          push: userData.push_notifications ?? true,
+          weeklySummary: userData.weekly_summary ?? true,
+        })
+        setPrivacy({
+          publicProfile: false, // Not implemented yet - requires PublicProfile model
+          dataCollection: userData.allow_data_collection ?? true,
+        })
+      } catch (error) {
+        console.error('Failed to fetch settings:', error)
+      }
+    }
+    fetchSettings()
+  }, [])
+
   // Mock login history data
   const loginHistory = [
     { id: 1, device: 'Chrome on Windows', location: 'San Francisco, CA', date: '2024-01-15 09:30 AM', current: true },
@@ -67,19 +89,54 @@ export default function Settings() {
   ]
 
   // Handlers for notification toggles
-  const handleNotificationChange = (type) => {
+  const handleNotificationChange = async (type) => {
+    const newValue = !notifications[type]
     setNotifications((prev) => ({
       ...prev,
-      [type]: !prev[type],
+      [type]: newValue,
     }))
+    
+    try {
+      await authService.updateProfile({
+        [type === 'weeklySummary' ? 'weekly_summary' : type + '_notifications']: newValue
+      })
+      addToast('Settings saved!', 'success')
+    } catch (error) {
+      // Revert on error
+      setNotifications((prev) => ({
+        ...prev,
+        [type]: !newValue,
+      }))
+      addToast('Failed to save settings', 'error')
+    }
   }
 
   // Handlers for privacy toggles
-  const handlePrivacyChange = (type) => {
+  const handlePrivacyChange = async (type) => {
+    const newValue = !privacy[type]
     setPrivacy((prev) => ({
       ...prev,
-      [type]: !prev[type],
+      [type]: newValue,
     }))
+    
+    try {
+      if (type === 'publicProfile') {
+        // Handle public profile separately - it needs a PublicProfile object
+        await usersService.updatePublicProfile({ is_public: newValue })
+      } else {
+        await authService.updateProfile({
+          allow_data_collection: newValue
+        })
+      }
+      addToast('Settings saved!', 'success')
+    } catch (error) {
+      // Revert on error
+      setPrivacy((prev) => ({
+        ...prev,
+        [type]: !newValue,
+      }))
+      addToast('Failed to save settings', 'error')
+    }
   }
 
   // Save all settings

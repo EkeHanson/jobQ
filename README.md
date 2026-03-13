@@ -157,6 +157,11 @@ JobQ/
 - **Soft Delete**: Recover deleted applications
 - **Deadlines**: Set application deadlines
 - **Applied Date**: Track when you applied
+- **Source Tracking**: Track application source (LinkedIn, Indeed, Company Website, Referral, Recruiter)
+- **Follow-up Reminders**: Set follow-up dates with reminder system
+- **Interview Tracking**: Track interviews with dates, types, interviewers, and outcomes
+- **Kanban View**: Visual board to drag-and-drop applications between stages
+- **Resume Upload**: Upload and attach resumes to applications
 
 ### AI-Powered Features
 
@@ -208,6 +213,15 @@ JobQ/
 - **Reviews**: User-submitted app reviews
 - **Admin Response**: Admin can respond to contact messages
 
+### Gamification & Progress Tracking
+
+- **Job Search Goals**: Set weekly application targets
+- **Progress Tracking**: Visual progress bar showing applications vs. goal
+- **Auto-Increment**: Goals automatically increase when applications are created
+- **Public Profiles**: Share job search progress publicly
+- **Public URL**: Generate shareable link (e.g., jobq.app/username)
+- **Stats Display**: Choose which stats to show (applications, interviews, offers, success rate)
+
 ---
 
 ## API Endpoints
@@ -250,7 +264,29 @@ JobQ/
 | GET | `/api/v1/applications/stats/` | Get application statistics |
 | POST | `/api/v1/applications/{id}/archive/` | Archive application |
 | POST | `/api/v1/applications/{id}/restore/` | Restore application |
+| POST | `/api/v1/applications/{id}/soft_delete/` | Soft delete application |
+| POST | `/api/v1/applications/{id}/unarchive/` | Unarchive application |
+| GET | `/api/v1/applications/followups/` | Get upcoming follow-ups |
+| POST | `/api/v1/applications/followups/mark_sent/` | Mark follow-up as sent |
+| GET | `/api/v1/applications/{id}/status-history/` | Get status history |
 | POST | `/api/v1/jobs/{id}/save-application/` | Save job as application |
+
+### Interviews
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/v1/interviews/` | List interviews |
+| POST | `/api/v1/interviews/` | Create interview |
+| GET | `/api/v1/interviews/{id}/` | Get interview |
+| PUT/PATCH | `/api/v1/interviews/{id}/` | Update interview |
+| DELETE | `/api/v1/interviews/{id}/` | Delete interview |
+| POST | `/api/v1/interviews/{id}/update_outcome/` | Update outcome |
+
+### Users & Goals
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET/POST/PATCH | `/api/v1/users/public-profile/` | Get/update public profile |
+| GET | `/api/v1/users/public/{slug}/` | View public profile (no auth) |
+| GET/POST/PATCH | `/api/v1/users/goal/` | Job search goal management |
 
 ### Profiles
 | Method | Endpoint | Description |
@@ -305,6 +341,8 @@ JobQ/
 | POST | `/api/v1/ai/interview-prep/` | Create interview prep |
 | GET | `/api/v1/ai/interview-prep/{prep_id}/` | Get interview prep |
 | POST | `/api/v1/ai/interview-prep/{prep_id}/regenerate/` | Regenerate content |
+| POST | `/api/v1/ai/job-match/` | Calculate resume-job match score |
+| POST | `/api/v1/ai/resume-optimizer/` | Optimize resume for job |
 
 ### Other
 | Method | Endpoint | Description |
@@ -321,6 +359,8 @@ JobQ/
 - **User** - Extended Django user (phone, location, 2FA, suspension)
 - **TwoFactorToken** - 2FA verification tokens
 - **PasswordResetToken** - Password reset tokens
+- **PublicProfile** - Public job search profile for sharing
+- **JobSearchGoal** - Weekly job search target goals
 
 ### Jobs App
 - **Company** - Company information
@@ -331,6 +371,7 @@ JobQ/
 ### Applications App
 - **Application** - Job applications with status tracking
 - **StatusHistory** - Status change history
+- **Interview** - Interview schedules with dates, types, outcomes
 
 ### Profiles App
 - **Profile** - User profile

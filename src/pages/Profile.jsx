@@ -410,13 +410,13 @@ export default function Profile() {
         </Card>
 
         {/* Delete Account */}
-        <Card className="border-red-200 bg-red-50">
+        {/* <Card className="border-red-200 bg-red-50">
           <h2 className="text-2xl font-semibold text-red-900 mb-2">Danger Zone</h2>
           <p className="text-red-800 mb-4">
             Permanently delete your account and all associated data. This action cannot be undone.
           </p>
           <Button variant="danger">Delete Account</Button>
-        </Card>
+        </Card> */}
       </div>
 
       {/* Add Profile Modal */}

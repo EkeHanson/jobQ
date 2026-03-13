@@ -1,5 +1,5 @@
 import { useDispatch, useSelector } from 'react-redux'
-import { useEffect, useCallback, useRef } from 'react'
+import { useEffect, useCallback, useRef, useMemo } from 'react'
 import {
   fetchApplications,
   fetchStats,
@@ -38,16 +38,36 @@ function dependenciesAreEqual(a, b) {
   return keysA.every(key => dependenciesAreEqual(a[key], b[key]))
 }
 
-export const useApplications = (filters = {}) => {
+export const useApplications = (filters = null) => {
   const dispatch = useDispatch()
   const { applications, stats, loading, error, currentApplication } = useSelector(
     (state) => state.applications
   )
+  const prevFiltersRef = useRef(null)
+  const hasFetchedRef = useRef(false)
 
-  useDeepCompareEffect(() => {
-    dispatch(fetchApplications(filters))
-    dispatch(fetchStats(filters))
-  }, [dispatch, filters])
+  // Create stable filter key - only recalculates when filters actually change
+  const filtersKey = useMemo(() => {
+    return filters ? JSON.stringify(filters) : 'empty'
+  }, [filters])
+
+  useEffect(() => {
+    // Skip if we've already fetched with the same filters
+    if (hasFetchedRef.current && prevFiltersRef.current === filtersKey) {
+      return
+    }
+    
+    prevFiltersRef.current = filtersKey
+    hasFetchedRef.current = true
+    
+    if (filters === null || Object.keys(filters).length === 0) {
+      dispatch(fetchApplications({}))
+      dispatch(fetchStats({}))
+    } else {
+      dispatch(fetchApplications(filters))
+      dispatch(fetchStats(filters))
+    }
+  }, [dispatch, filtersKey])
 
   const create = useCallback(
     async (data) => {

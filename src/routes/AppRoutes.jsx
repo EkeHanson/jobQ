@@ -32,6 +32,8 @@ const Subscription = lazy(() => import('../pages/Subscription'))
 const Analytics = lazy(() => import('../pages/Analytics'))
 const Reviews = lazy(() => import('../pages/Reviews'))
 const InterviewPrep = lazy(() => import('../pages/InterviewPrep'))
+const PublicProfile = lazy(() => import('../pages/PublicProfile'))
+const PublicView = lazy(() => import('../pages/PublicView'))
 
 const Loading = () => (
   <div className="flex items-center justify-center min-h-screen">
@@ -59,6 +61,7 @@ export default function AppRoutes() {
       <Route path="/terms" element={<Terms />} />
       <Route path="/security" element={<Security />} />
       <Route path="/demo" element={<Demo />} />
+      <Route path="/public/:slug" element={<PublicView />} />
 
       {/* Protected Routes */}
       <Route element={<PrivateRoute />}>
@@ -112,11 +115,7 @@ export default function AppRoutes() {
         />
         <Route
           path="/analytics"
-          element={
-            <Suspense fallback={<Loading />}>
-              <Analytics />
-            </Suspense>
-          }
+          element={<Navigate to="/dashboard" replace />}
         />
         <Route
           path="/settings"
@@ -155,6 +154,14 @@ export default function AppRoutes() {
           element={
             <Suspense fallback={<Loading />}>
               <InterviewPrep />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/public-profile"
+          element={
+            <Suspense fallback={<Loading />}>
+              <PublicProfile />
             </Suspense>
           }
         />

@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd'
-import { useApplications } from '../../hooks/useApplications'
 import Card from '../common/Card'
 import Button from '../common/Button'
 import Modal from '../common/Modal'
@@ -17,8 +16,7 @@ const COLUMNS = [
   { id: 'withdrawn', title: 'Withdrawn', color: 'bg-gray-200' },
 ]
 
-export default function ApplicationKanbanBoard() {
-  const { applications, update, loading } = useApplications()
+export default function ApplicationKanbanBoard({ applications = [], update, loading }) {
   const [columns, setColumns] = useState({})
   const [selectedApp, setSelectedApp] = useState(null)
   const [showModal, setShowModal] = useState(false)

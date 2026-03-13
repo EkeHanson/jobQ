@@ -18,4 +18,5 @@ urlpatterns = [
     path('users/', views.UserManagementView.as_view(), name='user-management'),
     path('public-profile/', views.PublicProfileView.as_view(), name='public-profile'),
     path('public/<slug:slug>/', views.PublicProfileDetailView.as_view(), name='public-profile-detail'),
+    path('goal/', views.JobSearchGoalView.as_view(), name='job-search-goal'),
 ]

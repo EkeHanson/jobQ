@@ -120,14 +120,11 @@ export default function Settings() {
     }))
     
     try {
-      if (type === 'publicProfile') {
-        // Handle public profile separately - it needs a PublicProfile object
-        await usersService.updatePublicProfile({ is_public: newValue })
-      } else {
-        await authService.updateProfile({
-          allow_data_collection: newValue
-        })
-      }
+      // Both privacy settings currently use the /auth/me/ endpoint
+      // (publicProfile toggle is disabled until PublicProfile feature is implemented)
+      await authService.updateProfile({
+        allow_data_collection: newValue
+      })
       addToast('Settings saved!', 'success')
     } catch (error) {
       // Revert on error

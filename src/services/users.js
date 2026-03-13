@@ -14,19 +14,19 @@ const usersService = {
   },
 
   getProfile: async () => {
-    return apiClient.get('/users/me/')
+    return apiClient.get('/auth/me/')
   },
 
   updateProfile: async (data) => {
-    return apiClient.patch('/users/me/', data)
+    return apiClient.patch('/auth/me/', data)
   },
 
   getPublicProfile: async (slug) => {
-    return apiClient.get(`/users/public/${slug}/`)
+    return apiClient.get(`/auth/public/${slug}/`)
   },
 
   updatePublicProfile: async (data) => {
-    return apiClient.patch('/users/public-profile/', data)
+    return apiClient.patch('/auth/public-profile/', data)
   },
 }
 

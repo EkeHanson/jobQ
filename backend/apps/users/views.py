@@ -661,3 +661,88 @@ class UserManagementView(generics.GenericAPIView):
                 'detail': f'User {user.email} has been unsuspended',
                 'user': UserSerializer(user).data
             })
+
+
+class PublicProfileView(generics.GenericAPIView):
+    """API view for managing public profile (authenticated)"""
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def get(self, request):
+        """Get current user's public profile settings"""
+        profile, created = PublicProfile.objects.get_or_create(user=request.user)
+        return Response({
+            'public_slug': profile.public_slug,
+            'is_public': profile.is_public,
+            'show_applications_count': profile.show_applications_count,
+            'show_interviews_count': profile.show_interviews_count,
+            'show_offers_count': profile.show_offers_count,
+            'show_success_rate': profile.show_success_rate,
+            'display_name': profile.display_name,
+            'share_url': f'/public/{profile.public_slug}' if profile.is_public else None
+        })
+    
+    def post(self, request):
+        """Update public profile settings"""
+        profile, created = PublicProfile.objects.get_or_create(user=request.user)
+        
+        profile.is_public = request.data.get('is_public', profile.is_public)
+        profile.show_applications_count = request.data.get('show_applications_count', profile.show_applications_count)
+        profile.show_interviews_count = request.data.get('show_interviews_count', profile.show_interviews_count)
+        profile.show_offers_count = request.data.get('show_offers_count', profile.show_offers_count)
+        profile.show_success_rate = request.data.get('show_success_rate', profile.show_success_rate)
+        
+        if request.data.get('display_name'):
+            profile.display_name = request.data['display_name']
+        
+        if request.data.get('public_slug'):
+            # Check if slug is taken
+            existing = PublicProfile.objects.filter(public_slug=request.data['public_slug']).exclude(user=request.user)
+            if existing:
+                return Response(
+                    {'detail': 'This URL is already taken'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            profile.public_slug = request.data['public_slug']
+        
+        profile.save()
+        
+        return Response({
+            'message': 'Public profile updated',
+            'public_slug': profile.public_slug,
+            'is_public': profile.is_public,
+            'share_url': f'/public/{profile.public_slug}' if profile.is_public else None
+        })
+
+
+class PublicProfileDetailView(generics.GenericAPIView):
+    """Public view for accessing public profiles (no auth required)"""
+    permission_classes = [permissions.AllowAny]
+    
+    def get(self, request, slug):
+        """Get public profile by slug"""
+        try:
+            profile = PublicProfile.objects.get(public_slug=slug, is_public=True)
+        except PublicProfile.DoesNotExist:
+            return Response(
+                {'detail': 'Public profile not found'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+        stats = profile.get_stats()
+        
+        # Filter what to show based on settings
+        response_data = {}
+        if profile.show_applications_count:
+            response_data['applications'] = stats['total_applications']
+        if profile.show_interviews_count:
+            response_data['interviews'] = stats['interviews']
+        if profile.show_offers_count:
+            response_data['offers'] = stats['offers']
+        if profile.show_success_rate:
+            response_data['success_rate'] = stats['success_rate']
+            response_data['interview_rate'] = stats['interview_rate']
+        
+        response_data['display_name'] = profile.display_name or profile.user.username
+        response_data['share_url'] = f'/public/{profile.public_slug}'
+        
+        return Response(response_data)

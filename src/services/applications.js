@@ -49,6 +49,40 @@ const applicationService = {
   restoreApplication: async (id) => {
     return apiClient.post(`/applications/${id}/restore/`)
   },
+
+  // Follow-ups
+  getFollowUps: async () => {
+    return apiClient.get('/applications/followups/')
+  },
+
+  markFollowUpSent: async (applicationId) => {
+    return apiClient.post('/applications/followups/mark_sent/', { application_id: applicationId })
+  },
+
+  // Interviews
+  getInterviews: async (params) => {
+    return apiClient.get('/interviews/', { params })
+  },
+
+  getInterview: async (id) => {
+    return apiClient.get(`/interviews/${id}`)
+  },
+
+  createInterview: async (data) => {
+    return apiClient.post('/interviews/', data)
+  },
+
+  updateInterview: async (id, data) => {
+    return apiClient.patch(`/interviews/${id}/`, data)
+  },
+
+  deleteInterview: async (id) => {
+    return apiClient.delete(`/interviews/${id}`)
+  },
+
+  updateInterviewOutcome: async (id, outcome) => {
+    return apiClient.post(`/interviews/${id}/update_outcome/`, { outcome })
+  },
 }
 
 export default applicationService

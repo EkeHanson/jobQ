@@ -16,4 +16,6 @@ urlpatterns = [
     path('two-factor/verify/', views.TwoFactorVerifyView.as_view(), name='two-factor-verify'),
     path('two-factor/manage/', views.TwoFactorManageView.as_view(), name='two-factor-manage'),
     path('users/', views.UserManagementView.as_view(), name='user-management'),
+    path('public-profile/', views.PublicProfileView.as_view(), name='public-profile'),
+    path('public/<slug:slug>/', views.PublicProfileDetailView.as_view(), name='public-profile-detail'),
 ]

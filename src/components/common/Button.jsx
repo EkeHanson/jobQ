@@ -1,10 +1,12 @@
 import { cn } from '../../utils/helpers'
+import { ArrowPathIcon } from '@heroicons/react/24/solid'
 
 const Button = ({
   children,
   variant = 'primary',
   size = 'md',
   disabled = false,
+  loading = false,
   className = '',
   ...props
 }) => {
@@ -23,18 +25,23 @@ const Button = ({
     lg: 'px-6 py-3 text-lg',
   }
 
+  const isDisabled = disabled || loading
+
   return (
     <button
       className={cn(
-        'rounded-xl font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:ring-offset-2 active:scale-[0.98]',
+        'rounded-xl font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:ring-offset-2 active:scale-[0.98] flex items-center justify-center gap-2',
         variantClasses[variant],
         sizeClasses[size],
-        disabled && 'cursor-not-allowed opacity-50',
+        isDisabled && 'cursor-not-allowed opacity-50',
         className
       )}
-      disabled={disabled}
+      disabled={isDisabled}
       {...props}
     >
+      {loading && (
+        <ArrowPathIcon className="w-4 h-4 animate-spin" />
+      )}
       {children}
     </button>
   )

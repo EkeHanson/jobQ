@@ -1,13 +1,12 @@
 import { useState } from 'react'
 import { formatDate } from '../../utils/formatters'
-import { ArrowsUpDownIcon, EyeIcon, PencilSquareIcon, ArchiveBoxIcon, ArrowUturnDownIcon, TrashIcon } from '@heroicons/react/24/outline'
+import { ArrowsUpDownIcon, PencilSquareIcon, ArchiveBoxIcon, ArrowUturnDownIcon, TrashIcon } from '@heroicons/react/24/outline'
 import StatusBadge from './StatusBadge'
 import Button from '../common/Button'
 
 export default function ApplicationTable({ 
   applications, 
   onEdit, 
-  onView, 
   onArchive, 
   onUnarchive,
   onDelete,
@@ -145,18 +144,10 @@ export default function ApplicationTable({
               </td>
               <td className="px-6 py-4 text-right">
                 <div className="flex justify-end gap-2">
-                  <button
-                    onClick={() => onView(app)}
-                    className="p-1.5 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-colors"
-                    title="View"
-                  >
-                    <EyeIcon className="w-5 h-5" />
-                  </button>
-                  
                   {!showArchived && (
                     <button
                       onClick={() => onEdit(app)}
-                      className="p-1.5 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
+                      className="p-1.5 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-colors"
                       title="Edit"
                     >
                       <PencilSquareIcon className="w-5 h-5" />
@@ -164,14 +155,24 @@ export default function ApplicationTable({
                   )}
                   
                   {showArchived ? (
-                    <button
-                      onClick={() => onUnarchive(app)}
-                      disabled={archivingId === app.id}
-                      className="p-1.5 text-green-600 hover:text-green-800 hover:bg-green-50 rounded-lg transition-colors disabled:opacity-50"
-                      title="Unarchive"
-                    >
-                      <ArrowUturnDownIcon className="w-5 h-5" />
-                    </button>
+                    <>
+                      <button
+                        onClick={() => onUnarchive(app)}
+                        disabled={archivingId === app.id}
+                        className="p-1.5 text-green-600 hover:text-green-800 hover:bg-green-50 rounded-lg transition-colors disabled:opacity-50"
+                        title="Unarchive"
+                      >
+                        <ArrowUturnDownIcon className="w-5 h-5" />
+                      </button>
+                      <button
+                        onClick={() => onDelete(app)}
+                        disabled={archivingId === app.id}
+                        className="p-1.5 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
+                        title="Delete"
+                      >
+                        <TrashIcon className="w-5 h-5" />
+                      </button>
+                    </>
                   ) : (
                     <button
                       onClick={() => onArchive(app)}
@@ -182,15 +183,6 @@ export default function ApplicationTable({
                       <ArchiveBoxIcon className="w-5 h-5" />
                     </button>
                   )}
-                  
-                  <button
-                    onClick={() => onDelete(app)}
-                    disabled={archivingId === app.id}
-                    className="p-1.5 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
-                    title="Delete"
-                  >
-                    <TrashIcon className="w-5 h-5" />
-                  </button>
                 </div>
               </td>
             </tr>

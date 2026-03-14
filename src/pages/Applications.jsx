@@ -42,6 +42,7 @@ export default function Applications() {
   const [activeView, setActiveView] = useState('active') // 'active' or 'archived'
   const [viewMode, setViewMode] = useState('table') // 'table' or 'kanban'
   const [archivingId, setArchivingId] = useState(null)
+  const [saving, setSaving] = useState(false)
   
   // Filter applications based on active view
   const filteredApps = useMemo(() => {
@@ -165,6 +166,7 @@ export default function Applications() {
 
   const handleSaveEdit = async () => {
     if (currentApplication && editData) {
+      setSaving(true)
       const payload = new FormData()
       payload.append('job_title', editData.jobTitle || '')
       payload.append('company_name', editData.companyName || '')
@@ -180,10 +182,14 @@ export default function Applications() {
         payload.append('resume_file', editResumeFile)
       }
 
-      await update(currentApplication.id, payload)
-      setIsModalOpen(false)
-      clearCurrent()
-      setEditResumeFile(null)
+      try {
+        await update(currentApplication.id, payload)
+        setIsModalOpen(false)
+        clearCurrent()
+        setEditResumeFile(null)
+      } finally {
+        setSaving(false)
+      }
     }
   }
 
@@ -239,6 +245,8 @@ export default function Applications() {
       return
     }
 
+    setSaving(true)
+
     const payload = new FormData()
     payload.append('job_title', newData.jobTitle)
     payload.append('company_name', newData.companyName)
@@ -288,6 +296,8 @@ export default function Applications() {
       } else {
         toast.error(error?.message || 'Failed to create application')
       }
+    } finally {
+      setSaving(false)
     }
   }
 
@@ -426,7 +436,6 @@ export default function Applications() {
                 <ApplicationTable 
                   applications={filteredApps} 
                   onEdit={handleEdit} 
-                  onView={handleView} 
                   onArchive={handleArchive}
                   onUnarchive={handleUnarchive}
                   onDelete={handleDelete}
@@ -610,7 +619,7 @@ export default function Applications() {
                     <Button size="sm" variant="secondary" onClick={() => setActiveTab(2)}><ChevronLeftIcon className="w-4 h-4 mr-1" /> Back</Button>
                     <div className="flex gap-2">
                       <Button size="sm" variant="secondary" onClick={() => { setIsModalOpen(false); setIsCreating(false); setLimitError(null); setActiveTab(0); }}>Cancel</Button>
-                      <Button size="sm" onClick={handleSaveNew}>Create</Button>
+                      <Button size="sm" onClick={handleSaveNew} loading={saving}>Create</Button>
                     </div>
                   </div>
                 </div>
@@ -767,7 +776,7 @@ export default function Applications() {
                     <Button size="sm" variant="secondary" onClick={() => setEditActiveTab(2)}><ChevronLeftIcon className="w-4 h-4 mr-1" /> Back</Button>
                     <div className="flex gap-2">
                       <Button size="sm" variant="secondary" onClick={() => { setIsModalOpen(false); clearCurrent(); setEditResumeFile(null); setEditActiveTab(0); }}>Cancel</Button>
-                      <Button size="sm" onClick={handleSaveEdit}>Save</Button>
+                      <Button size="sm" onClick={handleSaveEdit} loading={saving}>Save</Button>
                     </div>
                   </div>
                 </div>

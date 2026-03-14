@@ -27,19 +27,47 @@ export default function PublicProfile() {
 
   const fetchProfile = async () => {
     try {
-      const response = await usersService.getPublicProfile()
-      setProfile(response.data)
+      // API already returns response.data due to interceptor
+      const data = await usersService.getMyPublicProfile()
+      
+      // Handle case where data might be undefined
+      if (!data) {
+        setProfile({
+          public_slug: '',
+          is_public: false,
+          display_name: '',
+          show_applications_count: true,
+          show_interviews_count: true,
+          show_offers_count: true,
+          show_success_rate: true,
+          stats: { total_applications: 0, interviews: 0, offers: 0, success_rate: 0 }
+        })
+        return
+      }
+      
+      setProfile(data)
       setFormData({
-        public_slug: response.data.public_slug || '',
-        is_public: response.data.is_public || false,
-        display_name: response.data.display_name || '',
-        show_applications_count: response.data.show_applications_count ?? true,
-        show_interviews_count: response.data.show_interviews_count ?? true,
-        show_offers_count: response.data.show_offers_count ?? true,
-        show_success_rate: response.data.show_success_rate ?? true,
+        public_slug: data.public_slug || '',
+        is_public: data.is_public || false,
+        display_name: data.display_name || '',
+        show_applications_count: data.show_applications_count ?? true,
+        show_interviews_count: data.show_interviews_count ?? true,
+        show_offers_count: data.show_offers_count ?? true,
+        show_success_rate: data.show_success_rate ?? true,
       })
     } catch (error) {
       console.error('Failed to fetch profile:', error)
+      // Set default empty profile on error
+      setProfile({
+        public_slug: '',
+        is_public: false,
+        display_name: '',
+        show_applications_count: true,
+        show_interviews_count: true,
+        show_offers_count: true,
+        show_success_rate: true,
+        stats: { total_applications: 0, interviews: 0, offers: 0, success_rate: 0 }
+      })
     } finally {
       setLoading(false)
     }

@@ -118,11 +118,11 @@ export const filterApplications = (applications, filters) => {
       return false
     }
 
-    if (filters.search) {
-      const searchLower = filters.search.toLowerCase()
+    if (filters.searchQuery) {
+      const searchLower = filters.searchQuery.toLowerCase()
       if (
-        !app.job?.title?.toLowerCase().includes(searchLower) &&
-        !app.job?.company?.name?.toLowerCase().includes(searchLower)
+        !app.job_title?.toLowerCase().includes(searchLower) &&
+        !app.company_name?.toLowerCase().includes(searchLower)
       ) {
         return false
       }

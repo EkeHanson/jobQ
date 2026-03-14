@@ -16,8 +16,9 @@ export default function PublicView() {
 
   const fetchPublicProfile = async () => {
     try {
-      const response = await usersService.getPublicProfileBySlug(slug)
-      setProfile(response.data)
+      // API returns response.data directly due to interceptor
+      const data = await usersService.getPublicProfileBySlug(slug)
+      setProfile(data)
     } catch (err) {
       setError('Profile not found or is not public')
     } finally {

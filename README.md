@@ -164,6 +164,8 @@ JobQ/
 - **Interview Tracking**: Track interviews with dates, types, interviewers, and outcomes
 - **Kanban View**: Visual board to drag-and-drop applications between stages
 - **Resume Upload**: Upload and attach resumes to applications
+- **Search & Filter**: Search by job title or company name, filter by status
+- **Table & Kanban Views**: Toggle between table view and kanban board
 
 ### AI-Powered Features
 
@@ -171,6 +173,14 @@ JobQ/
 - **Paste & Extract**: Paste job posting text and extract structured data
 - **Auto-Parse**: Extract title, company, location, salary, description, requirements, skills
 - **AI Fallback**: Graceful degradation when OpenAI is unavailable
+
+#### AI Career Tools
+- **Resume Analysis**: Paste job description and resume to get match analysis
+- **Job Match Scoring**: Calculate match percentage based on skills, experience, and ATS compatibility
+- **Skills Analysis**: Identify matching and missing skills
+- **Resume Optimization**: Get AI-generated optimized resume content
+- **Personalized Recommendations**: Tailored advice to improve your application
+- **Multiple Resume Sources**: Paste resume text, upload file, or use profile resume
 
 #### Interview Preparation
 - **AI Interview Questions**: Generate questions by category (Technical, Behavioral, Situational)
@@ -399,6 +409,44 @@ JobQ/
 
 ### AI App
 - **InterviewPrep** - Interview preparation content
+
+## Frontend Pages
+
+### Public Pages
+| Route | Page | Description |
+|-------|------|-------------|
+| `/` | Landing | Main landing page |
+| `/login` | Login | User login |
+| `/register` | Register | User registration |
+| `/forgot-password` | ForgotPassword | Password reset request |
+| `/reset-password` | ResetPassword | Password reset |
+| `/features` | Features | Product features |
+| `/about` | About | About page |
+| `/insights` | Insights | Blog/Insights listing |
+| `/contact` | Contact | Contact form |
+| `/privacy` | Privacy | Privacy policy |
+| `/terms` | Terms | Terms of service |
+| `/security` | Security | Security information |
+| `/demo` | Demo | Demo page |
+| `/public/:slug` | PublicView | Public profile view |
+
+### Protected Pages (Require Authentication)
+| Route | Page | Description |
+|-------|------|-------------|
+| `/dashboard` | Dashboard | Main dashboard with stats |
+| `/applications` | Applications | Application tracking list |
+| `/jobs` | Jobs | Job listings browse |
+| `/jobs/:id` | JobDetails | Individual job details |
+| `/ai-paste` | AIPaste | AI job extraction tool |
+| `/profile` | Profile | User profile management |
+| `/settings` | Settings | Account settings |
+| `/subscription` | Subscription | Subscription management |
+| `/analytics` | Analytics | Application analytics |
+| `/reviews` | Reviews | User reviews |
+| `/interview-prep` | InterviewPrep | AI interview preparation |
+| `/interview-prep/:id` | InterviewPrep | View/edit interview prep |
+| `/public-profile` | PublicProfile | Public profile settings |
+| `/job-match` | JobMatch | AI job matching tool |
 
 ---
 

@@ -6,11 +6,12 @@ import Button from '../components/common/Button'
 import Input from '../components/common/Input'
 import Modal from '../components/common/Modal'
 import Badge from '../components/common/Badge'
-import { CheckIcon } from '@heroicons/react/24/outline'
+import { CheckIcon, LinkIcon, GlobeAltIcon, EyeSlashIcon, EyeIcon } from '@heroicons/react/24/outline'
 import { useAuth } from '../hooks/useAuth'
 import { useProfiles } from '../hooks/useProfiles'
 import { useToast } from '../components/common/Toast'
 import authService from '../services/auth'
+import usersService from '../services/users'
 import { setUser } from '../store/authSlice'
 
 export default function Profile() {
@@ -40,6 +41,66 @@ export default function Profile() {
   })
   const [skills, setSkills] = useState([])
   const [skillInput, setSkillInput] = useState('')
+
+  // Public profile state
+  const [publicProfile, setPublicProfile] = useState(null)
+  const [publicFormData, setPublicFormData] = useState({
+    public_slug: '',
+    is_public: false,
+    display_name: '',
+    show_applications_count: true,
+    show_interviews_count: true,
+    show_offers_count: true,
+    show_success_rate: true,
+  })
+  const [isSavingPublic, setIsSavingPublic] = useState(false)
+  const [isLoadingPublic, setIsLoadingPublic] = useState(true)
+
+  // Fetch public profile on mount
+  useEffect(() => {
+    fetchPublicProfile()
+  }, [])
+
+  const fetchPublicProfile = async () => {
+    try {
+      const data = await usersService.getMyPublicProfile()
+      if (data) {
+        setPublicProfile(data)
+        setPublicFormData({
+          public_slug: data.public_slug || '',
+          is_public: data.is_public || false,
+          display_name: data.display_name || '',
+          show_applications_count: data.show_applications_count ?? true,
+          show_interviews_count: data.show_interviews_count ?? true,
+          show_offers_count: data.show_offers_count ?? true,
+          show_success_rate: data.show_success_rate ?? true,
+        })
+      }
+    } catch (error) {
+      console.error('Failed to fetch public profile:', error)
+    } finally {
+      setIsLoadingPublic(false)
+    }
+  }
+
+  const handleSavePublicProfile = async () => {
+    setIsSavingPublic(true)
+    try {
+      await usersService.updatePublicProfile(publicFormData)
+      addToast('Public profile updated!', 'success')
+      fetchPublicProfile()
+    } catch (error) {
+      addToast('Failed to update public profile', 'error')
+    } finally {
+      setIsSavingPublic(false)
+    }
+  }
+
+  const copyShareLink = () => {
+    const link = `${window.location.origin}/public/${publicFormData.public_slug}`
+    navigator.clipboard.writeText(link)
+    addToast('Link copied to clipboard!', 'success')
+  }
 
   // Role entries state - each entry has role title and resume file
   const [roleEntries, setRoleEntries] = useState([
@@ -597,6 +658,175 @@ export default function Profile() {
           </div>
         </div>
       </Modal>
+
+      {/* Public Profile Section */}
+      {!isLoadingPublic && (
+        <div className="glass-card p-6">
+          <h2 className="text-2xl font-semibold text-gray-900 mb-6">Public Profile</h2>
+          <p className="text-gray-600 mb-6">
+            Share your job search progress with the world
+          </p>
+          
+          {/* Preview Card */}
+          <div className="bg-gradient-to-br from-primary-50 to-accent-50 rounded-xl p-6 border border-primary-100 mb-6">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center text-white text-2xl font-bold">
+                {publicFormData.display_name ? publicFormData.display_name[0].toUpperCase() : '?'}
+              </div>
+              <div>
+                <h3 className="text-xl font-bold text-gray-900">
+                  {publicFormData.display_name || 'Your Name'}
+                </h3>
+                <p className="text-gray-500">Job Seeker</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {publicFormData.show_applications_count && (
+                <div className="bg-white/60 rounded-lg p-4 text-center">
+                  <p className="text-3xl font-bold text-primary-600">
+                    {publicProfile?.stats?.total_applications || 0}
+                  </p>
+                  <p className="text-sm text-gray-600">Applications</p>
+                </div>
+              )}
+              {publicFormData.show_interviews_count && (
+                <div className="bg-white/60 rounded-lg p-4 text-center">
+                  <p className="text-3xl font-bold text-blue-600">
+                    {publicProfile?.stats?.interviews || 0}
+                  </p>
+                  <p className="text-sm text-gray-600">Interviews</p>
+                </div>
+              )}
+              {publicFormData.show_offers_count && (
+                <div className="bg-white/60 rounded-lg p-4 text-center">
+                  <p className="text-3xl font-bold text-green-600">
+                    {publicProfile?.stats?.offers || 0}
+                  </p>
+                  <p className="text-sm text-gray-600">Offers</p>
+                </div>
+              )}
+              {publicFormData.show_success_rate && (
+                <div className="bg-white/60 rounded-lg p-4 text-center">
+                  <p className="text-3xl font-bold text-purple-600">
+                    {publicProfile?.stats?.success_rate || 0}%
+                  </p>
+                  <p className="text-sm text-gray-600">Success Rate</p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {publicFormData.is_public && publicFormData.public_slug ? (
+            <div className="mb-6 flex items-center gap-2">
+              <Button onClick={copyShareLink} variant="secondary" size="sm">
+                <LinkIcon className="w-4 h-4 mr-2" />
+                Copy Share Link
+              </Button>
+              <span className="text-sm text-gray-500">
+                {window.location.origin}/public/{publicFormData.public_slug}
+              </span>
+            </div>
+          ) : (
+            <div className="mb-6 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+              <p className="text-amber-800 text-sm">
+                Your profile is not visible. Enable public sharing below to share your progress.
+              </p>
+            </div>
+          )}
+
+          {/* Settings */}
+          <div className="space-y-6">
+            <Input
+              label="Display Name"
+              value={publicFormData.display_name}
+              onChange={(e) => setPublicFormData({ ...publicFormData, display_name: e.target.value })}
+              placeholder="Your name"
+            />
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Public URL Slug
+              </label>
+              <div className="flex items-center gap-2">
+                <span className="text-gray-500">jobq.app/public/</span>
+                <input
+                  type="text"
+                  value={publicFormData.public_slug}
+                  onChange={(e) => setPublicFormData({ ...publicFormData, public_slug: e.target.value.replace(/[^a-zA-Z0-9-_]/g, '') })}
+                  placeholder="your-name"
+                  className="flex-1 px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500"
+                />
+              </div>
+              <p className="text-xs text-gray-500 mt-1">
+                Only letters, numbers, hyphens, and underscores allowed
+              </p>
+            </div>
+
+            <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+              <div className="flex items-center gap-3">
+                {publicFormData.is_public ? (
+                  <GlobeAltIcon className="w-6 h-6 text-green-600" />
+                ) : (
+                  <EyeSlashIcon className="w-6 h-6 text-gray-400" />
+                )}
+                <div>
+                  <p className="font-medium text-gray-900">
+                    {publicFormData.is_public ? 'Profile is Public' : 'Profile is Private'}
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    {publicFormData.is_public ? 'Anyone can view your job search progress' : 'Only you can see your profile'}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setPublicFormData({ ...publicFormData, is_public: !publicFormData.is_public })}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                  publicFormData.is_public ? 'bg-green-600' : 'bg-gray-200'
+                }`}
+              >
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                    publicFormData.is_public ? 'translate-x-6' : 'translate-x-1'
+                  }`}
+                />
+              </button>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-3">
+                Statistics to Show
+              </label>
+              <div className="space-y-3">
+                {[
+                  { key: 'show_applications_count', label: 'Total Applications' },
+                  { key: 'show_interviews_count', label: 'Interview Count' },
+                  { key: 'show_offers_count', label: 'Offers Received' },
+                  { key: 'show_success_rate', label: 'Success Rate' },
+                ].map((item) => (
+                  <label key={item.key} className="flex items-center gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={publicFormData[item.key]}
+                      onChange={(e) => setPublicFormData({ ...publicFormData, [item.key]: e.target.checked })}
+                      className="w-4 h-4 text-primary-600 rounded border-gray-300 focus:ring-primary-500"
+                    />
+                    <span className="text-gray-700">{item.label}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            <Button 
+              onClick={handleSavePublicProfile} 
+              disabled={isSavingPublic}
+              className="w-full"
+            >
+              {isSavingPublic ? 'Saving...' : 'Save Changes'}
+            </Button>
+          </div>
+        </div>
+      )}
     </DashboardLayout>
   )
 }

@@ -25,6 +25,14 @@ const usersService = {
     return apiClient.get(`/auth/public/${slug}/`)
   },
 
+  getPublicProfileBySlug: async (slug) => {
+    return apiClient.get(`/auth/public/${slug}/`)
+  },
+
+  getMyPublicProfile: async () => {
+    return apiClient.get('/auth/public-profile/')
+  },
+
   updatePublicProfile: async (data) => {
     return apiClient.patch('/auth/public-profile/', data)
   },

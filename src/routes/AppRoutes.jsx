@@ -33,7 +33,6 @@ const Subscription = lazy(() => import('../pages/Subscription'))
 const Analytics = lazy(() => import('../pages/Analytics'))
 const Reviews = lazy(() => import('../pages/Reviews'))
 const InterviewPrep = lazy(() => import('../pages/InterviewPrep'))
-const PublicProfile = lazy(() => import('../pages/PublicProfile'))
 const PublicView = lazy(() => import('../pages/PublicView'))
 
 const Loading = () => (
@@ -155,14 +154,6 @@ export default function AppRoutes() {
           element={
             <Suspense fallback={<Loading />}>
               <InterviewPrep />
-            </Suspense>
-          }
-        />
-        <Route
-          path="/public-profile"
-          element={
-            <Suspense fallback={<Loading />}>
-              <PublicProfile />
             </Suspense>
           }
         />

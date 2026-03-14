@@ -9,7 +9,7 @@ export default function ApplicationFilters() {
   const filters = useSelector((state) => state.ui.filters)
 
   const handleStatusChange = (status) => {
-    dispatch(setFilter({ status: filters.status === status ? null : status }))
+    dispatch(setFilter({ status: status || null }))
   }
 
   const handleSearchChange = (query) => {
@@ -21,41 +21,37 @@ export default function ApplicationFilters() {
   }
 
   return (
-    <div className="bg-white rounded-lg shadow p-6 mb-6">
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">Filters</h3>
-
-      <div className="space-y-4">
+    <div className="bg-white rounded-lg shadow p-4 mb-4">
+      <div className="flex flex-wrap items-end gap-4">
         {/* Search */}
-        <Input
-          placeholder="Search by job title or company..."
-          value={filters.searchQuery}
-          onChange={(e) => handleSearchChange(e.target.value)}
-        />
+        <div className="flex-1 min-w-[200px]">
+          <Input
+            placeholder="Search by job title or company..."
+            value={filters.searchQuery}
+            onChange={(e) => handleSearchChange(e.target.value)}
+          />
+        </div>
 
-        {/* Status Filters */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
-          <div className="flex flex-wrap gap-2">
+        {/* Status Filter Dropdown */}
+        <div className="min-w-[180px]">
+          <select
+            value={filters.status || ''}
+            onChange={(e) => handleStatusChange(e.target.value)}
+            className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 text-sm"
+          >
+            <option value="">All Statuses</option>
             {Object.entries(STATUS_LABELS).map(([key, label]) => (
-              <button
-                key={key}
-                onClick={() => handleStatusChange(key)}
-                className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
-                  filters.status === key
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
-              >
+              <option key={key} value={key}>
                 {label}
-              </button>
+              </option>
             ))}
-          </div>
+          </select>
         </div>
 
         {/* Clear Filters */}
         {(filters.status || filters.searchQuery) && (
           <Button variant="secondary" size="sm" onClick={handleClearFilters}>
-            Clear Filters
+            Clear
           </Button>
         )}
       </div>

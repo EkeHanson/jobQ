@@ -190,6 +190,17 @@ export default function Applications() {
   const handleView = (app) => {
     setIsCreating(false)
     setCurrent(app)
+    setEditData({
+      jobTitle: app.job_title || '',
+      companyName: app.company_name || '',
+      status: app.status,
+      source: app.source || '',
+      followUpDate: app.follow_up_date || '',
+      notes: app.notes || '',
+      description: app.description || '',
+      requirements: app.requirements || '',
+      recruiterQuestions: app.recruiter_questions || '',
+    })
     setIsModalOpen(true)
   }
 
@@ -471,6 +482,8 @@ export default function Applications() {
                     >
                       <option value="">Select source...</option>
                       <option value="linkedin">LinkedIn</option>
+                      <option value="jobberman">jobberman</option>
+                      <option value="glassdoor">Glassdoor</option>
                       <option value="indeed">Indeed</option>
                       <option value="company_website">Company Website</option>
                       <option value="referral">Referral</option>
@@ -789,7 +802,7 @@ export default function Applications() {
           
           {/* Warnings */}
           <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6 text-left">
-            <p className="text-sm text-amber-800 font-medium mb-2">⚠️ Please note:</p>
+            <p className="text-sm text-amber-800 font-medium mb-2">Please note:</p>
             <ul className="text-sm text-amber-700 space-y-1">
               <li>• This application will be permanently removed from your active list</li>
               <li>• All associated data (notes, status history) will be hidden</li>

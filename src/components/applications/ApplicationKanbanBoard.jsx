@@ -122,7 +122,7 @@ export default function ApplicationKanbanBoard({ applications = [], update, load
                             )}
                             {app.interviews?.length > 0 && (
                               <div className="mt-2 text-xs text-blue-600">
-                                📅 {app.interviews.length} interview(s)
+                                {app.interviews.length} interview(s)
                               </div>
                             )}
                           </div>

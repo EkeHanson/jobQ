@@ -13,6 +13,8 @@ import {
   ChevronRightIcon,
   GlobeAltIcon,
   ChatBubbleLeftRightIcon,
+  DocumentMagnifyingGlassIcon,
+  WrenchScrewdriverIcon,
 } from '@heroicons/react/24/outline'
 import { useSelector, useDispatch } from 'react-redux'
 import { toggleSidebar, toggleSidebarCollapse } from '../../store/uiSlice'
@@ -24,8 +26,9 @@ const navigation = [
   { name: 'Applications', to: '/applications', icon: DocumentTextIcon },
   { name: 'Jobs', to: '/jobs', icon: DocumentTextIcon },
   { name: 'AI Paste', to: '/ai-paste', icon: SparklesIcon },
+  { name: 'AI Career Tools', to: '/job-match', icon: WrenchScrewdriverIcon },
   { name: 'Interview Prep', to: '/interview-prep', icon: ChatBubbleLeftRightIcon },
-  { name: 'Analytics', to: '/analytics', icon: ChartBarIcon },
+  // { name: 'Analytics', to: '/analytics', icon: ChartBarIcon },
   { name: 'Profile', to: '/profile', icon: UserIcon },
   { name: 'Settings', to: '/settings', icon: Cog6ToothIcon },
   { name: 'Subscription', to: '/subscription', icon: CreditCardIcon },

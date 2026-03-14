@@ -168,7 +168,7 @@ export default function JobSearchGoalTracker() {
         {isComplete ? (
           <div className="flex items-center gap-2 text-green-600 bg-green-50 p-3 rounded-lg">
             <ArrowTrendingUpIcon className="w-5 h-5" />
-            <span className="text-sm font-medium">🎉 Goal achieved! Keep up the great work!</span>
+            <span className="text-sm font-medium">Goal achieved! Keep up the great work!</span>
           </div>
         ) : (
           <p className="text-sm text-gray-500">

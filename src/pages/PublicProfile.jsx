@@ -152,7 +152,7 @@ export default function PublicProfile() {
           ) : (
             <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
               <p className="text-amber-800 text-sm">
-                ⚠️ Your profile is not visible. Enable public sharing below to share your progress.
+                Your profile is not visible. Enable public sharing below to share your progress.
               </p>
             </div>
           )}
@@ -211,10 +211,25 @@ export default function PublicProfile() {
                 </div>
               </div>
               <button
-                onClick={() => setFormData({ ...formData, is_public: !formData.is_public })}
+                onClick={async () => {
+                  const newValue = !formData.is_public
+                  setFormData({ ...formData, is_public: newValue })
+                  setSaving(true)
+                  try {
+                    await usersService.updatePublicProfile({ ...formData, is_public: newValue })
+                    toast.success(newValue ? 'Profile is now public!' : 'Profile is now private')
+                    fetchProfile()
+                  } catch (error) {
+                    toast.error('Failed to update profile')
+                    setFormData({ ...formData, is_public: !newValue })
+                  } finally {
+                    setSaving(false)
+                  }
+                }}
                 className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                   formData.is_public ? 'bg-green-600' : 'bg-gray-200'
                 }`}
+                disabled={saving}
               >
                 <span
                   className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${

@@ -6,7 +6,7 @@ import Input from '../components/common/Input'
 import Spinner from '../components/common/Spinner'
 import toast from 'react-hot-toast'
 import authService from '../services/auth'
-import { ArrowLeftIcon, CheckCircleIcon, ExclamationCircleIcon } from '@heroicons/react/24/outline'
+import { ArrowLeftIcon, CheckCircleIcon, ExclamationCircleIcon, EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline'
 
 export default function ResetPassword() {
   const navigate = useNavigate()
@@ -151,7 +151,11 @@ export default function ResetPassword() {
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute right-3 top-3 text-gray-500"
                   >
-                    {showPassword ? '🙈' : '👁'}
+                    {showPassword ? (
+                      <EyeSlashIcon className="w-5 h-5" />
+                    ) : (
+                      <EyeIcon className="w-5 h-5" />
+                    )}
                   </button>
                 </div>
               </div>
@@ -174,7 +178,11 @@ export default function ResetPassword() {
                     onClick={() => setShowConfirm(!showConfirm)}
                     className="absolute right-3 top-3 text-gray-500"
                   >
-                    {showConfirm ? '🙈' : '👁'}
+                    {showConfirm ? (
+                      <EyeSlashIcon className="w-5 h-5" />
+                    ) : (
+                      <EyeIcon className="w-5 h-5" />
+                    )}
                   </button>
                 </div>
               </div>

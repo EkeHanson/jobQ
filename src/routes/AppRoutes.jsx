@@ -28,6 +28,7 @@ const Jobs = lazy(() => import('../pages/Jobs'))
 const JobDetails = lazy(() => import('../pages/JobDetails'))
 const Profile = lazy(() => import('../pages/Profile'))
 const Settings = lazy(() => import('../pages/Settings'))
+const JobMatch = lazy(() => import('../pages/JobMatch'))
 const Subscription = lazy(() => import('../pages/Subscription'))
 const Analytics = lazy(() => import('../pages/Analytics'))
 const Reviews = lazy(() => import('../pages/Reviews'))
@@ -162,6 +163,14 @@ export default function AppRoutes() {
           element={
             <Suspense fallback={<Loading />}>
               <PublicProfile />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/job-match"
+          element={
+            <Suspense fallback={<Loading />}>
+              <JobMatch />
             </Suspense>
           }
         />

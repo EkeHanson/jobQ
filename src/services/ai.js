@@ -1,9 +1,25 @@
 import apiClient from './api'
 
 const aiService = {
+  // Job Match Score - Calculate match between your skills and job requirements
+  getJobMatchScore: async (jobDescription, jobSkills) => {
+    return apiClient.post('/ai/job-match/', {
+      job_description: jobDescription,
+      job_skills: jobSkills,
+    })
+  },
+
+  // Resume Optimization - Get recommendations to optimize your resume for a job
+  optimizeResume: async (jobDescription, resumeText) => {
+    return apiClient.post('/ai/resume-optimizer/', {
+      job_description: jobDescription,
+      resume_text: resumeText,
+    })
+  },
+
   // Interview Preparation
   prepareInterview: async (applicationId) => {
-    return apiClient.post('/ai/prepare-interview', {
+    return apiClient.post('/ai/interview-prep/', {
       application_id: applicationId,
     })
   },

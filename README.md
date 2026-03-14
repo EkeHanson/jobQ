@@ -134,6 +134,8 @@ JobQ/
 - **Password Reset**: Email-based password reset flow
 - **Account Suspension**: Admin can suspend users
 - **OAuth Integration**: Google and LinkedIn OAuth (stubbed)
+- **Notification Settings**: Email notifications, push notifications, weekly summary preferences
+- **Data Collection**: Allow/disallow anonymous data collection
 
 ### Job Management
 
@@ -233,7 +235,7 @@ JobQ/
 | POST | `/api/v1/auth/login/` | Login (username/email + password) |
 | POST | `/api/v1/auth/logout/` | Logout |
 | POST | `/api/v1/auth/refresh/` | Refresh JWT token |
-| GET/PUT | `/api/v1/auth/me/` | Get/update current user |
+| GET/PUT/PATCH | `/api/v1/auth/me/` | Get/update current user (includes notification settings) |
 | POST | `/api/v1/auth/delete/` | Delete account |
 | POST | `/api/v1/auth/password-reset/request/` | Request password reset |
 | POST | `/api/v1/auth/password-reset/verify/` | Verify reset token |
@@ -284,9 +286,9 @@ JobQ/
 ### Users & Goals
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| GET/POST/PATCH | `/api/v1/users/public-profile/` | Get/update public profile |
-| GET | `/api/v1/users/public/{slug}/` | View public profile (no auth) |
-| GET/POST/PATCH | `/api/v1/users/goal/` | Job search goal management |
+| GET/POST/PATCH | `/api/v1/auth/public-profile/` | Get/update public profile |
+| GET | `/api/v1/auth/public/{slug}/` | View public profile (no auth) |
+| GET/POST/PATCH | `/api/v1/auth/goal/` | Job search goal management |
 
 ### Profiles
 | Method | Endpoint | Description |

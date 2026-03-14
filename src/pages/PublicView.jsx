@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom'
 import usersService from '../services/users'
 import Spinner from '../components/common/Spinner'
 import { ArrowLeftIcon, BriefcaseIcon, ChatBubbleLeftIcon, GiftIcon, TrophyIcon } from '@heroicons/react/24/outline'
+import { APP_NAME } from '../utils/config'
 
 export default function PublicView() {
   const { slug } = useParams()
@@ -141,7 +142,7 @@ export default function PublicView() {
       {/* Footer */}
       <footer className="bg-white border-t mt-12">
         <div className="max-w-4xl mx-auto px-4 py-6 text-center text-gray-500 text-sm">
-          <p>Powered by <Link to="/" className="text-primary-600 hover:text-primary-700 font-medium">JobQ</Link> - Track your job search</p>
+          <p>Powered by <Link to="/" className="text-primary-600 hover:text-primary-700 font-medium">{APP_NAME}</Link> - Track your job search</p>
         </div>
       </footer>
     </div>

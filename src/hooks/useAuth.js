@@ -8,8 +8,8 @@ export const useAuth = () => {
   const { user, token, loading, error } = useSelector((state) => state.auth)
 
   const handleLogin = useCallback(
-    ({ identifier, password }) => {
-      return dispatch(login({ identifier, password }))
+    ({ identifier, password, rememberMe = false }) => {
+      return dispatch(login({ identifier, password, rememberMe }))
     },
     [dispatch]
   )

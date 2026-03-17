@@ -70,8 +70,8 @@ export default function ApplicationKanbanBoard({ applications = [], update, load
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+      <div className="flex items-center justify-center h-48 sm:h-64">
+        <div className="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-primary-600"></div>
       </div>
     )
   }
@@ -79,13 +79,13 @@ export default function ApplicationKanbanBoard({ applications = [], update, load
   return (
     <div className="h-full">
       <DragDropContext onDragEnd={onDragEnd}>
-        <div className="flex gap-2 overflow-x-auto pb-4">
+        <div className="flex gap-1.5 sm:gap-2 overflow-x-auto pb-2 sm:pb-3">
           {COLUMNS.map((column) => (
-            <div key={column.id} className="flex-shrink-0 w-64">
-              <div className={`rounded-t-lg px-3 py-2 ${column.color}`}>
+            <div key={column.id} className="flex-shrink-0 w-48 sm:w-56">
+              <div className={`rounded-t px-2 py-1.5 sm:px-3 sm:py-2 ${column.color}`}>
                 <div className="flex justify-between items-center">
-                  <h3 className="font-semibold text-gray-800">{column.title}</h3>
-                  <span className="text-sm text-gray-600 bg-white px-2 py-0.5 rounded-full">
+                  <h3 className="font-semibold text-gray-800 text-xs sm:text-sm">{column.title}</h3>
+                  <span className="text-xs text-gray-600 bg-white px-1.5 py-0.5 rounded-full">
                     {getColumnCount(column.id)}
                   </span>
                 </div>
@@ -95,7 +95,7 @@ export default function ApplicationKanbanBoard({ applications = [], update, load
                   <div
                     ref={provided.innerRef}
                     {...provided.droppableProps}
-                    className={`bg-gray-50 rounded-b-lg min-h-[200px] p-2 space-y-2 ${
+                    className={`bg-gray-50 rounded-b min-h-[150px] sm:min-h-[200px] p-1.5 space-y-1.5 ${
                       snapshot.isDraggingOver ? 'bg-primary-50' : ''
                     }`}
                   >
@@ -107,21 +107,21 @@ export default function ApplicationKanbanBoard({ applications = [], update, load
                             {...provided.draggableProps}
                             {...provided.dragHandleProps}
                             onClick={() => handleCardClick(app)}
-                            className={`bg-white rounded-lg shadow-sm p-3 cursor-pointer hover:shadow-md transition-shadow ${
+                            className={`bg-white rounded shadow-sm p-2 sm:p-3 cursor-pointer hover:shadow-md transition-shadow ${
                               snapshot.isDragging ? 'shadow-lg rotate-2' : ''
                             }`}
                           >
-                            <h4 className="font-medium text-gray-900 text-sm truncate">
+                            <h4 className="font-medium text-gray-900 text-xs sm:text-sm truncate">
                               {app.job_title || 'Untitled'}
                             </h4>
-                            <p className="text-xs text-gray-500 truncate">{app.company_name}</p>
+                            <p className="text-[10px] sm:text-xs text-gray-500 truncate">{app.company_name}</p>
                             {app.follow_up_date && (
-                              <div className="mt-2 text-xs text-orange-600">
+                              <div className="mt-1 text-[10px] sm:text-xs text-orange-600">
                                 Follow up: {format(new Date(app.follow_up_date), 'MMM d')}
                               </div>
                             )}
                             {app.interviews?.length > 0 && (
-                              <div className="mt-2 text-xs text-blue-600">
+                              <div className="mt-1 text-[10px] sm:text-xs text-blue-600">
                                 {app.interviews.length} interview(s)
                               </div>
                             )}

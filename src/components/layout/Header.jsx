@@ -13,9 +13,10 @@ export default function Header() {
   const { user, logout } = useAuth()
   const { unreadCount } = useNotifications()
   const dispatch = useDispatch()
-  const navigatecls = useNavigate()
+  const navigate = useNavigate()
   const [showMenu, setShowMenu] = useState(false)
   const [currentSubscription, setCurrentSubscription] = useState(null)
+  const [loggingOut, setLoggingOut] = useState(false)
 
   const menuRef = useRef(null)
 
@@ -42,9 +43,16 @@ export default function Header() {
     fetchSubscription()
   }, [])
 
-  const handleLogout = () => {
-    logout()
-    navigate('/')
+  const handleLogout = async () => {
+    setLoggingOut(true)
+    try {
+      await logout()
+      navigate('/')
+    } catch (error) {
+      console.error('Logout failed:', error)
+    } finally {
+      setLoggingOut(false)
+    }
   }
 
   return (
@@ -137,10 +145,15 @@ export default function Header() {
                 <div className="border-t border-gray-100 py-2">
                   <button
                     onClick={handleLogout}
-                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                    disabled={loggingOut}
+                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50"
                   >
-                    <ArrowRightOnRectangleIcon className="w-5 h-5" />
-                    Logout
+                    {loggingOut ? (
+                      <div className="w-5 h-5 border-2 border-red-600 border-t-transparent rounded-full animate-spin" />
+                    ) : (
+                      <ArrowRightOnRectangleIcon className="w-5 h-5" />
+                    )}
+                    {loggingOut ? 'Logging out...' : 'Logout'}
                   </button>
                 </div>
               </div>

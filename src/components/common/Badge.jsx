@@ -16,7 +16,7 @@ const Badge = ({ status, label, variant = 'default', className = '' }) => {
   return (
     <span
       className={cn(
-        'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium',
+        'inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] sm:text-xs font-medium',
         variant !== 'default' ? variantClasses[variant] : colorClass,
         className
       )}

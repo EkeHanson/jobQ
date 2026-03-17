@@ -93,8 +93,10 @@ export default function Login() {
 
   const onSubmit = async (data) => {
     try {
-      // Ensure rememberMe is a boolean (checkbox returns 'on' string when checked)
-      const rememberMe = data.rememberMe === true || data.rememberMe === 'on' || data.rememberMe === 'true'
+      // Ensure rememberMe is properly converted to boolean
+      // react-hook-form checkbox returns true when checked, undefined when unchecked
+      const rememberMe = Boolean(data.rememberMe)
+      console.log('Remember me value:', rememberMe, 'Raw:', data.rememberMe)
       const response = await login({ identifier: data.identifier, password: data.password, rememberMe })
       
       // Check if 2FA is required

@@ -21,25 +21,26 @@ export default function ApplicationFilters() {
   }
 
   return (
-    <div className="bg-white rounded-lg shadow p-4 mb-4">
-      <div className="flex flex-wrap items-end gap-4">
+    <div className="bg-white rounded-lg shadow p-2 sm:p-3">
+      <div className="flex flex-wrap items-end gap-2 sm:gap-3">
         {/* Search */}
-        <div className="flex-1 min-w-[200px]">
+        <div className="flex-1 min-w-[150px]">
           <Input
-            placeholder="Search by job title or company..."
+            placeholder="Search..."
             value={filters.searchQuery}
             onChange={(e) => handleSearchChange(e.target.value)}
+            className="text-sm"
           />
         </div>
 
         {/* Status Filter Dropdown */}
-        <div className="min-w-[180px]">
+        <div className="min-w-[140px]">
           <select
             value={filters.status || ''}
             onChange={(e) => handleStatusChange(e.target.value)}
-            className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 text-sm"
+            className="w-full px-2 py-1.5 sm:py-2 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 text-xs sm:text-sm"
           >
-            <option value="">All Statuses</option>
+            <option value="">All Status</option>
             {Object.entries(STATUS_LABELS).map(([key, label]) => (
               <option key={key} value={key}>
                 {label}
@@ -50,7 +51,7 @@ export default function ApplicationFilters() {
 
         {/* Clear Filters */}
         {(filters.status || filters.searchQuery) && (
-          <Button variant="secondary" size="sm" onClick={handleClearFilters}>
+          <Button variant="secondary" size="sm" onClick={handleClearFilters} className="text-xs">
             Clear
           </Button>
         )}

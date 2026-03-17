@@ -322,88 +322,78 @@ export default function Applications() {
   return (
     <DashboardLayout>
       {/* Main Container - Responsive padding */}
-      <div className="px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 max-w-7xl mx-auto w-full">
+      <div className="px-2 sm:px-4 lg:px-6 py-2 sm:py-3 lg:py-4 max-w-7xl mx-auto w-full">
         
-        {/* Header Section - Responsive flex column on mobile */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+        {/* Header Section - Compact */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3 sm:mb-4">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Applications</h1>
-            <p className="text-sm sm:text-base text-gray-600 mt-1">Track all your job applications in one place</p>
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Applications</h1>
+            <p className="text-xs sm:text-sm text-gray-600 hidden sm:block">Track all your job applications</p>
           </div>
           
-          {/* Action Buttons - Stack on mobile */}
-          <div className="flex flex-col xs:flex-row gap-2 w-full sm:w-auto">
-            <Button 
-              variant="secondary" 
-              onClick={() => setIsBulkImportOpen(true)}
-              className="w-full xs:w-auto justify-center"
-              size="sm"
-            >
-              <ArrowUpTrayIcon className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-              <span className="text-sm sm:text-base">Import</span>
-            </Button>
-            <Button 
-              onClick={handleCreateClick}
-              className="w-full xs:w-auto justify-center"
-              size="sm"
-            >
-              <PlusIcon className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-              <span className="text-sm sm:text-base">New Application</span>
-            </Button>
+          {/* Action Buttons and Plan Info - Side by side on mobile */}
+          <div className="flex flex-col xs:flex-row gap-2 w-full sm:w-auto items-start xs:items-center">
+            {/* Subscription Info - Compact inline */}
+            {limits && (
+              <div className={`rounded px-2 py-1 text-xs ${
+                limits.subscription?.active 
+                  ? 'bg-gradient-to-r from-primary-50 to-accent-50 border border-primary-200' 
+                  : 'bg-gray-100 border border-gray-200'
+              }`}>
+                <span className="font-medium text-gray-900">
+                  {limits.subscription?.active ? `${limits.subscription?.plan_name || 'Free'}` : 'Free plan'}
+                </span>
+                <span className="text-gray-600 ml-1">
+                  {limits.usage?.applications || 0}/{limits.limits?.max_applications || 0} apps
+                </span>
+              </div>
+            )}
+            
+            {/* Action Buttons */}
+            <div className="flex gap-1.5 w-full sm:w-auto">
+              <Button 
+                variant="secondary" 
+                onClick={() => setIsBulkImportOpen(true)}
+                className="w-full xs:w-auto justify-center"
+                size="sm"
+              >
+                <ArrowUpTrayIcon className="w-4 h-4 mr-1.5" />
+                <span className="text-xs sm:text-sm">Import</span>
+              </Button>
+              <Button 
+                onClick={handleCreateClick}
+                className="w-full xs:w-auto justify-center"
+                size="sm"
+              >
+                <PlusIcon className="w-4 h-4 mr-1.5" />
+                <span className="text-xs sm:text-sm">New</span>
+              </Button>
+            </div>
           </div>
         </div>
 
-        {/* Subscription Banner - Responsive */}
-        {limits && (
-          <div className={`rounded-xl p-3 sm:p-4 mb-6 ${
-            limits.subscription?.active 
-              ? 'bg-gradient-to-r from-primary-50 to-accent-50 border border-primary-200' 
-              : 'bg-gray-100 border border-gray-200'
-          }`}>
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-              <div>
-                <p className="font-medium text-gray-900 text-sm sm:text-base">
-                  {limits.subscription?.active ? `Plan: ${limits.subscription?.plan_name || 'Free'}` : 'No active subscription'}
-                </p>
-                {limits.subscription?.active && (
-                  <p className="text-xs sm:text-sm text-gray-600">
-                    Applications: {limits.usage?.applications || 0} / {limits.limits?.max_applications || 0}
-                  </p>
-                )}
-              </div>
-              {!limits.subscription?.active && (
-                <Link to="/subscription" className="w-full sm:w-auto">
-                  <Button size="sm" className="btn-gradient w-full sm:w-auto justify-center">
-                    Upgrade
-                  </Button>
-                </Link>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* Limit Error - Responsive */}
+        {/* Limit Error - Compact */}
         {limitError && (
-          <div className="bg-red-50 border border-red-200 rounded-xl p-3 sm:p-4 mb-6">
-            <p className="text-red-700 font-medium text-sm sm:text-base">{limitError}</p>
-            <Link to="/subscription" className="text-xs sm:text-sm text-red-600 hover:underline block mt-1">
+          <div className="bg-red-50 border border-red-200 rounded-lg p-2 sm:p-3 mb-2 sm:mb-3">
+            <p className="text-red-700 font-medium text-xs sm:text-sm">{limitError}</p>
+            <Link to="/subscription" className="text-xs text-red-600 hover:underline block mt-1">
               Upgrade your plan to continue
             </Link>
           </div>
         )}
 
         {/* Filters Section - Mobile friendly */}
-        <div className="mb-6">
+        <div className="mb-2 sm:mb-3">
           {/* Mobile Filter Toggle */}
-          <div className="sm:hidden mb-3">
+          <div className="sm:hidden mb-2">
             <Button
               variant="secondary"
               onClick={() => setShowMobileFilters(!showMobileFilters)}
-              className="w-full justify-center"
+              className="w-full justify-center text-xs"
               size="sm"
             >
-              <FunnelIcon className="w-4 h-4 mr-2" />
-              {showMobileFilters ? 'Hide Filters' : 'Show Filters'}
+              <FunnelIcon className="w-3.5 h-3.5 mr-1.5" />
+              {showMobileFilters ? 'Hide' : 'Show'} Filters
             </Button>
           </div>
           
@@ -413,21 +403,21 @@ export default function Applications() {
           </div>
         </div>
 
-        {/* View Tabs and Controls - Responsive grid */}
-        <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-4">
-          {/* View Tabs - Full width buttons with proper text */}
-          <div className="flex gap-2 w-full sm:w-auto">
+        {/* View Tabs and Controls - Compact grid */}
+        <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-3 sm:mb-4">
+          {/* View Tabs - Full width buttons */}
+          <div className="flex gap-1.5 w-full sm:w-auto">
             <button
               onClick={() => setActiveView('active')}
-              className={`flex-1 sm:flex-initial flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg font-medium transition-all text-sm ${
+              className={`flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3 py-2 rounded-md font-medium transition-all text-xs sm:text-sm ${
                 activeView === 'active'
-                  ? 'bg-primary-600 text-white shadow-md'
+                  ? 'bg-primary-600 text-white shadow-sm'
                   : 'bg-white text-gray-600 border border-gray-200 hover:border-primary-300'
               }`}
             >
-              <EyeIcon className="w-5 h-5" />
-              <span>Active</span>
-              <span className={`ml-1 px-2 py-0.5 text-xs rounded-full ${
+              <EyeIcon className="w-4 h-4" />
+              <span className="hidden xs:inline">Active</span>
+              <span className={`ml-0.5 px-1.5 py-0.5 text-xs rounded-full ${
                 activeView === 'active' ? 'bg-white/20' : 'bg-gray-100'
               }`}>
                 {stats.active}
@@ -435,15 +425,15 @@ export default function Applications() {
             </button>
             <button
               onClick={() => setActiveView('archived')}
-              className={`flex-1 sm:flex-initial flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg font-medium transition-all text-sm ${
+              className={`flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3 py-2 rounded-md font-medium transition-all text-xs sm:text-sm ${
                 activeView === 'archived'
-                  ? 'bg-primary-600 text-white shadow-md'
+                  ? 'bg-primary-600 text-white shadow-sm'
                   : 'bg-white text-gray-600 border border-gray-200 hover:border-primary-300'
               }`}
             >
-              <ArchiveBoxIcon className="w-5 h-5" />
-              <span>Archived</span>
-              <span className={`ml-1 px-2 py-0.5 text-xs rounded-full ${
+              <ArchiveBoxIcon className="w-4 h-4" />
+              <span className="hidden xs:inline">Archived</span>
+              <span className={`ml-0.5 px-1.5 py-0.5 text-xs rounded-full ${
                 activeView === 'archived' ? 'bg-white/20' : 'bg-gray-100'
               }`}>
                 {stats.archived}
@@ -452,54 +442,54 @@ export default function Applications() {
           </div>
           
           {/* View Mode Toggle - Right aligned */}
-          <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1 w-full sm:w-auto justify-center sm:justify-start">
+          <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-0.5 w-full sm:w-auto justify-center sm:justify-start">
             <button
               onClick={() => setViewMode('table')}
-              className={`flex-1 sm:flex-initial flex items-center justify-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${
+              className={`flex-1 sm:flex-initial flex items-center justify-center gap-1 px-3 py-1.5 rounded text-xs font-medium transition-all ${
                 viewMode === 'table'
                   ? 'bg-white text-gray-900 shadow-sm'
                   : 'text-gray-500 hover:text-gray-700'
               }`}
             >
-              <TableCellsIcon className="w-4 h-4" />
-              <span>Table</span>
+              <TableCellsIcon className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Table</span>
             </button>
             <button
               onClick={() => setViewMode('kanban')}
-              className={`flex-1 sm:flex-initial flex items-center justify-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${
+              className={`flex-1 sm:flex-initial flex items-center justify-center gap-1 px-3 py-1.5 rounded text-xs font-medium transition-all ${
                 viewMode === 'kanban'
                   ? 'bg-white text-gray-900 shadow-sm'
                   : 'text-gray-500 hover:text-gray-700'
               }`}
             >
-              <ViewColumnsIcon className="w-4 h-4" />
-              <span>Kanban</span>
+              <ViewColumnsIcon className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Kanban</span>
             </button>
           </div>
         </div>
 
-        {/* Main Content Card - Responsive */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-          {/* Results Count - Responsive padding */}
-          <div className="px-4 sm:px-4 py-3 border-b border-gray-100">
-            <p className="text-sm text-gray-600">
+        {/* Main Content Card - Compact */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden">
+          {/* Results Count - Compact padding */}
+          <div className="px-3 sm:px-4 py-2 border-b border-gray-100">
+            <p className="text-xs sm:text-sm text-gray-600">
               {activeView === 'active' 
-                ? `Showing ${filteredApps.length} of ${stats.active} active applications`
-                : `Showing ${filteredApps.length} of ${stats.archived} archived applications`
+                ? `${filteredApps.length} of ${stats.active} active`
+                : `${filteredApps.length} of ${stats.archived} archived`
               }
             </p>
           </div>
           
-          {/* Content Area - Responsive */}
-          <div className="p-4">
+          {/* Content Area - Compact */}
+          <div className="p-2 sm:p-3">
             {loading ? (
-              <div className="flex items-center justify-center py-12">
-                <Spinner size="lg" />
+              <div className="flex items-center justify-center py-8">
+                <Spinner size="md" />
               </div>
             ) : (
               <>
                 {viewMode === 'kanban' ? (
-                  <div className="overflow-x-auto -mx-4 px-4">
+                  <div className="overflow-x-auto -mx-2 px-2">
                     <div className="min-w-[640px]">
                       <ApplicationKanbanBoard 
                         applications={filteredApps} 
@@ -509,8 +499,8 @@ export default function Applications() {
                     </div>
                   </div>
                 ) : (
-                  <div className="overflow-x-auto -mx-4">
-                    <div className="min-w-[640px] px-4">
+                  <div className="overflow-x-auto -mx-2 sm:mx-0">
+                    <div className="min-w-[500px] px-2 sm:px-0">
                       <ApplicationTable 
                         applications={filteredApps} 
                         onEdit={handleEdit} 

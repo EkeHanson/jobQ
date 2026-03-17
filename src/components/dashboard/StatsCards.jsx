@@ -36,20 +36,20 @@ export default function StatsCards({ stats, loading = false }) {
   ]
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
       {cards.map((card) => (
         <Card key={card.title} className={card.color}>
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-2">
             <div>
-              <p className="text-sm font-medium text-gray-600">{card.title}</p>
+              <p className="text-xs sm:text-sm font-medium text-gray-600">{card.title}</p>
               {loading ? (
-                <Spinner size="sm" className="mt-2" />
+                <Spinner size="sm" className="mt-1" />
               ) : (
-                <p className="text-3xl font-bold mt-2">{card.value}</p>
+                <p className="text-xl sm:text-2xl font-bold mt-1">{card.value}</p>
               )}
             </div>
             <div>
-              <card.icon className="w-10 h-10" />
+              <card.icon className="w-6 h-6 sm:w-8 sm:h-8" />
             </div>
           </div>
         </Card>

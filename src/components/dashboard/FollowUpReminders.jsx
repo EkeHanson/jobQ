@@ -48,12 +48,12 @@ export default function FollowUpReminders() {
 
   if (loading) {
     return (
-      <div className="glass-card p-6">
+      <div className="glass-card p-3 sm:p-4">
         <div className="animate-pulse">
-          <div className="h-4 bg-gray-200 rounded w-1/3 mb-4"></div>
-          <div className="space-y-3">
-            <div className="h-16 bg-gray-200 rounded"></div>
-            <div className="h-16 bg-gray-200 rounded"></div>
+          <div className="h-4 bg-gray-200 rounded w-1/3 mb-3"></div>
+          <div className="space-y-2">
+            <div className="h-12 bg-gray-200 rounded"></div>
+            <div className="h-12 bg-gray-200 rounded"></div>
           </div>
         </div>
       </div>
@@ -65,48 +65,48 @@ export default function FollowUpReminders() {
   }
 
   return (
-    <div className="glass-card p-6">
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2">
-          <BellIcon className="w-5 h-5 text-orange-500" />
-          <h3 className="font-semibold text-gray-900">Follow-up Reminders</h3>
+    <div className="glass-card p-3 sm:p-4">
+      <div className="flex items-center justify-between mb-2 sm:mb-3">
+        <div className="flex items-center gap-1.5">
+          <BellIcon className="w-4 h-4 text-orange-500" />
+          <h3 className="font-semibold text-gray-900 text-sm">Follow-up Reminders</h3>
         </div>
-        <Link to="/applications" className="text-sm text-primary-600 hover:text-primary-700">
+        <Link to="/applications" className="text-xs text-primary-600 hover:text-primary-700">
           View All
         </Link>
       </div>
 
-      <div className="space-y-3">
+      <div className="space-y-2">
         {followUps.map((app) => (
           <div 
             key={app.id} 
-            className={`p-3 rounded-lg border ${
+            className={`p-2 sm:p-2.5 rounded border ${
               isOverdue(app.follow_up_date) 
                 ? 'bg-red-50 border-red-200' 
                 : 'bg-white border-gray-100'
             }`}
           >
-            <div className="flex items-start justify-between">
+            <div className="flex items-start justify-between gap-2">
               <div className="flex-1 min-w-0">
-                <p className="font-medium text-gray-900 truncate">
-                  {app.job_title || 'Untitled Application'}
+                <p className="font-medium text-gray-900 text-xs sm:text-sm truncate">
+                  {app.job_title || 'Untitled'}
                 </p>
-                <p className="text-sm text-gray-500 truncate">
+                <p className="text-xs text-gray-500 truncate">
                   {app.company_name}
                 </p>
-                <div className="flex items-center gap-2 mt-1">
-                  <CalendarIcon className={`w-4 h-4 ${isOverdue(app.follow_up_date) ? 'text-red-500' : 'text-gray-400'}`} />
-                  <span className={`text-sm ${isOverdue(app.follow_up_date) ? 'text-red-600 font-medium' : 'text-gray-500'}`}>
+                <div className="flex items-center gap-1 mt-0.5">
+                  <CalendarIcon className={`w-3 h-3 ${isOverdue(app.follow_up_date) ? 'text-red-500' : 'text-gray-400'}`} />
+                  <span className={`text-[10px] sm:text-xs ${isOverdue(app.follow_up_date) ? 'text-red-600 font-medium' : 'text-gray-500'}`}>
                     {getFollowUpLabel(app.follow_up_date)}
                   </span>
                 </div>
               </div>
               <button
                 onClick={() => handleMarkSent(app.id)}
-                className="ml-2 p-2 text-gray-400 hover:text-green-500 hover:bg-green-50 rounded-lg transition-colors"
+                className="p-1 text-gray-400 hover:text-green-500 hover:bg-green-50 rounded transition-colors"
                 title="Mark as done"
               >
-                <CheckCircleIcon className="w-5 h-5" />
+                <CheckCircleIcon className="w-4 h-4" />
               </button>
             </div>
           </div>

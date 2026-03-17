@@ -1,13 +1,16 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useToast } from '../components/common/Toast'
 import reviewsService from '../services/reviews'
 import { useAuth } from '../hooks/useAuth'
+import DashboardLayout from '../components/layout/DashboardLayout'
 
 const RATING_OPTIONS = [1, 2, 3, 4, 5]
 
 export default function Reviews() {
   const { user, isAuthenticated } = useAuth()
   const { addToast } = useToast()
+  const navigate = useNavigate()
   const [reviews, setReviews] = useState([])
   const [form, setForm] = useState({ rating: 5, title: '', body: '' })
   const [loading, setLoading] = useState(false)
@@ -44,6 +47,10 @@ export default function Reviews() {
     try {
       await reviewsService.create(form)
       addToast('Thank you for your review! It will appear once approved.', 'success')
+      // Redirect to dashboard after successful submission
+      setTimeout(() => {
+        navigate('/dashboard')
+      }, 1500)
       setForm({ rating: 5, title: '', body: '' })
     } catch (err) {
       addToast('Failed to submit review. Please try again.', 'error')
@@ -53,8 +60,8 @@ export default function Reviews() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-16">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+    <DashboardLayout>
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <h1 className="text-4xl font-bold text-gray-900 mb-6">Reviews</h1>
 
         <div className="grid gap-10 lg:grid-cols-2">
@@ -149,6 +156,6 @@ export default function Reviews() {
           </div>
         </div>
       </div>
-    </div>
+    </DashboardLayout>
   )
 }

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import usersService from '../../services/users'
-import { BookmarkSquareIcon, ArrowTrendingUpIcon } from '@heroicons/react/24/outline'
+import { BookmarkSquareIcon, ArrowTrendingUpIcon, CheckCircleIcon } from '@heroicons/react/24/outline'
 
 export default function JobSearchGoalTracker() {
   const [goal, setGoal] = useState(null)
@@ -16,13 +16,16 @@ export default function JobSearchGoalTracker() {
   const fetchGoal = async () => {
     try {
       const response = await usersService.getGoal()
-      if (response.data) {
-        setGoal(response.data)
-        setWeeklyTarget(response.data.weekly_target || 10)
+      // Handle both response object and direct data
+      const goalData = response.data || response
+      if (goalData) {
+        setGoal(goalData)
+        setWeeklyTarget(goalData.weekly_target || 10)
       }
     } catch (error) {
       // Goal might not exist yet
       console.log('No goal set yet')
+      setGoal(null)
     } finally {
       setLoading(false)
     }
@@ -30,10 +33,16 @@ export default function JobSearchGoalTracker() {
 
   const handleSaveGoal = async () => {
     try {
+      // If goal exists, update it; otherwise create new
       if (goal && goal.id) {
         await usersService.updateGoal(goal.id, { weekly_target: weeklyTarget })
       } else {
-        await usersService.createGoal({ weekly_target: weeklyTarget })
+        try {
+          await usersService.createGoal({ weekly_target: weeklyTarget })
+        } catch (createError) {
+          // If goal already exists, update it instead
+          await usersService.updateGoal(null, { weekly_target: weeklyTarget })
+        }
       }
       fetchGoal()
       setIsEditing(false)
@@ -127,7 +136,7 @@ export default function JobSearchGoalTracker() {
     <div className="glass-card p-6">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <TargetIcon className="w-5 h-5 text-primary-500" />
+          <CheckCircleIcon className="w-5 h-5 text-primary-500" />
           <h3 className="font-semibold text-gray-900">Weekly Goal</h3>
         </div>
         <button

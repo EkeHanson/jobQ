@@ -93,7 +93,9 @@ export default function Login() {
 
   const onSubmit = async (data) => {
     try {
-      const response = await login({ identifier: data.identifier, password: data.password, rememberMe: data.rememberMe })
+      // Ensure rememberMe is a boolean (checkbox returns 'on' string when checked)
+      const rememberMe = data.rememberMe === true || data.rememberMe === 'on' || data.rememberMe === 'true'
+      const response = await login({ identifier: data.identifier, password: data.password, rememberMe })
       
       // Check if 2FA is required
       if (response?.require_2fa) {

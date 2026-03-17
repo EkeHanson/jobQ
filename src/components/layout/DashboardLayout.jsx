@@ -9,7 +9,7 @@ export default function DashboardLayout({ children }) {
   return (
     <div className="flex h-screen bg-gray-50/50">
       <Sidebar />
-      <div className={`flex-1 flex flex-col overflow-hidden transition-all duration-300 ${isCollapsed ? 'ml-20' : 'ml-64'}`}>
+      <div className={`flex-1 flex flex-col overflow-hidden transition-all duration-300 lg:${isCollapsed ? 'ml-20' : 'ml-64'} ml-0`}>
         <Header />
         <main className="flex-1 overflow-auto scrollbar-thin">
           <div className="p-4 sm:p-6 lg:p-8">{children}</div>

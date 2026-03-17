@@ -83,6 +83,21 @@ const applicationService = {
   updateInterviewOutcome: async (id, outcome) => {
     return apiClient.post(`/interviews/${id}/update_outcome/`, { outcome })
   },
+
+  // Bulk Import
+  bulkImport: async (file) => {
+    const formData = new FormData()
+    formData.append('file', file)
+    return apiClient.post('/applications/bulk-import/', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    })
+  },
+
+  getBulkImportStatus: async (taskId) => {
+    return apiClient.get(`/applications/bulk-import/${taskId}/`)
+  },
 }
 
 export default applicationService

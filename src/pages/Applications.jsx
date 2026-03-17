@@ -6,10 +6,29 @@ import { useSelector } from 'react-redux'
 import ApplicationTable from '../components/applications/ApplicationTable'
 import ApplicationKanbanBoard from '../components/applications/ApplicationKanbanBoard'
 import ApplicationFilters from '../components/applications/ApplicationFilters'
+import BulkImportModal from '../components/applications/BulkImportModal'
 import Button from '../components/common/Button'
 import Modal from '../components/common/Modal'
 import { filterApplications } from '../utils/helpers'
-import { PlusIcon, ChevronLeftIcon, ChevronRightIcon, DocumentIcon, CloudArrowUpIcon, ArchiveBoxIcon, EyeIcon, ClipboardDocumentListIcon, PencilSquareIcon, BookmarkIcon, ExclamationTriangleIcon, TrashIcon, TableCellsIcon, ViewColumnsIcon } from '@heroicons/react/24/outline'
+import { 
+  PlusIcon, 
+  ChevronLeftIcon, 
+  ChevronRightIcon, 
+  DocumentIcon, 
+  CloudArrowUpIcon, 
+  ArchiveBoxIcon, 
+  EyeIcon, 
+  ClipboardDocumentListIcon, 
+  PencilSquareIcon, 
+  BookmarkIcon, 
+  ExclamationTriangleIcon, 
+  TrashIcon, 
+  TableCellsIcon, 
+  ViewColumnsIcon, 
+  ArrowUpTrayIcon,
+  FunnelIcon,
+  XMarkIcon
+} from '@heroicons/react/24/outline'
 import Input from '../components/common/Input'
 import Spinner from '../components/common/Spinner'
 import toast from 'react-hot-toast'
@@ -39,12 +58,13 @@ export default function Applications() {
   const [editData, setEditData] = useState(null)
   const [editResumeFile, setEditResumeFile] = useState(null)
   const [limitError, setLimitError] = useState(null)
-  const [activeView, setActiveView] = useState('active') // 'active' or 'archived'
-  const [viewMode, setViewMode] = useState('table') // 'table' or 'kanban'
+  const [activeView, setActiveView] = useState('active')
+  const [viewMode, setViewMode] = useState('table')
   const [archivingId, setArchivingId] = useState(null)
   const [saving, setSaving] = useState(false)
+  const [isBulkImportOpen, setIsBulkImportOpen] = useState(false)
+  const [showMobileFilters, setShowMobileFilters] = useState(false)
   
-  // Filter applications based on active view
   const filteredApps = useMemo(() => {
     let apps = applications
     if (activeView === 'active') {
@@ -55,7 +75,6 @@ export default function Applications() {
     return filterApplications(apps, filters)
   }, [applications, filters, activeView])
 
-  // Stats
   const stats = useMemo(() => {
     const active = applications.filter(app => !app.archived).length
     const archived = applications.filter(app => app.archived).length
@@ -114,7 +133,6 @@ export default function Applications() {
     setApplicationToDelete(null)
   }
   
-  // Tab state for create modal
   const [activeTab, setActiveTab] = useState(0)
   const createTabs = [
     { name: 'Basic Info', icon: ClipboardDocumentListIcon },
@@ -123,7 +141,6 @@ export default function Applications() {
     { name: 'Notes', icon: BookmarkIcon },
   ]
   
-  // Tab state for edit modal
   const [editActiveTab, setEditActiveTab] = useState(0)
   const editTabs = [
     { name: 'Basic Info', icon: ClipboardDocumentListIcon },
@@ -131,6 +148,7 @@ export default function Applications() {
     { name: 'Documents', icon: DocumentIcon },
     { name: 'Notes', icon: BookmarkIcon },
   ]
+  
   const [newData, setNewData] = useState({
     jobTitle: '',
     companyName: '',
@@ -145,7 +163,6 @@ export default function Applications() {
     recruiterQuestions: '',
     resumeFile: null,
   })
-
 
   const handleEdit = (app) => {
     setIsCreating(false)
@@ -187,6 +204,9 @@ export default function Applications() {
         setIsModalOpen(false)
         clearCurrent()
         setEditResumeFile(null)
+        toast.success('Application updated successfully')
+      } catch (error) {
+        toast.error('Failed to update application')
       } finally {
         setSaving(false)
       }
@@ -253,7 +273,6 @@ export default function Applications() {
     payload.append('status', newData.status)
     payload.append('source', newData.source || '')
     
-    // Only append dates if they have valid values
     if (newData.appliedDate && newData.appliedDate.trim()) {
       payload.append('applied_date', newData.appliedDate)
     }
@@ -279,10 +298,9 @@ export default function Applications() {
       setIsCreating(false)
       refetch()
       refresh()
+      toast.success('Application created successfully')
     } catch (error) {
-      // Handle backend validation errors
       if (error && typeof error === 'object') {
-        // Build error message from backend response
         const errorMessages = []
         Object.keys(error).forEach(field => {
           const messages = error[field]
@@ -303,535 +321,738 @@ export default function Applications() {
 
   return (
     <DashboardLayout>
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
+      {/* Main Container - Responsive padding */}
+      <div className="px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 max-w-7xl mx-auto w-full">
+        
+        {/* Header Section - Responsive flex column on mobile */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Applications</h1>
-            <p className="text-gray-600 mt-1">Track all your job applications in one place</p>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Applications</h1>
+            <p className="text-sm sm:text-base text-gray-600 mt-1">Track all your job applications in one place</p>
           </div>
-          <Button onClick={handleCreateClick}>
-            <PlusIcon className="w-5 h-5 mr-2" />
-            New Application
-          </Button>
+          
+          {/* Action Buttons - Stack on mobile */}
+          <div className="flex flex-col xs:flex-row gap-2 w-full sm:w-auto">
+            <Button 
+              variant="secondary" 
+              onClick={() => setIsBulkImportOpen(true)}
+              className="w-full xs:w-auto justify-center"
+              size="sm"
+            >
+              <ArrowUpTrayIcon className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+              <span className="text-sm sm:text-base">Import</span>
+            </Button>
+            <Button 
+              onClick={handleCreateClick}
+              className="w-full xs:w-auto justify-center"
+              size="sm"
+            >
+              <PlusIcon className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+              <span className="text-sm sm:text-base">New Application</span>
+            </Button>
+          </div>
         </div>
 
+        {/* Subscription Banner - Responsive */}
         {limits && (
-          <div className={`rounded-xl p-4 ${limits.subscription?.active ? 'bg-gradient-to-r from-primary-50 to-accent-50 border border-primary-200' : 'bg-gray-100 border border-gray-200'}`}>
+          <div className={`rounded-xl p-3 sm:p-4 mb-6 ${
+            limits.subscription?.active 
+              ? 'bg-gradient-to-r from-primary-50 to-accent-50 border border-primary-200' 
+              : 'bg-gray-100 border border-gray-200'
+          }`}>
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <div>
-                <p className="font-medium text-gray-900">
+                <p className="font-medium text-gray-900 text-sm sm:text-base">
                   {limits.subscription?.active ? `Plan: ${limits.subscription?.plan_name || 'Free'}` : 'No active subscription'}
                 </p>
                 {limits.subscription?.active && (
-                  <p className="text-sm text-gray-600">
+                  <p className="text-xs sm:text-sm text-gray-600">
                     Applications: {limits.usage?.applications || 0} / {limits.limits?.max_applications || 0}
                   </p>
                 )}
               </div>
               {!limits.subscription?.active && (
-                <Link to="/subscription">
-                  <Button size="sm" className="btn-gradient">Upgrade to Unlock More</Button>
+                <Link to="/subscription" className="w-full sm:w-auto">
+                  <Button size="sm" className="btn-gradient w-full sm:w-auto justify-center">
+                    Upgrade
+                  </Button>
                 </Link>
               )}
             </div>
           </div>
         )}
 
+        {/* Limit Error - Responsive */}
         {limitError && (
-          <div className="bg-red-50 border border-red-200 rounded-xl p-4">
-            <p className="text-red-700 font-medium">{limitError}</p>
-            <Link to="/subscription" className="text-sm text-red-600 hover:underline">Upgrade your plan to continue</Link>
+          <div className="bg-red-50 border border-red-200 rounded-xl p-3 sm:p-4 mb-6">
+            <p className="text-red-700 font-medium text-sm sm:text-base">{limitError}</p>
+            <Link to="/subscription" className="text-xs sm:text-sm text-red-600 hover:underline block mt-1">
+              Upgrade your plan to continue
+            </Link>
           </div>
         )}
 
-        <ApplicationFilters />
-
-        {/* View Tabs - Active/Archived */}
-        <div className="flex items-center gap-2 mb-4">
-          <button
-            onClick={() => setActiveView('active')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
-              activeView === 'active'
-                ? 'bg-primary-600 text-white shadow-md'
-                : 'bg-white text-gray-600 border border-gray-200 hover:border-primary-300'
-            }`}
-          >
-            <EyeIcon className="w-5 h-5" />
-            Active
-            <span className={`ml-1 px-2 py-0.5 text-xs rounded-full ${
-              activeView === 'active' ? 'bg-white/20' : 'bg-gray-100'
-            }`}>
-              {stats.active}
-            </span>
-          </button>
-          <button
-            onClick={() => setActiveView('archived')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
-              activeView === 'archived'
-                ? 'bg-primary-600 text-white shadow-md'
-                : 'bg-white text-gray-600 border border-gray-200 hover:border-primary-300'
-            }`}
-          >
-            <ArchiveBoxIcon className="w-5 h-5" />
-            Archived
-            <span className={`ml-1 px-2 py-0.5 text-xs rounded-full ${
-              activeView === 'archived' ? 'bg-white/20' : 'bg-gray-100'
-            }`}>
-              {stats.archived}
-            </span>
-          </button>
+        {/* Filters Section - Mobile friendly */}
+        <div className="mb-6">
+          {/* Mobile Filter Toggle */}
+          <div className="sm:hidden mb-3">
+            <Button
+              variant="secondary"
+              onClick={() => setShowMobileFilters(!showMobileFilters)}
+              className="w-full justify-center"
+              size="sm"
+            >
+              <FunnelIcon className="w-4 h-4 mr-2" />
+              {showMobileFilters ? 'Hide Filters' : 'Show Filters'}
+            </Button>
+          </div>
           
-          {/* View Mode Toggle - Table/Kanban */}
-          <div className="ml-auto flex items-center gap-1 bg-gray-100 rounded-lg p-1">
+          {/* Filters - Hidden on mobile unless toggled */}
+          <div className={`${showMobileFilters ? 'block' : 'hidden sm:block'}`}>
+            <ApplicationFilters />
+          </div>
+        </div>
+
+        {/* View Tabs and Controls - Responsive grid */}
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-4">
+          {/* View Tabs - Full width buttons with proper text */}
+          <div className="flex gap-2 w-full sm:w-auto">
+            <button
+              onClick={() => setActiveView('active')}
+              className={`flex-1 sm:flex-initial flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg font-medium transition-all text-sm ${
+                activeView === 'active'
+                  ? 'bg-primary-600 text-white shadow-md'
+                  : 'bg-white text-gray-600 border border-gray-200 hover:border-primary-300'
+              }`}
+            >
+              <EyeIcon className="w-5 h-5" />
+              <span>Active</span>
+              <span className={`ml-1 px-2 py-0.5 text-xs rounded-full ${
+                activeView === 'active' ? 'bg-white/20' : 'bg-gray-100'
+              }`}>
+                {stats.active}
+              </span>
+            </button>
+            <button
+              onClick={() => setActiveView('archived')}
+              className={`flex-1 sm:flex-initial flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg font-medium transition-all text-sm ${
+                activeView === 'archived'
+                  ? 'bg-primary-600 text-white shadow-md'
+                  : 'bg-white text-gray-600 border border-gray-200 hover:border-primary-300'
+              }`}
+            >
+              <ArchiveBoxIcon className="w-5 h-5" />
+              <span>Archived</span>
+              <span className={`ml-1 px-2 py-0.5 text-xs rounded-full ${
+                activeView === 'archived' ? 'bg-white/20' : 'bg-gray-100'
+              }`}>
+                {stats.archived}
+              </span>
+            </button>
+          </div>
+          
+          {/* View Mode Toggle - Right aligned */}
+          <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1 w-full sm:w-auto justify-center sm:justify-start">
             <button
               onClick={() => setViewMode('table')}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
+              className={`flex-1 sm:flex-initial flex items-center justify-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${
                 viewMode === 'table'
                   ? 'bg-white text-gray-900 shadow-sm'
                   : 'text-gray-500 hover:text-gray-700'
               }`}
             >
               <TableCellsIcon className="w-4 h-4" />
-              Table
+              <span>Table</span>
             </button>
             <button
               onClick={() => setViewMode('kanban')}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
+              className={`flex-1 sm:flex-initial flex items-center justify-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${
                 viewMode === 'kanban'
                   ? 'bg-white text-gray-900 shadow-sm'
                   : 'text-gray-500 hover:text-gray-700'
               }`}
             >
               <ViewColumnsIcon className="w-4 h-4" />
-              Kanban
+              <span>Kanban</span>
             </button>
           </div>
         </div>
 
-        <div className="glass-card">
-          {loading ? (
-            <div className="flex items-center justify-center py-12">
-              <Spinner size="lg" />
-            </div>
-          ) : (
-            <>
-              <div className="p-4 border-b border-gray-100">
-                <p className="text-sm text-gray-600">
-                  {activeView === 'active' 
-                    ? `Showing ${filteredApps.length} of ${stats.active} active applications`
-                    : `Showing ${filteredApps.length} of ${stats.archived} archived applications`
-                  }
-                </p>
+        {/* Main Content Card - Responsive */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+          {/* Results Count - Responsive padding */}
+          <div className="px-4 sm:px-4 py-3 border-b border-gray-100">
+            <p className="text-sm text-gray-600">
+              {activeView === 'active' 
+                ? `Showing ${filteredApps.length} of ${stats.active} active applications`
+                : `Showing ${filteredApps.length} of ${stats.archived} archived applications`
+              }
+            </p>
+          </div>
+          
+          {/* Content Area - Responsive */}
+          <div className="p-4">
+            {loading ? (
+              <div className="flex items-center justify-center py-12">
+                <Spinner size="lg" />
               </div>
-              
-              {viewMode === 'kanban' ? (
-                <div className="p-4">
-                  <ApplicationKanbanBoard 
-                    applications={filteredApps} 
-                    update={update} 
-                    loading={loading}
-                  />
-                </div>
-              ) : (
-                <ApplicationTable 
-                  applications={filteredApps} 
-                  onEdit={handleEdit} 
-                  onArchive={handleArchive}
-                  onUnarchive={handleUnarchive}
-                  onDelete={handleDelete}
-                  archivingId={archivingId}
-                  showArchived={activeView === 'archived'}
-                  loading={loading} 
-                />
-              )}
-            </>
-          )}
+            ) : (
+              <>
+                {viewMode === 'kanban' ? (
+                  <div className="overflow-x-auto -mx-4 px-4">
+                    <div className="min-w-[640px]">
+                      <ApplicationKanbanBoard 
+                        applications={filteredApps} 
+                        update={update} 
+                        loading={loading}
+                      />
+                    </div>
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto -mx-4">
+                    <div className="min-w-[640px] px-4">
+                      <ApplicationTable 
+                        applications={filteredApps} 
+                        onEdit={handleEdit} 
+                        onArchive={handleArchive}
+                        onUnarchive={handleUnarchive}
+                        onDelete={handleDelete}
+                        archivingId={archivingId}
+                        showArchived={activeView === 'archived'}
+                        loading={loading} 
+                      />
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
         </div>
       </div>
 
+      {/* Create/Edit Modal - Fully Responsive */}
       <Modal
         isOpen={isModalOpen}
-        onClose={() => { setIsModalOpen(false); clearCurrent(); setIsCreating(false); setLimitError(null); setActiveTab(0); }}
+        onClose={() => { 
+          setIsModalOpen(false); 
+          clearCurrent(); 
+          setIsCreating(false); 
+          setLimitError(null); 
+          setActiveTab(0);
+          setEditActiveTab(0);
+        }}
         title={isCreating ? 'New Application' : currentApplication ? 'Update Application' : 'Application Details'}
-        size="xl"
+        size="full sm:xl"
+        className="sm:max-w-3xl"
       >
-        {isCreating ? (
-          <>
-            {/* Tabs - Horizontal scrollable on mobile */}
-            <div className="flex border-b border-gray-200 mb-5 -mx-6 px-6 overflow-x-auto">
-              {createTabs.map((tab, index) => (
-                <button
-                  key={index}
-                  onClick={() => setActiveTab(index)}
-                  className={`flex items-center gap-2 px-3 py-2.5 border-b-2 text-sm font-medium whitespace-nowrap transition-all ${
-                    activeTab === index
-                      ? 'border-primary-500 text-primary-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                  }`}
-                >
-                  <tab.icon className="w-5 h-5" />
-                  <span>{tab.name}</span>
-                </button>
-              ))}
-            </div>
+        <div className="px-4 sm:px-6">
+          {isCreating ? (
+            <>
+              {/* Tabs - Horizontal scrollable on mobile */}
+              <div className="flex border-b border-gray-200 mb-5 -mx-4 sm:-mx-6 px-4 sm:px-6 overflow-x-auto scrollbar-hide">
+                {createTabs.map((tab, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setActiveTab(index)}
+                    className={`flex items-center gap-2 px-4 py-2.5 border-b-2 text-sm font-medium whitespace-nowrap transition-all flex-shrink-0 ${
+                      activeTab === index
+                        ? 'border-primary-500 text-primary-600'
+                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    }`}
+                  >
+                    <tab.icon className="w-5 h-5" />
+                    <span>{tab.name}</span>
+                  </button>
+                ))}
+              </div>
 
-            {/* Tab Content */}
-            <div className="min-h-[300px]">
-              {activeTab === 0 && (
-                <div className="space-y-4">
-                  <Input label="Job Title" required value={newData.jobTitle} onChange={(e) => setNewData({ ...newData, jobTitle: e.target.value })} />
-                  <Input label="Company" required value={newData.companyName} onChange={(e) => setNewData({ ...newData, companyName: e.target.value })} />
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Source</label>
-                    <select
-                      value={newData.source}
-                      onChange={(e) => setNewData({ ...newData, source: e.target.value })}
-                      className="w-full px-3 py-2.5 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 text-sm"
-                    >
-                      <option value="">Select source...</option>
-                      <option value="linkedin">LinkedIn</option>
-                      <option value="jobberman">jobberman</option>
-                      <option value="glassdoor">Glassdoor</option>
-                      <option value="indeed">Indeed</option>
-                      <option value="company_website">Company Website</option>
-                      <option value="referral">Referral</option>
-                      <option value="recruiter">Recruiter</option>
-                      <option value="other">Other</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
-                    <select
-                      value={newData.status}
-                      onChange={(e) => setNewData({ ...newData, status: e.target.value })}
-                      className="w-full px-3 py-2.5 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 text-sm"
-                    >
-                      <option value="saved">Saved</option>
-                      <option value="applied">Applied</option>
-                      <option value="assessment">Assessment</option>
-                      <option value="interview">Interview</option>
-                      <option value="offer">Offer</option>
-                      <option value="accepted">Accepted</option>
-                      <option value="rejected">Rejected</option>
-                      <option value="withdrawn">Withdrawn</option>
-                    </select>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <Input type="date" label="Applied Date" value={newData.appliedDate} onChange={(e) => setNewData({ ...newData, appliedDate: e.target.value })} />
-                    <Input type="date" label="Deadline" value={newData.deadline} onChange={(e) => setNewData({ ...newData, deadline: e.target.value })} />
-                  </div>
-
-                  <Input type="date" label="Follow-up Date" value={newData.followUpDate} onChange={(e) => setNewData({ ...newData, followUpDate: e.target.value })} placeholder="When to follow up" />
-
-                  <div className="flex justify-end pt-2">
-                    <Button size="sm" onClick={() => setActiveTab(1)}>Next <ChevronRightIcon className="w-4 h-4 ml-1" /></Button>
-                  </div>
-                </div>
-              )}
-
-              {activeTab === 1 && (
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Job Description</label>
-                    <RichTextEditor
-                      value={newData.description}
-                      onChange={(value) => setNewData({ ...newData, description: value })}
-                      placeholder="Paste job description here..."
+              {/* Tab Content - Responsive spacing */}
+              <div className="min-h-[300px] sm:min-h-[400px] overflow-y-auto">
+                {activeTab === 0 && (
+                  <div className="space-y-4">
+                    <Input 
+                      label="Job Title" 
+                      required 
+                      value={newData.jobTitle} 
+                      onChange={(e) => setNewData({ ...newData, jobTitle: e.target.value })} 
                     />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Requirements</label>
-                    <RichTextEditor
-                      value={newData.requirements}
-                      onChange={(value) => setNewData({ ...newData, requirements: value })}
-                      placeholder="Job requirements and qualifications..."
+                    <Input 
+                      label="Company" 
+                      required 
+                      value={newData.companyName} 
+                      onChange={(e) => setNewData({ ...newData, companyName: e.target.value })} 
                     />
-                  </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Source</label>
+                      <select
+                        value={newData.source}
+                        onChange={(e) => setNewData({ ...newData, source: e.target.value })}
+                        className="w-full px-3 py-2.5 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 text-sm"
+                      >
+                        <option value="">Select source...</option>
+                        <option value="linkedin">LinkedIn</option>
+                        <option value="jobberman">jobberman</option>
+                        <option value="glassdoor">Glassdoor</option>
+                        <option value="indeed">Indeed</option>
+                        <option value="company_website">Company Website</option>
+                        <option value="referral">Referral</option>
+                        <option value="recruiter">Recruiter</option>
+                        <option value="other">Other</option>
+                      </select>
+                    </div>
 
-                  <div className="flex justify-between pt-2">
-                    <Button size="sm" variant="secondary" onClick={() => setActiveTab(0)}><ChevronLeftIcon className="w-4 h-4 mr-1" /> Back</Button>
-                    <Button size="sm" onClick={() => setActiveTab(2)}>Next <ChevronRightIcon className="w-4 h-4 ml-1" /></Button>
-                  </div>
-                </div>
-              )}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                      <select
+                        value={newData.status}
+                        onChange={(e) => setNewData({ ...newData, status: e.target.value })}
+                        className="w-full px-3 py-2.5 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 text-sm"
+                      >
+                        <option value="saved">Saved</option>
+                        <option value="applied">Applied</option>
+                        <option value="assessment">Assessment</option>
+                        <option value="interview">Interview</option>
+                        <option value="offer">Offer</option>
+                        <option value="accepted">Accepted</option>
+                        <option value="rejected">Rejected</option>
+                        <option value="withdrawn">Withdrawn</option>
+                      </select>
+                    </div>
 
-              {activeTab === 2 && (
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Recruiter Questions</label>
-                    <RichTextEditor
-                      value={newData.recruiterQuestions}
-                      onChange={(value) => setNewData({ ...newData, recruiterQuestions: value })}
-                      placeholder="Questions asked by recruiter..."
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <Input 
+                        type="date" 
+                        label="Applied Date" 
+                        value={newData.appliedDate} 
+                        onChange={(e) => setNewData({ ...newData, appliedDate: e.target.value })} 
+                      />
+                      <Input 
+                        type="date" 
+                        label="Deadline" 
+                        value={newData.deadline} 
+                        onChange={(e) => setNewData({ ...newData, deadline: e.target.value })} 
+                      />
+                    </div>
+
+                    <Input 
+                      type="date" 
+                      label="Follow-up Date" 
+                      value={newData.followUpDate} 
+                      onChange={(e) => setNewData({ ...newData, followUpDate: e.target.value })} 
+                      placeholder="When to follow up"
                     />
-                  </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Resume</label>
-                    <div className="border-2 border-dashed border-gray-200 rounded-lg p-4 text-center hover:border-primary-300 transition-colors">
+                    <div className="flex justify-end pt-2">
+                      <Button 
+                        size="sm" 
+                        onClick={() => setActiveTab(1)}
+                      >
+                        Next <ChevronRightIcon className="w-4 h-4 ml-1" />
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                {activeTab === 1 && (
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Job Description</label>
+                      <RichTextEditor
+                        value={newData.description}
+                        onChange={(value) => setNewData({ ...newData, description: value })}
+                        placeholder="Paste job description here..."
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Requirements</label>
+                      <RichTextEditor
+                        value={newData.requirements}
+                        onChange={(value) => setNewData({ ...newData, requirements: value })}
+                        placeholder="Job requirements and qualifications..."
+                      />
+                    </div>
+
+                    <div className="flex justify-between pt-2">
+                      <Button 
+                        size="sm" 
+                        variant="secondary" 
+                        onClick={() => setActiveTab(0)}
+                      >
+                        <ChevronLeftIcon className="w-4 h-4 mr-1" /> Back
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        onClick={() => setActiveTab(2)}
+                      >
+                        Next <ChevronRightIcon className="w-4 h-4 ml-1" />
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                {activeTab === 2 && (
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Recruiter Questions</label>
+                      <RichTextEditor
+                        value={newData.recruiterQuestions}
+                        onChange={(value) => setNewData({ ...newData, recruiterQuestions: value })}
+                        placeholder="Questions asked by recruiter..."
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Resume</label>
+                      <div className="border-2 border-dashed border-gray-200 rounded-lg p-4 text-center hover:border-primary-300 transition-colors">
+                        <input
+                          type="file"
+                          accept=".pdf,.doc,.docx"
+                          onChange={(e) => setNewData({ ...newData, resumeFile: e.target.files[0] })}
+                          className="hidden"
+                          id="resume-upload"
+                        />
+                        <label htmlFor="resume-upload" className="cursor-pointer block">
+                          {newData.resumeFile ? (
+                            <div className="flex items-center justify-center gap-2 text-primary-600">
+                              <DocumentIcon className="w-5 h-5" />
+                              <span className="text-sm font-medium truncate max-w-[200px]">
+                                {newData.resumeFile.name}
+                              </span>
+                            </div>
+                          ) : (
+                            <div className="text-gray-500">
+                              <CloudArrowUpIcon className="w-8 h-8 mx-auto mb-2 text-gray-400" />
+                              <span className="text-sm">Click to upload resume</span>
+                              <p className="text-xs text-gray-400 mt-1">PDF, DOC, DOCX</p>
+                            </div>
+                          )}
+                        </label>
+                      </div>
+                    </div>
+
+                    <div className="flex justify-between pt-2">
+                      <Button 
+                        size="sm" 
+                        variant="secondary" 
+                        onClick={() => setActiveTab(1)}
+                      >
+                        <ChevronLeftIcon className="w-4 h-4 mr-1" /> Back
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        onClick={() => setActiveTab(3)}
+                      >
+                        Next <ChevronRightIcon className="w-4 h-4 ml-1" />
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                {activeTab === 3 && (
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+                      <RichTextEditor
+                        value={newData.notes}
+                        onChange={(value) => setNewData({ ...newData, notes: value })}
+                        placeholder="Add your notes here..."
+                      />
+                    </div>
+
+                    <div className="flex justify-between pt-2">
+                      <Button 
+                        size="sm" 
+                        variant="secondary" 
+                        onClick={() => setActiveTab(2)}
+                      >
+                        <ChevronLeftIcon className="w-4 h-4 mr-1" /> Back
+                      </Button>
+                      <div className="flex gap-2">
+                        <Button 
+                          size="sm" 
+                          variant="secondary" 
+                          onClick={() => { 
+                            setIsModalOpen(false); 
+                            setIsCreating(false); 
+                            setLimitError(null); 
+                            setActiveTab(0); 
+                          }}
+                        >
+                          Cancel
+                        </Button>
+                        <Button 
+                          size="sm" 
+                          onClick={handleSaveNew} 
+                          loading={saving}
+                        >
+                          Create
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </>
+          ) : currentApplication ? (
+            <>
+              {/* Edit Tabs - Horizontal scrollable on mobile */}
+              <div className="flex border-b border-gray-200 mb-5 -mx-4 sm:-mx-6 px-4 sm:px-6 overflow-x-auto scrollbar-hide">
+                {editTabs.map((tab, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setEditActiveTab(index)}
+                    className={`flex items-center gap-2 px-4 py-2.5 border-b-2 text-sm font-medium whitespace-nowrap transition-all flex-shrink-0 ${
+                      editActiveTab === index
+                        ? 'border-primary-500 text-primary-600'
+                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    }`}
+                  >
+                    <tab.icon className="w-5 h-5" />
+                    <span>{tab.name}</span>
+                  </button>
+                ))}
+              </div>
+
+              <div className="min-h-[300px] sm:min-h-[400px] overflow-y-auto">
+                {editActiveTab === 0 && (
+                  <div className="space-y-4">
+                    <Input 
+                      label="Job Title" 
+                      value={editData?.jobTitle || ''} 
+                      onChange={(e) => setEditData({ ...editData, jobTitle: e.target.value })} 
+                    />
+                    <Input 
+                      label="Company" 
+                      value={editData?.companyName || ''} 
+                      onChange={(e) => setEditData({ ...editData, companyName: e.target.value })} 
+                    />
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                      <select
+                        value={editData?.status || currentApplication.status}
+                        onChange={(e) => setEditData({ ...editData, status: e.target.value })}
+                        className="w-full px-3 py-2.5 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 text-sm"
+                      >
+                        <option value="saved">Saved</option>
+                        <option value="applied">Applied</option>
+                        <option value="assessment">Assessment</option>
+                        <option value="interview">Interview</option>
+                        <option value="offer">Offer</option>
+                        <option value="accepted">Accepted</option>
+                        <option value="rejected">Rejected</option>
+                        <option value="withdrawn">Withdrawn</option>
+                      </select>
+                    </div>
+
+                    <div className="flex justify-end pt-2">
+                      <Button 
+                        size="sm" 
+                        onClick={() => setEditActiveTab(1)}
+                      >
+                        Next <ChevronRightIcon className="w-4 h-4 ml-1" />
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                {editActiveTab === 1 && (
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Job Description</label>
+                      <RichTextEditor
+                        value={editData?.description || ''}
+                        onChange={(value) => setEditData({ ...editData, description: value })}
+                        placeholder="Paste job description here..."
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Requirements</label>
+                      <RichTextEditor
+                        value={editData?.requirements || ''}
+                        onChange={(value) => setEditData({ ...editData, requirements: value })}
+                        placeholder="Job requirements and qualifications..."
+                      />
+                    </div>
+
+                    <div className="flex justify-between pt-2">
+                      <Button 
+                        size="sm" 
+                        variant="secondary" 
+                        onClick={() => setEditActiveTab(0)}
+                      >
+                        <ChevronLeftIcon className="w-4 h-4 mr-1" /> Back
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        onClick={() => setEditActiveTab(2)}
+                      >
+                        Next <ChevronRightIcon className="w-4 h-4 ml-1" />
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                {editActiveTab === 2 && (
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Recruiter Questions</label>
+                      <RichTextEditor
+                        value={editData?.recruiterQuestions || ''}
+                        onChange={(value) => setEditData({ ...editData, recruiterQuestions: value })}
+                        placeholder="Questions asked by recruiter..."
+                      />
+                    </div>
+
+                    {currentApplication.resume && (
+                      <div className="bg-gray-50 rounded-lg p-4">
+                        <p className="text-sm font-medium text-gray-500 mb-2">Current Resume</p>
+                        <a 
+                          href={currentApplication.resume} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="text-primary-600 hover:text-primary-700 flex items-center gap-2 text-sm font-medium"
+                        >
+                          <DocumentIcon className="w-5 h-5" />
+                          View Resume
+                        </a>
+                      </div>
+                    )}
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Update Resume</label>
                       <input
                         type="file"
                         accept=".pdf,.doc,.docx"
-                        onChange={(e) => setNewData({ ...newData, resumeFile: e.target.files[0] })}
-                        className="hidden"
-                        id="resume-upload"
+                        onChange={(e) => setEditResumeFile(e.target.files[0])}
+                        className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100"
                       />
-                      <label htmlFor="resume-upload" className="cursor-pointer">
-                        {newData.resumeFile ? (
-                          <div className="flex items-center justify-center gap-2 text-primary-600">
-                            <DocumentIcon className="w-5 h-5" />
-                            <span className="text-sm font-medium">{newData.resumeFile.name}</span>
-                          </div>
-                        ) : (
-                          <div className="text-gray-500">
-                            <CloudArrowUpIcon className="w-8 h-8 mx-auto mb-2 text-gray-400" />
-                            <span className="text-sm">Click to upload resume</span>
-                            <p className="text-xs text-gray-400 mt-1">PDF, DOC, DOCX - will be compressed</p>
-                          </div>
-                        )}
-                      </label>
                     </div>
-                  </div>
 
-                  <div className="flex justify-between pt-2">
-                    <Button size="sm" variant="secondary" onClick={() => setActiveTab(1)}><ChevronLeftIcon className="w-4 h-4 mr-1" /> Back</Button>
-                    <Button size="sm" onClick={() => setActiveTab(3)}>Next <ChevronRightIcon className="w-4 h-4 ml-1" /></Button>
-                  </div>
-                </div>
-              )}
-
-              {activeTab === 3 && (
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
-                    <RichTextEditor
-                      value={newData.notes}
-                      onChange={(value) => setNewData({ ...newData, notes: value })}
-                      placeholder="Add your notes here..."
-                    />
-                  </div>
-
-                  <div className="flex justify-between pt-2">
-                    <Button size="sm" variant="secondary" onClick={() => setActiveTab(2)}><ChevronLeftIcon className="w-4 h-4 mr-1" /> Back</Button>
-                    <div className="flex gap-2">
-                      <Button size="sm" variant="secondary" onClick={() => { setIsModalOpen(false); setIsCreating(false); setLimitError(null); setActiveTab(0); }}>Cancel</Button>
-                      <Button size="sm" onClick={handleSaveNew} loading={saving}>Create</Button>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          </>
-        ) : currentApplication ? (
-          <>
-            {/* Edit Tabs */}
-            <div className="flex border-b border-gray-200 mb-5 -mx-6 px-6 overflow-x-auto">
-              {editTabs.map((tab, index) => (
-                <button
-                  key={index}
-                  onClick={() => setEditActiveTab(index)}
-                  className={`flex items-center gap-2 px-3 py-2.5 border-b-2 text-sm font-medium whitespace-nowrap transition-all ${
-                    editActiveTab === index
-                      ? 'border-primary-500 text-primary-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                  }`}
-                >
-                  <tab.icon className="w-5 h-5" />
-                  <span>{tab.name}</span>
-                </button>
-              ))}
-            </div>
-
-            <div className="min-h-[300px]">
-              {editActiveTab === 0 && (
-                <div className="space-y-4">
-                  <Input 
-                    label="Job Title" 
-                    value={editData?.jobTitle || ''} 
-                    onChange={(e) => setEditData({ ...editData, jobTitle: e.target.value })} 
-                  />
-                  <Input 
-                    label="Company" 
-                    value={editData?.companyName || ''} 
-                    onChange={(e) => setEditData({ ...editData, companyName: e.target.value })} 
-                  />
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
-                    <select
-                      value={editData?.status || currentApplication.status}
-                      onChange={(e) => setEditData({ ...editData, status: e.target.value })}
-                      className="w-full px-3 py-2.5 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 text-sm"
-                    >
-                      <option value="saved">Saved</option>
-                      <option value="applied">Applied</option>
-                      <option value="assessment">Assessment</option>
-                      <option value="interview">Interview</option>
-                      <option value="offer">Offer</option>
-                      <option value="accepted">Accepted</option>
-                      <option value="rejected">Rejected</option>
-                      <option value="withdrawn">Withdrawn</option>
-                    </select>
-                  </div>
-
-                  <div className="flex justify-end pt-2">
-                    <Button size="sm" onClick={() => setEditActiveTab(1)}>Next <ChevronRightIcon className="w-4 h-4 ml-1" /></Button>
-                  </div>
-                </div>
-              )}
-
-              {editActiveTab === 1 && (
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Job Description</label>
-                    <RichTextEditor
-                      value={editData?.description || ''}
-                      onChange={(value) => setEditData({ ...editData, description: value })}
-                      placeholder="Paste job description here..."
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Requirements</label>
-                    <RichTextEditor
-                      value={editData?.requirements || ''}
-                      onChange={(value) => setEditData({ ...editData, requirements: value })}
-                      placeholder="Job requirements and qualifications..."
-                    />
-                  </div>
-
-                  <div className="flex justify-between pt-2">
-                    <Button size="sm" variant="secondary" onClick={() => setEditActiveTab(0)}><ChevronLeftIcon className="w-4 h-4 mr-1" /> Back</Button>
-                    <Button size="sm" onClick={() => setEditActiveTab(2)}>Next <ChevronRightIcon className="w-4 h-4 ml-1" /></Button>
-                  </div>
-                </div>
-              )}
-
-              {editActiveTab === 2 && (
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Recruiter Questions</label>
-                    <RichTextEditor
-                      value={editData?.recruiterQuestions || ''}
-                      onChange={(value) => setEditData({ ...editData, recruiterQuestions: value })}
-                      placeholder="Questions asked by recruiter..."
-                    />
-                  </div>
-
-                  {currentApplication.resume && (
-                    <div className="bg-gray-50 rounded-lg p-4">
-                      <p className="text-sm font-medium text-gray-500 mb-2">Resume</p>
-                      <a 
-                        href={currentApplication.resume} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="text-primary-600 hover:text-primary-700 flex items-center gap-2 text-sm font-medium"
+                    <div className="flex justify-between pt-2">
+                      <Button 
+                        size="sm" 
+                        variant="secondary" 
+                        onClick={() => setEditActiveTab(1)}
                       >
-                        <DocumentIcon className="w-5 h-5" />
-                        View Resume
-                      </a>
-                    </div>
-                  )}
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Update Resume</label>
-                    <input
-                      type="file"
-                      accept=".pdf,.doc,.docx"
-                      onChange={(e) => setEditResumeFile(e.target.files[0])}
-                      className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100"
-                    />
-                  </div>
-
-                  <div className="flex justify-between pt-2">
-                    <Button size="sm" variant="secondary" onClick={() => setEditActiveTab(1)}><ChevronLeftIcon className="w-4 h-4 mr-1" /> Back</Button>
-                    <Button size="sm" onClick={() => setEditActiveTab(3)}>Next <ChevronRightIcon className="w-4 h-4 ml-1" /></Button>
-                  </div>
-                </div>
-              )}
-
-              {editActiveTab === 3 && (
-                <div className="space-y-4">
-                  {currentApplication.notes && (
-                    <div className="bg-gray-50 rounded-lg p-4">
-                      <p className="text-sm font-medium text-gray-500 mb-2">Current Notes</p>
-                      <div className="prose prose-sm max-w-none text-gray-600" dangerouslySetInnerHTML={{ __html: currentApplication.notes }} />
-                    </div>
-                  )}
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Edit Notes</label>
-                    <RichTextEditor
-                      value={editData?.notes || currentApplication.notes || ''}
-                      onChange={(value) => setEditData({ ...editData, notes: value })}
-                      placeholder="Add your notes here..."
-                    />
-                  </div>
-
-                  <div className="flex justify-between pt-2">
-                    <Button size="sm" variant="secondary" onClick={() => setEditActiveTab(2)}><ChevronLeftIcon className="w-4 h-4 mr-1" /> Back</Button>
-                    <div className="flex gap-2">
-                      <Button size="sm" variant="secondary" onClick={() => { setIsModalOpen(false); clearCurrent(); setEditResumeFile(null); setEditActiveTab(0); }}>Cancel</Button>
-                      <Button size="sm" onClick={handleSaveEdit} loading={saving}>Save</Button>
+                        <ChevronLeftIcon className="w-4 h-4 mr-1" /> Back
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        onClick={() => setEditActiveTab(3)}
+                      >
+                        Next <ChevronRightIcon className="w-4 h-4 ml-1" />
+                      </Button>
                     </div>
                   </div>
-                </div>
-              )}
-            </div>
-          </>
-        ) : null}
+                )}
+
+                {editActiveTab === 3 && (
+                  <div className="space-y-4">
+                    {currentApplication.notes && (
+                      <div className="bg-gray-50 rounded-lg p-4">
+                        <p className="text-sm font-medium text-gray-500 mb-2">Current Notes</p>
+                        <div className="prose prose-sm max-w-none text-gray-600" 
+                          dangerouslySetInnerHTML={{ __html: currentApplication.notes }} 
+                        />
+                      </div>
+                    )}
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Edit Notes</label>
+                      <RichTextEditor
+                        value={editData?.notes || currentApplication.notes || ''}
+                        onChange={(value) => setEditData({ ...editData, notes: value })}
+                        placeholder="Add your notes here..."
+                      />
+                    </div>
+
+                    <div className="flex justify-between pt-2">
+                      <Button 
+                        size="sm" 
+                        variant="secondary" 
+                        onClick={() => setEditActiveTab(2)}
+                      >
+                        <ChevronLeftIcon className="w-4 h-4 mr-1" /> Back
+                      </Button>
+                      <div className="flex gap-2">
+                        <Button 
+                          size="sm" 
+                          variant="secondary" 
+                          onClick={() => { 
+                            setIsModalOpen(false); 
+                            clearCurrent(); 
+                            setEditResumeFile(null); 
+                            setEditActiveTab(0); 
+                          }}
+                        >
+                          Cancel
+                        </Button>
+                        <Button 
+                          size="sm" 
+                          onClick={handleSaveEdit} 
+                          loading={saving}
+                        >
+                          Save
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </>
+          ) : null}
+        </div>
       </Modal>
 
-      {/* Delete Confirmation Modal */}
+      {/* Delete Confirmation Modal - Responsive */}
       <Modal
         isOpen={isDeleteModalOpen}
         onClose={cancelDelete}
         title="Delete Application"
-        size="md"
+        size="full sm:md"
+        className="sm:max-w-md"
       >
-        <div className="text-center">
-          {/* Warning Icon */}
-          <div className="mx-auto w-16 h-16 rounded-full bg-red-100 flex items-center justify-center mb-4">
-            <ExclamationTriangleIcon className="w-8 h-8 text-red-600" />
+        <div className="text-center px-4 sm:px-6">
+          <div className="mx-auto w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-red-100 flex items-center justify-center mb-4">
+            <ExclamationTriangleIcon className="w-6 h-6 sm:w-8 sm:h-8 text-red-600" />
           </div>
           
-          {/* Warning Title */}
           <h3 className="text-lg font-semibold text-gray-900 mb-2">
             Delete Application?
           </h3>
           
-          {/* Application Info */}
-          <p className="text-gray-600 mb-4">
-            You're about to delete <span className="font-semibold text-gray-900">{applicationToDelete?.job_title || applicationToDelete?.company_name || 'this application'}</span>
+          <p className="text-sm sm:text-base text-gray-600 mb-4">
+            You're about to delete{' '}
+            <span className="font-semibold text-gray-900 block sm:inline">
+              {applicationToDelete?.job_title || applicationToDelete?.company_name || 'this application'}
+            </span>
           </p>
           
-          {/* Warnings */}
           <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6 text-left">
             <p className="text-sm text-amber-800 font-medium mb-2">Please note:</p>
             <ul className="text-sm text-amber-700 space-y-1">
-              <li>• This application will be permanently removed from your active list</li>
-              <li>• All associated data (notes, status history) will be hidden</li>
-              <li>• You can restore this application later if needed</li>
+              <li>• Permanently removed from active list</li>
+              <li>• All associated data will be hidden</li>
+              <li>• Can be restored later if needed</li>
             </ul>
           </div>
           
-          {/* Actions */}
-          <div className="flex gap-3 justify-center">
+          <div className="flex flex-col xs:flex-row gap-3 justify-center">
             <Button 
               variant="secondary" 
               onClick={cancelDelete}
-              className="flex-1"
+              className="w-full xs:flex-1 justify-center"
             >
               Cancel
             </Button>
             <Button 
               onClick={confirmDelete}
               disabled={archivingId !== null}
-              className="flex-1 bg-red-600 hover:bg-red-700 border-red-600 hover:border-red-700"
+              className="w-full xs:flex-1 justify-center bg-red-600 hover:bg-red-700 border-red-600 hover:border-red-700"
             >
               <TrashIcon className="w-4 h-4 mr-2" />
               {archivingId === applicationToDelete?.id ? 'Deleting...' : 'Delete'}
@@ -839,6 +1060,15 @@ export default function Applications() {
           </div>
         </div>
       </Modal>
+
+      <BulkImportModal
+        isOpen={isBulkImportOpen}
+        onClose={() => setIsBulkImportOpen(false)}
+        onImportComplete={() => {
+          refetch()
+          refresh()
+        }}
+      />
     </DashboardLayout>
   )
 }

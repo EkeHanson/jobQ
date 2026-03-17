@@ -17,7 +17,7 @@ const savedSidebar = loadSidebarState()
 
 const initialState = {
   sidebar: {
-    isOpen: true,
+    isOpen: false,
     isMobile: false,
     isCollapsed: savedSidebar?.isCollapsed ?? true,
   },

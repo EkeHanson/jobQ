@@ -18,9 +18,12 @@ export default function Reviews() {
       setLoading(true)
       try {
         const data = await reviewsService.list()
-        setReviews(data)
+        // Handle paginated response (DRF format) - apiClient already returns response.data
+        const reviewsData = data?.results || (Array.isArray(data) ? data : [])
+        setReviews(reviewsData)
       } catch (err) {
         console.error(err)
+        setReviews([])
       } finally {
         setLoading(false)
       }
@@ -131,6 +134,7 @@ export default function Reviews() {
                         <p className="font-semibold text-gray-900">{review.title}</p>
                         <p className="text-sm text-gray-500">
                           {review.user} • {review.rating} / 5
+                          {!review.published && <span className="ml-2 px-2 py-0.5 text-xs bg-yellow-100 text-yellow-700 rounded">Pending</span>}
                         </p>
                       </div>
                       <p className="text-xs text-gray-400">

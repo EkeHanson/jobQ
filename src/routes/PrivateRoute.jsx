@@ -7,7 +7,8 @@ export default function PrivateRoute() {
   const skipAuth =
     import.meta.env.VITE_SKIP_AUTH === 'true' ||
     import.meta.env.REACT_APP_SKIP_AUTH === 'true'
-  const { isAuthenticated, loading } = useAuth()
+  const { isAuthenticated, loading, user } = useAuth()
+  const isAdmin = user?.is_staff || user?.is_superuser
 
   if (loading && !skipAuth) {
     return (
@@ -23,5 +24,14 @@ export default function PrivateRoute() {
     return <Outlet />
   }
 
-  return isAuthenticated ? <Outlet /> : <Navigate to="/login" replace />
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />
+  }
+
+  // Redirect admin users to admin panel instead of regular user dashboard
+  if (isAdmin) {
+    return <Navigate to="/admin" replace />
+  }
+
+  return <Outlet />
 }

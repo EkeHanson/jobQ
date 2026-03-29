@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { lazy, Suspense } from 'react'
 import PrivateRoute from './PrivateRoute'
+import AdminRoute from './AdminRoute'
 
 // Common
 import Landing from '../pages/Landing'
@@ -33,6 +34,16 @@ const Subscription = lazy(() => import('../pages/Subscription'))
 const Analytics = lazy(() => import('../pages/Analytics'))
 const Reviews = lazy(() => import('../pages/Reviews'))
 const InterviewPrep = lazy(() => import('../pages/InterviewPrep'))
+const AdminPanel = lazy(() => import('../pages/AdminPanel'))
+const AdminUsers = lazy(() => import('../pages/AdminUsers'))
+const AdminContacts = lazy(() => import('../pages/AdminContacts'))
+const AdminBlog = lazy(() => import('../pages/AdminBlog'))
+const AdminSubscribers = lazy(() => import('../pages/AdminSubscribers'))
+const AdminNotifications = lazy(() => import('../pages/AdminNotifications'))
+const AdminApplications = lazy(() => import('../pages/AdminApplications'))
+const AdminJobs = lazy(() => import('../pages/AdminJobs'))
+const AdminProfiles = lazy(() => import('../pages/AdminProfiles'))
+const AdminSubscriptions = lazy(() => import('../pages/AdminSubscriptions'))
 const PublicView = lazy(() => import('../pages/PublicView'))
 
 const Loading = () => (
@@ -162,6 +173,89 @@ export default function AppRoutes() {
           element={
             <Suspense fallback={<Loading />}>
               <JobMatch />
+            </Suspense>
+          }
+        />
+      </Route>
+
+      <Route element={<AdminRoute />}>
+        <Route
+          path="/admin"
+          element={
+            <Suspense fallback={<Loading />}>
+              <AdminPanel />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/admin/users"
+          element={
+            <Suspense fallback={<Loading />}>
+              <AdminUsers />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/admin/contacts"
+          element={
+            <Suspense fallback={<Loading />}>
+              <AdminContacts />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/admin/blog"
+          element={
+            <Suspense fallback={<Loading />}>
+              <AdminBlog />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/admin/subscribers"
+          element={
+            <Suspense fallback={<Loading />}>
+              <AdminSubscribers />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/admin/notifications"
+          element={
+            <Suspense fallback={<Loading />}>
+              <AdminNotifications />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/admin/applications"
+          element={
+            <Suspense fallback={<Loading />}>
+              <AdminApplications />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/admin/jobs"
+          element={
+            <Suspense fallback={<Loading />}>
+              <AdminJobs />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/admin/profiles"
+          element={
+            <Suspense fallback={<Loading />}>
+              <AdminProfiles />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/admin/subscriptions"
+          element={
+            <Suspense fallback={<Loading />}>
+              <AdminSubscriptions />
             </Suspense>
           }
         />

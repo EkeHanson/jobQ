@@ -2,74 +2,72 @@ import { NavLink, Link } from 'react-router-dom'
 import { APP_NAME, APP_VERSION } from '../../utils/config'
 import {
   HomeIcon,
+  UsersIcon,
   DocumentTextIcon,
-  SparklesIcon,
-  UserIcon,
-  Cog6ToothIcon,
   CreditCardIcon,
+  BriefcaseIcon,
+  DocumentMagnifyingGlassIcon,
+  UserGroupIcon,
+  EnvelopeIcon,
+  BellIcon,
   ChartBarIcon,
   XMarkIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
-  GlobeAltIcon,
-  ChatBubbleLeftRightIcon,
-  DocumentMagnifyingGlassIcon,
-  WrenchScrewdriverIcon,
 } from '@heroicons/react/24/outline'
 import { useSelector, useDispatch } from 'react-redux'
 import { useAuth } from '../../hooks/useAuth'
 import { toggleSidebar, toggleSidebarCollapse } from '../../store/uiSlice'
 import { cn } from '../../utils/helpers'
 
-const navigation = [
-  { name: 'Home', to: '/', icon: GlobeAltIcon },
-  { name: 'Dashboard', to: '/dashboard', icon: HomeIcon },
-  { name: 'Applications', to: '/applications', icon: DocumentTextIcon },
-  { name: 'Jobs', to: '/jobs', icon: DocumentTextIcon },
-  { name: 'AI Paste', to: '/ai-paste', icon: SparklesIcon },
-  { name: 'AI Career Tools', to: '/job-match', icon: WrenchScrewdriverIcon },
-  { name: 'Interview Prep', to: '/interview-prep', icon: ChatBubbleLeftRightIcon },
-  { name: 'Profile', to: '/profile', icon: UserIcon },
-  { name: 'Settings', to: '/settings', icon: Cog6ToothIcon },
-  { name: 'Subscription', to: '/subscription', icon: CreditCardIcon },
+const adminNavigation = [
+  { name: 'Dashboard', to: '/admin', icon: HomeIcon },
+  { name: 'Users', to: '/admin/users', icon: UsersIcon },
+  { name: 'Blog', to: '/admin/blog', icon: DocumentTextIcon },
+  { name: 'Subscriptions', to: '/admin/subscriptions', icon: CreditCardIcon },
+  { name: 'Jobs', to: '/admin/jobs', icon: BriefcaseIcon },
+  { name: 'Applications', to: '/admin/applications', icon: DocumentMagnifyingGlassIcon },
+  { name: 'Profiles', to: '/admin/profiles', icon: UserGroupIcon },
+  { name: 'Contacts', to: '/admin/contacts', icon: EnvelopeIcon },
+  { name: 'Subscribers', to: '/admin/subscribers', icon: EnvelopeIcon },
+  { name: 'Notifications', to: '/admin/notifications', icon: BellIcon },
 ]
 
-export default function Sidebar() {
+export default function AdminLayout({ children }) {
   const { sidebar } = useSelector((state) => state.ui)
   const dispatch = useDispatch()
   const { user } = useAuth()
   const isCollapsed = sidebar.isCollapsed
-  // Admin users use separate AdminLayout, so no admin link in regular sidebar
-  const navItems = navigation
 
   return (
-    <>
+    <div className="flex h-screen bg-gray-50/50">
       {/* Desktop Sidebar */}
       <aside className={cn(
         "hidden lg:flex lg:flex-col bg-gray-900/95 backdrop-blur-xl text-white transition-all duration-300 border-r border-gray-800/50",
         isCollapsed ? "w-20" : "w-64"
       )}>
         <div className="flex items-center gap-3 px-4 py-5 border-b border-gray-800/50">
-          <Link to="/" className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-accent-500 rounded-xl flex items-center justify-center font-bold flex-shrink-0 shadow-lg shadow-primary-500/25">
-              J
+          <Link to="/admin" className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-gradient-to-br from-red-500 to-orange-500 rounded-xl flex items-center justify-center font-bold flex-shrink-0 shadow-lg shadow-red-500/25">
+              A
             </div>
             {!isCollapsed && (
-              <span className="text-lg font-semibold whitespace-nowrap">{APP_NAME}</span>
+              <span className="text-lg font-semibold whitespace-nowrap">Admin Panel</span>
             )}
           </Link>
         </div>
 
         <nav className="flex-1 px-3 py-4 space-y-1.5">
-          {navItems.map((item) => (
+          {adminNavigation.map((item) => (
             <NavLink
               key={item.name}
               to={item.to}
+              end={item.to === '/admin'}
               className={({ isActive }) =>
                 cn(
                   'flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 group',
                   isActive
-                    ? 'bg-gradient-to-r from-primary-600 to-accent-600 text-white shadow-lg shadow-primary-500/25'
+                    ? 'bg-gradient-to-r from-red-600 to-orange-600 text-white shadow-lg shadow-red-500/25'
                     : 'text-gray-400 hover:text-white hover:bg-white/5',
                   isCollapsed && 'justify-center px-3'
                 )
@@ -108,7 +106,10 @@ export default function Sidebar() {
 
         <div className="px-4 py-4 border-t border-gray-800/50">
           {!isCollapsed && (
-            <p className="text-xs text-gray-500">{APP_NAME} v{APP_VERSION}</p>
+            <>
+              <p className="text-xs text-gray-500">{APP_NAME} Admin</p>
+              <p className="text-xs text-gray-500 mt-1">v{APP_VERSION}</p>
+            </>
           )}
         </div>
       </aside>
@@ -121,10 +122,10 @@ export default function Sidebar() {
           <aside className="fixed left-0 top-0 bottom-0 w-72 bg-gray-900/95 backdrop-blur-xl text-white flex flex-col border-r border-gray-800/50">
             <div className="flex items-center justify-between px-6 py-5 border-b border-gray-800/50">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-accent-500 rounded-xl flex items-center justify-center font-bold shadow-lg shadow-primary-500/25">
-                  J
+                <div className="w-10 h-10 bg-gradient-to-br from-red-500 to-orange-500 rounded-xl flex items-center justify-center font-bold shadow-lg shadow-red-500/25">
+                  A
                 </div>
-                <span className="text-lg font-semibold">{APP_NAME}</span>
+                <span className="text-lg font-semibold">Admin Panel</span>
               </div>
               <button onClick={() => dispatch(toggleSidebar())} className="p-2 hover:bg-white/5 rounded-lg transition-colors">
                 <XMarkIcon className="w-6 h-6" />
@@ -132,16 +133,17 @@ export default function Sidebar() {
             </div>
 
             <nav className="flex-1 px-3 py-4 space-y-1.5">
-              {navItems.map((item) => (
+              {adminNavigation.map((item) => (
                 <NavLink
                   key={item.name}
                   to={item.to}
+                  end={item.to === '/admin'}
                   onClick={() => dispatch(toggleSidebar())}
                   className={({ isActive }) =>
                     cn(
                       'flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200',
                       isActive
-                        ? 'bg-gradient-to-r from-primary-600 to-accent-600 text-white shadow-lg shadow-primary-500/25'
+                        ? 'bg-gradient-to-r from-red-600 to-orange-600 text-white shadow-lg shadow-red-500/25'
                         : 'text-gray-400 hover:text-white hover:bg-white/5'
                     )
                   }
@@ -153,11 +155,51 @@ export default function Sidebar() {
             </nav>
 
             <div className="px-4 py-4 border-t border-gray-800/50">
-              <p className="text-xs text-gray-500">{APP_NAME} v{APP_VERSION}</p>
+              <p className="text-xs text-gray-500">{APP_NAME} Admin</p>
+              <p className="text-xs text-gray-500 mt-1">v{APP_VERSION}</p>
             </div>
           </aside>
         </div>
       )}
-    </>
+
+      {/* Main Content */}
+      <div className={`flex-1 flex flex-col overflow-hidden transition-all duration-300 lg:${isCollapsed ? 'ml-20' : 'ml-64'} ml-0`}>
+        {/* Admin Header */}
+        <header className="bg-white border-b border-gray-200 shadow-sm">
+          <div className="flex items-center justify-between px-4 sm:px-6 lg:px-8 py-4">
+            <div className="flex items-center gap-4">
+              <button
+                onClick={() => dispatch(toggleSidebar())}
+                className="lg:hidden p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              </button>
+              <div>
+                <h1 className="text-lg font-semibold text-gray-900">Admin Panel</h1>
+                <p className="text-sm text-gray-500">Manage your application</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-4">
+              <span className="text-sm text-gray-600">
+                Welcome, <span className="font-medium text-gray-900">{user?.username || 'Admin'}</span>
+              </span>
+              <Link
+                to="/dashboard"
+                className="text-sm text-gray-600 hover:text-gray-900 transition-colors"
+              >
+                Exit Admin
+              </Link>
+            </div>
+          </div>
+        </header>
+
+        {/* Page Content */}
+        <main className="flex-1 overflow-auto scrollbar-thin">
+          <div className="p-4 sm:p-6 lg:p-8">{children}</div>
+        </main>
+      </div>
+    </div>
   )
 }

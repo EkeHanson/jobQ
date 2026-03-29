@@ -76,13 +76,18 @@ export default function Login() {
     }
   }
 
+  const getDestinationPath = (user) => {
+    return user?.is_staff || user?.is_superuser ? '/admin' : '/dashboard'
+  }
+
   const handleGoogleResponse = async (response) => {
     if (response.credential) {
       setGoogleLoading(true)
       try {
-        await loginWithGoogle(response.credential)
+        const action = await loginWithGoogle(response.credential)
+        const payload = action?.payload ?? action
         toast.success('Google login successful!')
-        navigate('/dashboard')
+        navigate(getDestinationPath(payload?.user))
       } catch (err) {
         toast.error('Google login failed. Please try again.')
       } finally {
@@ -97,7 +102,8 @@ export default function Login() {
       // react-hook-form checkbox returns true when checked, undefined when unchecked
       const rememberMe = Boolean(data.rememberMe)
       console.log('Remember me value:', rememberMe, 'Raw:', data.rememberMe)
-      const response = await login({ identifier: data.identifier, password: data.password, rememberMe })
+      const action = await login({ identifier: data.identifier, password: data.password, rememberMe })
+      const response = action?.payload ?? action
       
       // Check if 2FA is required
       if (response?.require_2fa) {
@@ -108,7 +114,7 @@ export default function Login() {
       }
       
       toast.success('Login successful!')
-      navigate('/dashboard')
+      navigate(getDestinationPath(response?.user))
     } catch (err) {
       // Check if error is due to account suspension
       const errorMessage = err?.response?.data?.detail || 'Login failed. Please try again.'
@@ -121,7 +127,8 @@ export default function Login() {
       setTwoFactorLoading(true)
       await authService.verifyTwoFactor(twoFactorEmail, data.token, data.rememberMe)
       toast.success('Login successful!')
-      navigate('/dashboard')
+      const savedUser = JSON.parse(localStorage.getItem('user'))
+      navigate(getDestinationPath(savedUser))
     } catch (err) {
       const errorMessage = err?.response?.data?.detail || 'Invalid verification code. Please try again.'
       toast.error(errorMessage)

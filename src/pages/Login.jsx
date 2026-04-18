@@ -116,8 +116,11 @@ export default function Login() {
       toast.success('Login successful!')
       navigate(getDestinationPath(response?.user))
     } catch (err) {
-      // Check if error is due to account suspension
-      const errorMessage = err?.response?.data?.detail || 'Login failed. Please try again.'
+      // Check if error is due to account suspension or timeout
+      const errorMessage =
+        err?.response?.data?.detail ||
+        err?.message ||
+        'Login failed. Please try again.'
       toast.error(errorMessage)
     }
   }
@@ -130,7 +133,10 @@ export default function Login() {
       const savedUser = JSON.parse(localStorage.getItem('user'))
       navigate(getDestinationPath(savedUser))
     } catch (err) {
-      const errorMessage = err?.response?.data?.detail || 'Invalid verification code. Please try again.'
+      const errorMessage =
+        err?.response?.data?.detail ||
+        err?.message ||
+        'Invalid verification code. Please try again.'
       toast.error(errorMessage)
     } finally {
       setTwoFactorLoading(false)

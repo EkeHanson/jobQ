@@ -2,7 +2,8 @@ import axios from 'axios'
 
 const apiClient = axios.create({
   baseURL: (import.meta.env.VITE_API_URL || 'http://localhost:9090/api/v1') + '/',
-  timeout: 30000,
+  timeout: Number(import.meta.env.VITE_API_TIMEOUT || 60000),
+  timeoutErrorMessage: 'Request timed out. Please try again.',
 })
 
 // Flag to prevent multiple refresh attempts at the same time

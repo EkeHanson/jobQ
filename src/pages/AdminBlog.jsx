@@ -142,130 +142,174 @@ export default function AdminBlog() {
 
   return (
     <AdminLayout>
-      <div className="space-y-6 p-4 sm:p-6">
+      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 md:py-8">
         {/* Back Navigation */}
-        <div className="flex items-center gap-2">
-          <a href="/admin" className="flex items-center gap-1 text-sm text-gray-600 hover:text-gray-900 transition-colors">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+        <div className="mb-4 sm:mb-6">
+          <a
+            href="/admin"
+            className="inline-flex items-center gap-1.5 text-sm text-gray-600 hover:text-gray-900 transition-colors group"
+          >
+            <svg
+              className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M10 19l-7-7m0 0l7-7m-7 7h18"
+              />
             </svg>
-            Back to Admin
+            <span>Back to Admin</span>
           </a>
         </div>
 
-        {/* Header */}
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        {/* Header Section */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 sm:mb-8">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Blog Management</h1>
-            <p className="text-gray-600 mt-2 text-sm sm:text-base">Manage your blog posts and featured content directly from the React admin console.</p>
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900">
+              Blog Management
+            </h1>
+            <p className="text-gray-600 mt-1 sm:mt-2 text-sm sm:text-base max-w-2xl">
+              Manage your blog posts and featured content directly from the React admin console.
+            </p>
           </div>
           <button
             type="button"
             onClick={() => setShowCreateForm((prev) => !prev)}
-            className="rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 px-4 py-2.5 text-sm font-semibold text-white hover:from-purple-700 hover:to-pink-700 shadow-lg shadow-purple-500/30 transition-all duration-200 w-full sm:w-auto"
+            className="rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 px-4 sm:px-6 py-2.5 sm:py-3 text-sm sm:text-base font-semibold text-white hover:from-purple-700 hover:to-pink-700 shadow-lg shadow-purple-500/30 transition-all duration-200 w-full sm:w-auto flex-shrink-0"
           >
-            {showCreateForm ? 'Hide create form' : '+ Create new post'}
+            {showCreateForm ? (
+              <span className="flex items-center justify-center gap-1">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+                Hide create form
+              </span>
+            ) : (
+              <span className="flex items-center justify-center gap-1">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+                Create new post
+              </span>
+            )}
           </button>
         </div>
 
         {/* Create Form */}
         {showCreateForm && (
-          <div className="rounded-2xl border border-purple-200 bg-gradient-to-br from-purple-50 to-pink-50 p-4 sm:p-6 shadow-lg">
-            <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
-              <span className="w-8 h-8 rounded-full bg-purple-600 flex items-center justify-center text-white text-sm">✎</span>
+          <div className="rounded-2xl border border-purple-200 bg-gradient-to-br from-purple-50 to-pink-50 p-4 sm:p-6 lg:p-8 shadow-lg mb-6 sm:mb-8">
+            <h2 className="text-lg sm:text-xl lg:text-2xl font-semibold text-gray-900 mb-4 sm:mb-6 flex items-center gap-2">
+              <span className="w-8 h-8 rounded-full bg-purple-600 flex items-center justify-center text-white text-sm">
+                ✎
+              </span>
               Create Blog Post
             </h2>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Title *</label>
+            <div className="grid gap-4 sm:gap-5 md:gap-6 grid-cols-1 sm:grid-cols-2">
+              <div className="sm:col-span-2 md:col-span-1">
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                  Title <span className="text-red-500">*</span>
+                </label>
                 <input
                   name="title"
                   value={newPost.title}
                   onChange={handleNewPostChange}
-                  className="w-full rounded-xl border-gray-300 px-4 py-3 shadow-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all"
+                  className="w-full rounded-xl border-gray-300 px-4 py-2.5 sm:py-3 shadow-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all"
                   required
                 />
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+              <div className="sm:col-span-2 md:col-span-1">
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Category</label>
                 <input
                   name="category"
                   value={newPost.category}
                   onChange={handleNewPostChange}
-                  className="w-full rounded-xl border-gray-300 px-4 py-3 shadow-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all"
+                  className="w-full rounded-xl border-gray-300 px-4 py-2.5 sm:py-3 shadow-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all"
                 />
               </div>
               <div className="sm:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Excerpt</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Excerpt</label>
                 <textarea
                   name="excerpt"
                   value={newPost.excerpt}
                   onChange={handleNewPostChange}
                   rows={3}
-                  className="w-full rounded-xl border-gray-300 px-4 py-3 shadow-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all"
+                  className="w-full rounded-xl border-gray-300 px-4 py-2.5 sm:py-3 shadow-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all"
                 />
               </div>
               <div className="sm:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Content *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                  Content <span className="text-red-500">*</span>
+                </label>
                 <textarea
                   name="content"
                   value={newPost.content}
                   onChange={handleNewPostChange}
                   rows={6}
-                  className="w-full rounded-xl border-gray-300 px-4 py-3 shadow-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all"
+                  className="w-full rounded-xl border-gray-300 px-4 py-2.5 sm:py-3 shadow-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all"
                   required
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Featured Image URL</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                  Featured Image URL
+                </label>
                 <input
                   name="featured_image"
                   value={newPost.featured_image}
                   onChange={handleNewPostChange}
-                  className="w-full rounded-xl border-gray-300 px-4 py-3 shadow-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all"
+                  className="w-full rounded-xl border-gray-300 px-4 py-2.5 sm:py-3 shadow-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">External Link</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">External Link</label>
                 <input
                   name="external_link"
                   value={newPost.external_link}
                   onChange={handleNewPostChange}
-                  className="w-full rounded-xl border-gray-300 px-4 py-3 shadow-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all"
+                  className="w-full rounded-xl border-gray-300 px-4 py-2.5 sm:py-3 shadow-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all"
                 />
               </div>
-              <div className="flex items-center gap-3">
-                <input
-                  id="is_published"
-                  type="checkbox"
-                  name="is_published"
-                  checked={newPost.is_published}
-                  onChange={handleNewPostChange}
-                  className="h-5 w-5 rounded border-gray-300 text-purple-600 focus:ring-purple-500"
-                />
-                <label htmlFor="is_published" className="text-sm text-gray-700">Publish immediately</label>
-              </div>
-              <div className="flex items-center gap-3">
-                <input
-                  id="is_featured"
-                  type="checkbox"
-                  name="is_featured"
-                  checked={newPost.is_featured}
-                  onChange={handleNewPostChange}
-                  className="h-5 w-5 rounded border-gray-300 text-purple-600 focus:ring-purple-500"
-                />
-                <label htmlFor="is_featured" className="text-sm text-gray-700">Featured post</label>
+              <div className="flex flex-wrap items-center gap-4 sm:gap-6">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    name="is_published"
+                    checked={newPost.is_published}
+                    onChange={handleNewPostChange}
+                    className="h-5 w-5 rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+                  />
+                  <span className="text-sm text-gray-700">Publish immediately</span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    name="is_featured"
+                    checked={newPost.is_featured}
+                    onChange={handleNewPostChange}
+                    className="h-5 w-5 rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+                  />
+                  <span className="text-sm text-gray-700">Featured post</span>
+                </label>
               </div>
             </div>
-            <div className="mt-6 flex flex-col sm:flex-row justify-end gap-3">
+            <div className="mt-6 sm:mt-8 flex flex-col sm:flex-row justify-end gap-3">
               <Button
                 type="button"
-                className="bg-gray-500 hover:bg-gray-600 w-full sm:w-auto"
+                variant="secondary"
+                className="w-full sm:w-auto px-6 py-2.5"
                 onClick={() => setShowCreateForm(false)}
               >
                 Cancel
               </Button>
-              <Button type="button" onClick={handleCreatePost} className="w-full sm:w-auto">
+              <Button
+                type="button"
+                onClick={handleCreatePost}
+                className="w-full sm:w-auto px-6 py-2.5 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+              >
                 Save Post
               </Button>
             </div>
@@ -274,97 +318,106 @@ export default function AdminBlog() {
 
         {/* Edit Form */}
         {showEditForm && selectedPost && (
-          <div className="rounded-2xl border border-amber-200 bg-gradient-to-br from-amber-50 to-orange-50 p-4 sm:p-6 shadow-lg">
-            <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
-              <span className="w-8 h-8 rounded-full bg-amber-600 flex items-center justify-center text-white text-sm">✎</span>
+          <div className="rounded-2xl border border-amber-200 bg-gradient-to-br from-amber-50 to-orange-50 p-4 sm:p-6 lg:p-8 shadow-lg mb-6 sm:mb-8">
+            <h2 className="text-lg sm:text-xl lg:text-2xl font-semibold text-gray-900 mb-4 sm:mb-6 flex items-center gap-2">
+              <span className="w-8 h-8 rounded-full bg-amber-600 flex items-center justify-center text-white text-sm">
+                ✎
+              </span>
               Edit Blog Post: {selectedPost.title}
             </h2>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Title *</label>
+            <div className="grid gap-4 sm:gap-5 md:gap-6 grid-cols-1 sm:grid-cols-2">
+              <div className="sm:col-span-2 md:col-span-1">
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                  Title <span className="text-red-500">*</span>
+                </label>
                 <input
                   name="title"
                   value={newPost.title}
                   onChange={handleNewPostChange}
-                  className="w-full rounded-xl border-gray-300 px-4 py-3 shadow-sm focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all"
+                  className="w-full rounded-xl border-gray-300 px-4 py-2.5 sm:py-3 shadow-sm focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all"
                   required
                 />
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+              <div className="sm:col-span-2 md:col-span-1">
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Category</label>
                 <input
                   name="category"
                   value={newPost.category}
                   onChange={handleNewPostChange}
-                  className="w-full rounded-xl border-gray-300 px-4 py-3 shadow-sm focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all"
+                  className="w-full rounded-xl border-gray-300 px-4 py-2.5 sm:py-3 shadow-sm focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all"
                 />
               </div>
               <div className="sm:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Excerpt</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Excerpt</label>
                 <textarea
                   name="excerpt"
                   value={newPost.excerpt}
                   onChange={handleNewPostChange}
                   rows={3}
-                  className="w-full rounded-xl border-gray-300 px-4 py-3 shadow-sm focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all"
+                  className="w-full rounded-xl border-gray-300 px-4 py-2.5 sm:py-3 shadow-sm focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all"
                 />
               </div>
               <div className="sm:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Content *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                  Content <span className="text-red-500">*</span>
+                </label>
                 <textarea
                   name="content"
                   value={newPost.content}
                   onChange={handleNewPostChange}
                   rows={6}
-                  className="w-full rounded-xl border-gray-300 px-4 py-3 shadow-sm focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all"
+                  className="w-full rounded-xl border-gray-300 px-4 py-2.5 sm:py-3 shadow-sm focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all"
                   required
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Featured Image URL</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                  Featured Image URL
+                </label>
                 <input
                   name="featured_image"
                   value={newPost.featured_image}
                   onChange={handleNewPostChange}
-                  className="w-full rounded-xl border-gray-300 px-4 py-3 shadow-sm focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all"
+                  className="w-full rounded-xl border-gray-300 px-4 py-2.5 sm:py-3 shadow-sm focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">External Link</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">External Link</label>
                 <input
                   name="external_link"
                   value={newPost.external_link}
                   onChange={handleNewPostChange}
-                  className="w-full rounded-xl border-gray-300 px-4 py-3 shadow-sm focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all"
+                  className="w-full rounded-xl border-gray-300 px-4 py-2.5 sm:py-3 shadow-sm focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all"
                 />
               </div>
-              <div className="flex items-center gap-3">
-                <input
-                  id="edit_is_published"
-                  type="checkbox"
-                  name="is_published"
-                  checked={newPost.is_published}
-                  onChange={handleNewPostChange}
-                  className="h-5 w-5 rounded border-gray-300 text-amber-600 focus:ring-amber-500"
-                />
-                <label htmlFor="edit_is_published" className="text-sm text-gray-700">Published</label>
-              </div>
-              <div className="flex items-center gap-3">
-                <input
-                  id="edit_is_featured"
-                  type="checkbox"
-                  name="is_featured"
-                  checked={newPost.is_featured}
-                  onChange={handleNewPostChange}
-                  className="h-5 w-5 rounded border-gray-300 text-amber-600 focus:ring-amber-500"
-                />
-                <label htmlFor="edit_is_featured" className="text-sm text-gray-700">Featured post</label>
+              <div className="flex flex-wrap items-center gap-4 sm:gap-6">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    name="is_published"
+                    checked={newPost.is_published}
+                    onChange={handleNewPostChange}
+                    className="h-5 w-5 rounded border-gray-300 text-amber-600 focus:ring-amber-500"
+                  />
+                  <span className="text-sm text-gray-700">Published</span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    name="is_featured"
+                    checked={newPost.is_featured}
+                    onChange={handleNewPostChange}
+                    className="h-5 w-5 rounded border-gray-300 text-amber-600 focus:ring-amber-500"
+                  />
+                  <span className="text-sm text-gray-700">Featured post</span>
+                </label>
               </div>
             </div>
-            <div className="mt-6 flex flex-col sm:flex-row justify-end gap-3">
+            <div className="mt-6 sm:mt-8 flex flex-col sm:flex-row justify-end gap-3">
               <Button
                 type="button"
-                className="bg-gray-500 hover:bg-gray-600 w-full sm:w-auto"
+                variant="secondary"
+                className="w-full sm:w-auto px-6 py-2.5"
                 onClick={() => {
                   setShowEditForm(false)
                   setSelectedPost(null)
@@ -372,24 +425,40 @@ export default function AdminBlog() {
               >
                 Cancel
               </Button>
-              <Button type="button" onClick={handleUpdatePost} className="w-full sm:w-auto bg-amber-600 hover:bg-amber-700">
+              <Button
+                type="button"
+                onClick={handleUpdatePost}
+                className="w-full sm:w-auto px-6 py-2.5 bg-amber-600 hover:bg-amber-700"
+              >
                 Update Post
               </Button>
             </div>
           </div>
         )}
 
-        {/* Posts Table - Desktop */}
-        <div className="hidden md:block overflow-x-auto rounded-2xl border border-gray-200 bg-white shadow-lg">
+        {/* Desktop Table View (hidden on mobile) */}
+        <div className="hidden lg:block overflow-x-auto rounded-2xl border border-gray-200 bg-white shadow-lg">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
               <tr>
-                <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">Title</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">Category</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">Published</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">Featured</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">Author</th>
-                <th className="px-6 py-4 text-right text-xs font-semibold uppercase tracking-wider text-gray-600">Actions</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">
+                  Title
+                </th>
+                <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">
+                  Category
+                </th>
+                <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">
+                  Status
+                </th>
+                <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">
+                  Featured
+                </th>
+                <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">
+                  Author
+                </th>
+                <th className="px-6 py-4 text-right text-xs font-semibold uppercase tracking-wider text-gray-600">
+                  Actions
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200 bg-white">
@@ -398,60 +467,84 @@ export default function AdminBlog() {
                   <td colSpan="6" className="px-6 py-16 text-center text-sm text-gray-500">
                     <div className="flex flex-col items-center gap-3">
                       <div className="w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
-                      Loading blog posts…
+                      <span>Loading blog posts…</span>
                     </div>
                   </td>
                 </tr>
               ) : posts.length === 0 ? (
                 <tr>
-                  <td colSpan="6" className="px-6 py-16 text-center text-sm text-gray-500">No posts available.</td>
+                  <td colSpan="6" className="px-6 py-16 text-center text-sm text-gray-500">
+                    No posts available.
+                  </td>
                 </tr>
               ) : (
                 posts.map((post) => (
                   <tr key={post.slug || post.id} className="hover:bg-purple-50/50 transition-colors">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{post.title}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{post.category || 'N/A'}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                      {post.title}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                      {post.category || 'N/A'}
+                    </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${post.is_published ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
-                        {post.is_published ? 'Yes' : 'No'}
+                      <span
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                          post.is_published
+                            ? 'bg-green-100 text-green-800'
+                            : 'bg-gray-100 text-gray-800'
+                        }`}
+                      >
+                        {post.is_published ? 'Published' : 'Draft'}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${post.is_featured ? 'bg-amber-100 text-amber-800' : 'bg-gray-100 text-gray-800'}`}>
+                      <span
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                          post.is_featured
+                            ? 'bg-amber-100 text-amber-800'
+                            : 'bg-gray-100 text-gray-800'
+                        }`}
+                      >
                         {post.is_featured ? 'Yes' : 'No'}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{post.author || post.author_name || 'Unknown'}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                      {post.author || post.author_name || 'Unknown'}
+                    </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex flex-wrap justify-end gap-2">
-                        <Button
+                        <button
                           type="button"
-                          className="px-3 py-1.5 text-xs bg-blue-500 hover:bg-blue-600 shadow-sm"
                           onClick={() => handleViewPost(post)}
+                          className="px-3 py-1.5 text-xs rounded-lg bg-blue-500 text-white hover:bg-blue-600 shadow-sm transition-colors"
                         >
                           View
-                        </Button>
-                        <Button
+                        </button>
+                        <button
                           type="button"
-                          className="px-3 py-1.5 text-xs bg-amber-500 hover:bg-amber-600 shadow-sm"
                           onClick={() => handleEditPost(post)}
+                          className="px-3 py-1.5 text-xs rounded-lg bg-amber-500 text-white hover:bg-amber-600 shadow-sm transition-colors"
                         >
                           Edit
-                        </Button>
-                        <Button
+                        </button>
+                        <button
                           type="button"
-                          className={`px-3 py-1.5 text-xs shadow-sm ${post.is_featured ? 'bg-gray-500 hover:bg-gray-600' : 'bg-yellow-500 hover:bg-yellow-600'}`}
                           onClick={() => toggleFeatured(post.slug)}
+                          className={`px-3 py-1.5 text-xs rounded-lg shadow-sm transition-colors ${
+                            post.is_featured
+                              ? 'bg-gray-500 text-white hover:bg-gray-600'
+                              : 'bg-yellow-500 text-white hover:bg-yellow-600'
+                          }`}
                         >
                           {post.is_featured ? 'Unfeature' : 'Feature'}
-                        </Button>
-                        <Button
+                        </button>
+                        <button
                           type="button"
-                          className="px-3 py-1.5 text-xs bg-red-500 hover:bg-red-600 shadow-sm"
                           onClick={() => deletePost(post.slug)}
+                          className="px-3 py-1.5 text-xs rounded-lg bg-red-500 text-white hover:bg-red-600 shadow-sm transition-colors"
                         >
                           Delete
-                        </Button>
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -461,8 +554,8 @@ export default function AdminBlog() {
           </table>
         </div>
 
-        {/* Posts Cards - Mobile */}
-        <div className="md:hidden space-y-4">
+        {/* Mobile/Tablet Card View (visible on medium and smaller screens) */}
+        <div className="lg:hidden space-y-4">
           {loading ? (
             <div className="flex flex-col items-center gap-3 py-16">
               <div className="w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
@@ -472,11 +565,16 @@ export default function AdminBlog() {
             <div className="text-center py-16 text-sm text-gray-500">No posts available.</div>
           ) : (
             posts.map((post) => (
-              <div key={post.slug || post.id} className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm hover:shadow-md transition-shadow">
-                <div className="flex items-start justify-between mb-3">
-                  <div>
-                    <h3 className="font-semibold text-gray-900">{post.title}</h3>
-                    <p className="text-sm text-gray-600">{post.category || 'N/A'}</p>
+              <div
+                key={post.slug || post.id}
+                className="rounded-2xl border border-gray-200 bg-white p-4 sm:p-5 shadow-sm hover:shadow-md transition-all duration-200"
+              >
+                <div className="flex flex-wrap items-start justify-between gap-2 mb-3">
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-gray-900 text-base sm:text-lg break-words">
+                      {post.title}
+                    </h3>
+                    <p className="text-sm text-gray-600 mt-0.5">{post.category || 'Uncategorized'}</p>
                   </div>
                   <div className="flex gap-2">
                     {post.is_published && (
@@ -491,36 +589,42 @@ export default function AdminBlog() {
                     )}
                   </div>
                 </div>
-                <p className="text-sm text-gray-600 mb-3">By {post.author || post.author_name || 'Unknown'}</p>
-                <div className="flex flex-wrap gap-2">
-                  <Button
+                <p className="text-sm text-gray-600 mb-4">
+                  By {post.author || post.author_name || 'Unknown'}
+                </p>
+                <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-2">
+                  <button
                     type="button"
-                    className="px-3 py-1.5 text-xs bg-blue-500 hover:bg-blue-600 flex-1"
                     onClick={() => handleViewPost(post)}
+                    className="px-3 py-2 text-xs rounded-lg bg-blue-500 text-white hover:bg-blue-600 transition-colors"
                   >
                     View
-                  </Button>
-                  <Button
+                  </button>
+                  <button
                     type="button"
-                    className="px-3 py-1.5 text-xs bg-amber-500 hover:bg-amber-600 flex-1"
                     onClick={() => handleEditPost(post)}
+                    className="px-3 py-2 text-xs rounded-lg bg-amber-500 text-white hover:bg-amber-600 transition-colors"
                   >
                     Edit
-                  </Button>
-                  <Button
+                  </button>
+                  <button
                     type="button"
-                    className={`px-3 py-1.5 text-xs flex-1 ${post.is_featured ? 'bg-gray-500 hover:bg-gray-600' : 'bg-yellow-500 hover:bg-yellow-600'}`}
                     onClick={() => toggleFeatured(post.slug)}
+                    className={`px-3 py-2 text-xs rounded-lg transition-colors ${
+                      post.is_featured
+                        ? 'bg-gray-500 text-white hover:bg-gray-600'
+                        : 'bg-yellow-500 text-white hover:bg-yellow-600'
+                    }`}
                   >
                     {post.is_featured ? 'Unfeature' : 'Feature'}
-                  </Button>
-                  <Button
+                  </button>
+                  <button
                     type="button"
-                    className="px-3 py-1.5 text-xs bg-red-500 hover:bg-red-600 flex-1"
                     onClick={() => deletePost(post.slug)}
+                    className="px-3 py-2 text-xs rounded-lg bg-red-500 text-white hover:bg-red-600 transition-colors"
                   >
                     Delete
-                  </Button>
+                  </button>
                 </div>
               </div>
             ))
@@ -529,77 +633,117 @@ export default function AdminBlog() {
 
         {/* View Post Modal */}
         <Modal isOpen={showViewModal} onClose={() => setShowViewModal(false)}>
-          <div className="p-4 sm:p-6">
-            <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
-              <span className="w-8 h-8 rounded-full bg-purple-600 flex items-center justify-center text-white text-sm">📝</span>
-              Blog Post Details
+          <div className="p-4 sm:p-6 md:p-8 max-h-[90vh] overflow-y-auto">
+            <h2 className="text-xl sm:text-2xl font-semibold text-gray-900 mb-5 sm:mb-6 flex items-center gap-2">
+              <span className="w-8 h-8 rounded-full bg-purple-600 flex items-center justify-center text-white text-sm flex-shrink-0">
+                📝
+              </span>
+              <span className="break-words">Blog Post Details</span>
             </h2>
             {selectedPost && (
               <div className="space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="bg-gray-50 rounded-xl p-3">
+                  <div className="bg-gray-50 rounded-xl p-3 sm:p-4">
                     <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Title</p>
-                    <p className="text-sm font-semibold text-gray-900 mt-1">{selectedPost.title}</p>
+                    <p className="text-sm sm:text-base font-semibold text-gray-900 mt-1 break-words">
+                      {selectedPost.title}
+                    </p>
                   </div>
-                  <div className="bg-gray-50 rounded-xl p-3">
+                  <div className="bg-gray-50 rounded-xl p-3 sm:p-4">
                     <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Slug</p>
-                    <p className="text-sm font-semibold text-gray-900 mt-1">{selectedPost.slug}</p>
+                    <p className="text-sm sm:text-base font-semibold text-gray-900 mt-1 break-words">
+                      {selectedPost.slug}
+                    </p>
                   </div>
-                  <div className="bg-gray-50 rounded-xl p-3">
+                  <div className="bg-gray-50 rounded-xl p-3 sm:p-4">
                     <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Category</p>
-                    <p className="text-sm font-semibold text-gray-900 mt-1">{selectedPost.category || '—'}</p>
+                    <p className="text-sm sm:text-base font-semibold text-gray-900 mt-1">
+                      {selectedPost.category || '—'}
+                    </p>
                   </div>
-                  <div className="bg-gray-50 rounded-xl p-3">
+                  <div className="bg-gray-50 rounded-xl p-3 sm:p-4">
                     <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Author</p>
-                    <p className="text-sm font-semibold text-gray-900 mt-1">{selectedPost.author || selectedPost.author_name || '—'}</p>
+                    <p className="text-sm sm:text-base font-semibold text-gray-900 mt-1">
+                      {selectedPost.author || selectedPost.author_name || '—'}
+                    </p>
                   </div>
-                  <div className="bg-gray-50 rounded-xl p-3">
+                  <div className="bg-gray-50 rounded-xl p-3 sm:p-4">
                     <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Published</p>
-                    <p className="text-sm font-semibold text-gray-900 mt-1">{selectedPost.is_published ? 'Yes' : 'No'}</p>
+                    <p className="text-sm sm:text-base font-semibold text-gray-900 mt-1">
+                      {selectedPost.is_published ? 'Yes' : 'No'}
+                    </p>
                   </div>
-                  <div className="bg-gray-50 rounded-xl p-3">
+                  <div className="bg-gray-50 rounded-xl p-3 sm:p-4">
                     <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Featured</p>
-                    <p className="text-sm font-semibold text-gray-900 mt-1">{selectedPost.is_featured ? 'Yes' : 'No'}</p>
+                    <p className="text-sm sm:text-base font-semibold text-gray-900 mt-1">
+                      {selectedPost.is_featured ? 'Yes' : 'No'}
+                    </p>
                   </div>
-                  <div className="bg-gray-50 rounded-xl p-3">
+                  <div className="bg-gray-50 rounded-xl p-3 sm:p-4">
                     <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">View Count</p>
-                    <p className="text-sm font-semibold text-gray-900 mt-1">{selectedPost.view_count || 0}</p>
+                    <p className="text-sm sm:text-base font-semibold text-gray-900 mt-1">
+                      {selectedPost.view_count || 0}
+                    </p>
                   </div>
-                  <div className="bg-gray-50 rounded-xl p-3">
-                    <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Published Date</p>
-                    <p className="text-sm font-semibold text-gray-900 mt-1">{selectedPost.published_date ? new Date(selectedPost.published_date).toLocaleString() : '—'}</p>
+                  <div className="bg-gray-50 rounded-xl p-3 sm:p-4">
+                    <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+                      Published Date
+                    </p>
+                    <p className="text-sm sm:text-base font-semibold text-gray-900 mt-1">
+                      {selectedPost.published_date
+                        ? new Date(selectedPost.published_date).toLocaleString()
+                        : '—'}
+                    </p>
                   </div>
                 </div>
                 {selectedPost.excerpt && (
-                  <div className="bg-gray-50 rounded-xl p-3">
+                  <div className="bg-gray-50 rounded-xl p-3 sm:p-4">
                     <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Excerpt</p>
-                    <p className="text-sm text-gray-900 mt-1">{selectedPost.excerpt}</p>
+                    <p className="text-sm sm:text-base text-gray-900 mt-1 break-words">
+                      {selectedPost.excerpt}
+                    </p>
                   </div>
                 )}
                 {selectedPost.content && (
-                  <div className="bg-gray-50 rounded-xl p-3">
+                  <div className="bg-gray-50 rounded-xl p-3 sm:p-4">
                     <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Content</p>
-                    <p className="text-sm text-gray-900 mt-1 max-h-40 overflow-y-auto">{selectedPost.content}</p>
+                    <div className="text-sm sm:text-base text-gray-900 mt-1 max-h-48 overflow-y-auto break-words whitespace-pre-wrap">
+                      {selectedPost.content}
+                    </div>
                   </div>
                 )}
                 {selectedPost.featured_image && (
-                  <div className="bg-gray-50 rounded-xl p-3">
-                    <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Featured Image</p>
-                    <p className="text-sm text-gray-900 mt-1">{selectedPost.featured_image}</p>
+                  <div className="bg-gray-50 rounded-xl p-3 sm:p-4">
+                    <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+                      Featured Image
+                    </p>
+                    <p className="text-sm sm:text-base text-gray-900 mt-1 break-words">
+                      {selectedPost.featured_image}
+                    </p>
                   </div>
                 )}
                 {selectedPost.external_link && (
-                  <div className="bg-gray-50 rounded-xl p-3">
-                    <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">External Link</p>
-                    <p className="text-sm text-primary-600 mt-1">{selectedPost.external_link}</p>
+                  <div className="bg-gray-50 rounded-xl p-3 sm:p-4">
+                    <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+                      External Link
+                    </p>
+                    <a
+                      href={selectedPost.external_link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm sm:text-base text-purple-600 hover:text-purple-800 mt-1 break-words inline-block"
+                    >
+                      {selectedPost.external_link}
+                    </a>
                   </div>
                 )}
               </div>
             )}
-            <div className="mt-6 flex justify-end">
+            <div className="mt-6 sm:mt-8 flex justify-end">
               <Button
                 type="button"
                 onClick={() => setShowViewModal(false)}
+                className="px-6 py-2.5"
               >
                 Close
               </Button>

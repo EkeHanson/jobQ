@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import AdminLayout from '../components/layout/AdminLayout'
 import adminService from '../services/admin'
+import { useAuth } from '../hooks/useAuth'
 import { useToast } from '../components/common/Toast'
 
 export default function AdminSubscribers() {
@@ -8,19 +9,29 @@ export default function AdminSubscribers() {
   const [loading, setLoading] = useState(true)
   const [params, setParams] = useState({})
   const { addToast } = useToast()
+  const { user } = useAuth()
 
   useEffect(() => {
+    console.log('Current user:', user)
+    console.log('Is admin:', user?.is_staff || user?.is_superuser)
     fetchSubscribers()
   }, [params])
 
   const fetchSubscribers = async () => {
     try {
       setLoading(true)
+      console.log('Fetching subscribers...')
       const data = await adminService.getBlogSubscribers(params)
-      setSubscribers(data.results || data || [])
+      console.log('Subscribers data:', data)
+      console.log('Data type:', typeof data)
+      console.log('Is array:', Array.isArray(data))
+      setSubscribers(Array.isArray(data) ? data : (data.results || data || []))
     } catch (err) {
       console.error('Failed to load subscribers', err)
-      addToast('Unable to load subscribers. Make sure you are logged in as an admin.', 'error')
+      console.error('Error response:', err.response)
+      console.error('Error status:', err.response?.status)
+      console.error('Error data:', err.response?.data)
+      addToast(`Unable to load subscribers: ${err.response?.data?.detail || err.message}`, 'error')
     } finally {
       setLoading(false)
     }

@@ -150,10 +150,13 @@ export default function AdminUsers() {
 
   return (
     <AdminLayout>
-      <div className="space-y-6 p-4 sm:p-6">
+      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
         {/* Back Navigation */}
-        <div className="flex items-center gap-2">
-          <a href="/admin" className="flex items-center gap-1 text-sm text-gray-600 hover:text-gray-900 transition-colors">
+        <div className="mb-4 sm:mb-6">
+          <a 
+            href="/admin" 
+            className="inline-flex items-center gap-1.5 text-sm text-gray-600 hover:text-gray-900 transition-colors"
+          >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
             </svg>
@@ -161,29 +164,31 @@ export default function AdminUsers() {
           </a>
         </div>
 
-        {/* Header */}
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        {/* Header Section */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 sm:mb-8">
           <div>
             <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">User Management</h1>
-            <p className="text-gray-600 mt-2 text-sm sm:text-base">Manage registered users, create new accounts, and control user permissions.</p>
+            <p className="text-gray-600 mt-1 sm:mt-2 text-sm sm:text-base">
+              Manage registered users, create new accounts, and control user permissions.
+            </p>
           </div>
           <button
             type="button"
             onClick={() => setShowCreateForm((prev) => !prev)}
-            className="rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-2.5 text-sm font-semibold text-white hover:from-blue-700 hover:to-indigo-700 shadow-lg shadow-blue-500/30 transition-all duration-200 w-full sm:w-auto"
+            className="rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-2.5 text-sm font-semibold text-white hover:from-blue-700 hover:to-indigo-700 shadow-lg shadow-blue-500/30 transition-all duration-200"
           >
             {showCreateForm ? 'Hide create form' : '+ Create new user'}
           </button>
         </div>
 
-        {/* Create Form */}
+        {/* Create User Form - Fully Responsive */}
         {showCreateForm && (
-          <div className="rounded-2xl border border-blue-200 bg-gradient-to-br from-blue-50 to-indigo-50 p-4 sm:p-6 shadow-lg">
+          <div className="rounded-2xl border border-blue-200 bg-gradient-to-br from-blue-50 to-indigo-50 p-4 sm:p-6 mb-6 sm:mb-8 shadow-lg">
             <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
               <span className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white text-sm">+</span>
               Create User
             </h2>
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Username *</label>
                 <input
@@ -252,34 +257,35 @@ export default function AdminUsers() {
                   className="w-full rounded-xl border-gray-300 px-4 py-3 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
                 />
               </div>
-              <div className="flex items-center gap-3">
-                <input
-                  id="is_staff"
-                  type="checkbox"
-                  name="is_staff"
-                  checked={newUser.is_staff}
-                  onChange={handleNewUserChange}
-                  className="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                />
-                <label htmlFor="is_staff" className="text-sm text-gray-700">Staff status</label>
-              </div>
-              <div className="flex items-center gap-3">
-                <input
-                  id="is_active"
-                  type="checkbox"
-                  name="is_active"
-                  checked={newUser.is_active}
-                  onChange={handleNewUserChange}
-                  className="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                />
-                <label htmlFor="is_active" className="text-sm text-gray-700">Active</label>
+              <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    name="is_staff"
+                    checked={newUser.is_staff}
+                    onChange={handleNewUserChange}
+                    className="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  />
+                  <span className="text-sm text-gray-700">Staff status</span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    name="is_active"
+                    checked={newUser.is_active}
+                    onChange={handleNewUserChange}
+                    className="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  />
+                  <span className="text-sm text-gray-700">Active</span>
+                </label>
               </div>
             </div>
-            <div className="mt-6 flex flex-col sm:flex-row justify-end gap-3">
+            <div className="mt-6 flex flex-col-reverse sm:flex-row justify-end gap-3">
               <Button
                 type="button"
-                className="bg-gray-500 hover:bg-gray-600 w-full sm:w-auto"
+                variant="secondary"
                 onClick={() => setShowCreateForm(false)}
+                className="w-full sm:w-auto"
               >
                 Cancel
               </Button>
@@ -290,14 +296,14 @@ export default function AdminUsers() {
           </div>
         )}
 
-        {/* Edit Form */}
+        {/* Edit User Form - Fully Responsive */}
         {showEditForm && selectedUser && (
-          <div className="rounded-2xl border border-amber-200 bg-gradient-to-br from-amber-50 to-orange-50 p-4 sm:p-6 shadow-lg">
+          <div className="rounded-2xl border border-amber-200 bg-gradient-to-br from-amber-50 to-orange-50 p-4 sm:p-6 mb-6 sm:mb-8 shadow-lg">
             <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
               <span className="w-8 h-8 rounded-full bg-amber-600 flex items-center justify-center text-white text-sm">✎</span>
               Edit User: {selectedUser.username}
             </h2>
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Username *</label>
                 <input
@@ -365,37 +371,38 @@ export default function AdminUsers() {
                   className="w-full rounded-xl border-gray-300 px-4 py-3 shadow-sm focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all"
                 />
               </div>
-              <div className="flex items-center gap-3">
-                <input
-                  id="edit_is_staff"
-                  type="checkbox"
-                  name="is_staff"
-                  checked={newUser.is_staff}
-                  onChange={handleNewUserChange}
-                  className="h-5 w-5 rounded border-gray-300 text-amber-600 focus:ring-amber-500"
-                />
-                <label htmlFor="edit_is_staff" className="text-sm text-gray-700">Staff status</label>
-              </div>
-              <div className="flex items-center gap-3">
-                <input
-                  id="edit_is_active"
-                  type="checkbox"
-                  name="is_active"
-                  checked={newUser.is_active}
-                  onChange={handleNewUserChange}
-                  className="h-5 w-5 rounded border-gray-300 text-amber-600 focus:ring-amber-500"
-                />
-                <label htmlFor="edit_is_active" className="text-sm text-gray-700">Active</label>
+              <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    name="is_staff"
+                    checked={newUser.is_staff}
+                    onChange={handleNewUserChange}
+                    className="h-5 w-5 rounded border-gray-300 text-amber-600 focus:ring-amber-500"
+                  />
+                  <span className="text-sm text-gray-700">Staff status</span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    name="is_active"
+                    checked={newUser.is_active}
+                    onChange={handleNewUserChange}
+                    className="h-5 w-5 rounded border-gray-300 text-amber-600 focus:ring-amber-500"
+                  />
+                  <span className="text-sm text-gray-700">Active</span>
+                </label>
               </div>
             </div>
-            <div className="mt-6 flex flex-col sm:flex-row justify-end gap-3">
+            <div className="mt-6 flex flex-col-reverse sm:flex-row justify-end gap-3">
               <Button
                 type="button"
-                className="bg-gray-500 hover:bg-gray-600 w-full sm:w-auto"
+                variant="secondary"
                 onClick={() => {
                   setShowEditForm(false)
                   setSelectedUser(null)
                 }}
+                className="w-full sm:w-auto"
               >
                 Cancel
               </Button>
@@ -406,8 +413,8 @@ export default function AdminUsers() {
           </div>
         )}
 
-        {/* Users Table - Desktop */}
-        <div className="hidden md:block overflow-x-auto rounded-2xl border border-gray-200 bg-white shadow-lg">
+        {/* Desktop Table View - Hidden on mobile */}
+        <div className="hidden md:block overflow-x-auto rounded-2xl border border-gray-200 bg-white shadow-lg mb-6">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
               <tr>
@@ -425,7 +432,7 @@ export default function AdminUsers() {
                   <td colSpan="6" className="px-6 py-16 text-center text-sm text-gray-500">
                     <div className="flex flex-col items-center gap-3">
                       <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-                      Loading users…
+                      Loading users...
                     </div>
                   </td>
                 </tr>
@@ -505,105 +512,147 @@ export default function AdminUsers() {
           </table>
         </div>
 
-        {/* Users Cards - Mobile */}
-        <div className="md:hidden space-y-4">
-          {loading ? (
-            <div className="flex flex-col items-center gap-3 py-16">
-              <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-              <p className="text-sm text-gray-500">Loading users…</p>
-            </div>
-          ) : users.length === 0 ? (
-            <div className="text-center py-16 text-sm text-gray-500">No users found.</div>
-          ) : (
-            users.map((user) => (
-              <div key={user.id} className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm hover:shadow-md transition-shadow">
-                <div className="flex items-start justify-between mb-3">
-                  <div>
-                    <h3 className="font-semibold text-gray-900">{user.username}</h3>
-                    <p className="text-sm text-gray-600">{user.email}</p>
-                  </div>
-                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${user.is_suspended ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`}>
-                    {user.is_suspended ? 'Suspended' : 'Active'}
-                  </span>
-                </div>
-                <div className="flex flex-wrap gap-2 mb-3">
-                  {user.is_staff && (
-                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                      Staff
-                    </span>
-                  )}
-                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
-                    ID: {user.id}
-                  </span>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  <Button
-                    type="button"
-                    className="px-3 py-1.5 text-xs bg-blue-500 hover:bg-blue-600 flex-1"
-                    onClick={() => handleViewUser(user)}
-                  >
-                    View
-                  </Button>
-                  <Button
-                    type="button"
-                    className="px-3 py-1.5 text-xs bg-amber-500 hover:bg-amber-600 flex-1"
-                    onClick={() => handleEditUser(user)}
-                  >
-                    Edit
-                  </Button>
-                  <Button
-                    type="button"
-                    className={`px-3 py-1.5 text-xs flex-1 ${user.is_suspended ? 'bg-green-500 hover:bg-green-600' : 'bg-orange-500 hover:bg-orange-600'}`}
-                    onClick={() => handleToggleSuspension(user)}
-                  >
-                    {user.is_suspended ? 'Unsuspend' : 'Suspend'}
-                  </Button>
-                  <Button
-                    type="button"
-                    className="px-3 py-1.5 text-xs bg-red-500 hover:bg-red-600 flex-1"
-                    onClick={() => handleDeleteUser(user)}
-                  >
-                    Delete
-                  </Button>
-                </div>
-              </div>
-            ))
-          )}
+        {/* Mobile Table View - Visible only on mobile */}
+        <div className="md:hidden overflow-x-auto rounded-2xl border border-gray-200 bg-white shadow-lg mb-6">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
+              <tr>
+                <th className="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">User</th>
+                <th className="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">Status</th>
+                <th className="px-3 py-3 text-right text-xs font-semibold uppercase tracking-wider text-gray-600">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-200 bg-white">
+              {loading ? (
+                <tr>
+                  <td colSpan="3" className="px-3 py-12 text-center text-sm text-gray-500">
+                    <div className="flex flex-col items-center gap-3">
+                      <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                      Loading users...
+                    </div>
+                  </td>
+                </tr>
+              ) : users.length === 0 ? (
+                <tr>
+                  <td colSpan="3" className="px-3 py-12 text-center text-sm text-gray-500">No users found.</td>
+                </tr>
+              ) : (
+                users.map((user) => (
+                  <tr key={user.id} className="hover:bg-blue-50/50 transition-colors">
+                    <td className="px-3 py-3">
+                      <div className="flex flex-col">
+                        <span className="text-sm font-medium text-gray-900 truncate">{user.username}</span>
+                        <span className="text-xs text-gray-500 truncate">{user.email}</span>
+                        <div className="flex gap-1 mt-1">
+                          {user.is_staff && (
+                            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-800">
+                              Staff
+                            </span>
+                          )}
+                          <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600">
+                            ID:{user.id}
+                          </span>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-3 py-3">
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${user.is_suspended ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`}>
+                        {user.is_suspended ? 'Suspended' : 'Active'}
+                      </span>
+                    </td>
+                    <td className="px-3 py-3">
+                      <div className="flex justify-end gap-1">
+                        <button
+                          type="button"
+                          onClick={() => handleViewUser(user)}
+                          className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                          title="View"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                          </svg>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleEditUser(user)}
+                          className="p-1.5 text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"
+                          title="Edit"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                          </svg>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleToggleSuspension(user)}
+                          className={`p-1.5 rounded-lg transition-colors ${user.is_suspended ? 'text-green-600 hover:bg-green-50' : 'text-orange-600 hover:bg-orange-50'}`}
+                          title={user.is_suspended ? 'Unsuspend' : 'Suspend'}
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            {user.is_suspended ? (
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            ) : (
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+                            )}
+                          </svg>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteUser(user)}
+                          className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                          title="Delete"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
         </div>
 
-        {/* Pagination */}
+        {/* Pagination - Fully Responsive */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white rounded-2xl border border-gray-200 p-4 shadow-sm">
-          <p className="text-sm text-gray-600">Page <span className="font-semibold text-gray-900">{currentPage}</span> of <span className="font-semibold text-gray-900">{totalPages}</span></p>
-          <div className="flex items-center gap-2 w-full sm:w-auto">
-            <Button
-              disabled={currentPage <= 1}
+          <p className="text-sm text-gray-600 order-2 sm:order-1">
+            Page <span className="font-semibold text-gray-900">{currentPage}</span> of <span className="font-semibold text-gray-900">{totalPages}</span>
+          </p>
+          <div className="flex items-center gap-2 w-full sm:w-auto order-1 sm:order-2">
+            <button
+              type="button"
               onClick={() => setCurrentPage((page) => Math.max(page - 1, 1))}
-              className="flex-1 sm:flex-none"
+              disabled={currentPage <= 1}
+              className="flex-1 sm:flex-none px-4 py-2 text-sm font-medium rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               ← Previous
-            </Button>
-            <Button
-              disabled={currentPage >= totalPages}
+            </button>
+            <button
+              type="button"
               onClick={() => setCurrentPage((page) => Math.min(page + 1, totalPages))}
-              className="flex-1 sm:flex-none"
+              disabled={currentPage >= totalPages}
+              className="flex-1 sm:flex-none px-4 py-2 text-sm font-medium rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               Next →
-            </Button>
+            </button>
           </div>
         </div>
 
-        {/* View User Modal */}
-        <Modal isOpen={showViewModal} onClose={() => setShowViewModal(false)} size="full" className="max-w-full sm:max-w-2xl">
-          <div className="rounded-3xl bg-white p-4 sm:p-5 shadow-xl ring-1 ring-black/5 w-full">
-            <div className="flex flex-col gap-3 border-b border-gray-200 pb-4 sm:flex-row sm:items-start sm:justify-between">
+        {/* View User Modal - Fully Responsive */}
+        <Modal isOpen={showViewModal} onClose={() => setShowViewModal(false)}>
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-3xl mx-auto">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between p-5 border-b border-gray-200">
               <div>
-                <h2 className="text-lg font-semibold text-slate-900">User details</h2>
-                <p className="mt-1 text-sm text-slate-500">Compact summary of account status, permissions, and activity metadata.</p>
+                <h2 className="text-xl font-semibold text-gray-900">User details</h2>
+                <p className="mt-1 text-sm text-gray-500">Compact summary of account status, permissions, and activity metadata.</p>
               </div>
               <button
                 type="button"
                 onClick={() => setShowViewModal(false)}
-                className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 shadow-sm transition hover:bg-slate-50"
+                className="mt-3 sm:mt-0 inline-flex h-9 w-9 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-500 shadow-sm hover:bg-gray-50 transition-colors"
                 aria-label="Close"
               >
                 ×
@@ -611,67 +660,77 @@ export default function AdminUsers() {
             </div>
 
             {selectedUser && (
-              <div className="mt-5 space-y-4">
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                    <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">Username</p>
-                    <p className="mt-2 text-sm font-medium text-slate-900">{selectedUser.username}</p>
+              <div className="p-5 space-y-5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="rounded-xl border border-gray-200 bg-gray-50 p-4">
+                    <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">Username</p>
+                    <p className="mt-2 text-sm font-medium text-gray-900 break-all">{selectedUser.username}</p>
                   </div>
-                  <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                    <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">Email</p>
-                    <p className="mt-2 text-sm font-medium text-slate-900">{selectedUser.email}</p>
+                  <div className="rounded-xl border border-gray-200 bg-gray-50 p-4">
+                    <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">Email</p>
+                    <p className="mt-2 text-sm font-medium text-gray-900 break-all">{selectedUser.email}</p>
                   </div>
-                  <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                    <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">Name</p>
-                    <p className="mt-2 text-sm font-medium text-slate-900">{`${selectedUser.first_name || '-'} ${selectedUser.last_name || '-'}`}</p>
+                  <div className="rounded-xl border border-gray-200 bg-gray-50 p-4">
+                    <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">Name</p>
+                    <p className="mt-2 text-sm font-medium text-gray-900 break-all">
+                      {`${selectedUser.first_name || '-'} ${selectedUser.last_name || '-'}`}
+                    </p>
                   </div>
-                  <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                    <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">Contact</p>
-                    <p className="mt-2 text-sm font-medium text-slate-900">{selectedUser.phone || selectedUser.location || '—'}</p>
-                  </div>
-                </div>
-
-                <div className="grid gap-3 sm:grid-cols-3">
-                  <div className="rounded-2xl border border-slate-200 bg-white p-4">
-                    <p className="text-xs uppercase tracking-[0.22em] text-slate-400">Status</p>
-                    <p className="mt-2 text-sm font-semibold text-slate-900">{selectedUser.is_active ? 'Active' : 'Inactive'}</p>
-                  </div>
-                  <div className="rounded-2xl border border-slate-200 bg-white p-4">
-                    <p className="text-xs uppercase tracking-[0.22em] text-slate-400">Role</p>
-                    <p className="mt-2 text-sm font-semibold text-slate-900">{selectedUser.is_staff ? 'Staff' : 'User'}</p>
-                  </div>
-                  <div className="rounded-2xl border border-slate-200 bg-white p-4">
-                    <p className="text-xs uppercase tracking-[0.22em] text-slate-400">Suspension</p>
-                    <p className="mt-2 text-sm font-semibold text-slate-900">{selectedUser.is_suspended ? 'Suspended' : 'Clear'}</p>
+                  <div className="rounded-xl border border-gray-200 bg-gray-50 p-4">
+                    <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">Contact</p>
+                    <p className="mt-2 text-sm font-medium text-gray-900 break-all">
+                      {selectedUser.phone || selectedUser.location || '—'}
+                    </p>
                   </div>
                 </div>
 
-                <div className="grid gap-3 sm:grid-cols-3">
-                  <div className="rounded-2xl border border-slate-200 bg-white p-4">
-                    <p className="text-xs uppercase tracking-[0.22em] text-slate-400">2FA</p>
-                    <p className="mt-2 text-sm font-semibold text-slate-900">{selectedUser.is_2fa_enabled ? 'Enabled' : 'Disabled'}</p>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div className="rounded-xl border border-gray-200 bg-white p-4">
+                    <p className="text-xs uppercase tracking-wide text-gray-400">Status</p>
+                    <p className="mt-2 text-sm font-semibold text-gray-900">{selectedUser.is_active ? 'Active' : 'Inactive'}</p>
                   </div>
-                  <div className="rounded-2xl border border-slate-200 bg-white p-4">
-                    <p className="text-xs uppercase tracking-[0.22em] text-slate-400">Joined</p>
-                    <p className="mt-2 text-sm font-semibold text-slate-900">{selectedUser.date_joined ? new Date(selectedUser.date_joined).toLocaleDateString() : '—'}</p>
+                  <div className="rounded-xl border border-gray-200 bg-white p-4">
+                    <p className="text-xs uppercase tracking-wide text-gray-400">Role</p>
+                    <p className="mt-2 text-sm font-semibold text-gray-900">{selectedUser.is_staff ? 'Staff' : 'User'}</p>
                   </div>
-                  <div className="rounded-2xl border border-slate-200 bg-white p-4">
-                    <p className="text-xs uppercase tracking-[0.22em] text-slate-400">Last login</p>
-                    <p className="mt-2 text-sm font-semibold text-slate-900">{selectedUser.last_login ? new Date(selectedUser.last_login).toLocaleDateString() : '—'}</p>
+                  <div className="rounded-xl border border-gray-200 bg-white p-4">
+                    <p className="text-xs uppercase tracking-wide text-gray-400">Suspension</p>
+                    <p className="mt-2 text-sm font-semibold text-gray-900">{selectedUser.is_suspended ? 'Suspended' : 'Clear'}</p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div className="rounded-xl border border-gray-200 bg-white p-4">
+                    <p className="text-xs uppercase tracking-wide text-gray-400">2FA</p>
+                    <p className="mt-2 text-sm font-semibold text-gray-900">{selectedUser.is_2fa_enabled ? 'Enabled' : 'Disabled'}</p>
+                  </div>
+                  <div className="rounded-xl border border-gray-200 bg-white p-4">
+                    <p className="text-xs uppercase tracking-wide text-gray-400">Joined</p>
+                    <p className="mt-2 text-sm font-semibold text-gray-900">
+                      {selectedUser.date_joined ? new Date(selectedUser.date_joined).toLocaleDateString() : '—'}
+                    </p>
+                  </div>
+                  <div className="rounded-xl border border-gray-200 bg-white p-4">
+                    <p className="text-xs uppercase tracking-wide text-gray-400">Last login</p>
+                    <p className="mt-2 text-sm font-semibold text-gray-900">
+                      {selectedUser.last_login ? new Date(selectedUser.last_login).toLocaleDateString() : '—'}
+                    </p>
                   </div>
                 </div>
 
                 {selectedUser.is_suspended && (
-                  <div className="rounded-3xl border border-red-200 bg-red-50 p-4">
+                  <div className="rounded-xl border border-red-200 bg-red-50 p-4">
                     <p className="text-sm font-semibold text-red-800">Suspension details</p>
-                    <p className="mt-2 text-sm text-red-700">{selectedUser.suspension_reason || 'No reason provided'}</p>
-                    <p className="mt-2 text-xs text-red-500">Suspended at: {selectedUser.suspended_at ? new Date(selectedUser.suspended_at).toLocaleString() : '—'}</p>
+                    <p className="mt-2 text-sm text-red-700 break-all">{selectedUser.suspension_reason || 'No reason provided'}</p>
+                    <p className="mt-2 text-xs text-red-500">
+                      Suspended at: {selectedUser.suspended_at ? new Date(selectedUser.suspended_at).toLocaleString() : '—'}
+                    </p>
                   </div>
                 )}
               </div>
             )}
 
-            <div className="mt-5 flex justify-end">
+            <div className="p-5 border-t border-gray-200 flex justify-end">
               <Button type="button" onClick={() => setShowViewModal(false)} className="w-full sm:w-auto">
                 Close
               </Button>

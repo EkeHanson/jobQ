@@ -1,4 +1,4 @@
-import { NavLink, Link } from 'react-router-dom'
+import { NavLink, Link, useNavigate } from 'react-router-dom'
 import { APP_NAME, APP_VERSION } from '../../utils/config'
 import {
   HomeIcon,
@@ -14,6 +14,7 @@ import {
   XMarkIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
+  ArrowRightOnRectangleIcon,
 } from '@heroicons/react/24/outline'
 import { useSelector, useDispatch } from 'react-redux'
 import { useAuth } from '../../hooks/useAuth'
@@ -36,7 +37,12 @@ const adminNavigation = [
 export default function AdminLayout({ children }) {
   const { sidebar } = useSelector((state) => state.ui)
   const dispatch = useDispatch()
-  const { user } = useAuth()
+  const { user, handleLogout } = useAuth()
+  const navigate = useNavigate()
+  const handleLogoutClick = async () => {
+    await handleLogout()
+    navigate('/login')
+  }
   const isCollapsed = sidebar.isCollapsed
 
   return (
@@ -191,6 +197,14 @@ export default function AdminLayout({ children }) {
               >
                 Exit Admin
               </Link>
+              <button
+                onClick={handleLogoutClick}
+                className="flex items-center gap-2 px-3 py-1.5 text-sm text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"
+                title="Logout"
+              >
+                <ArrowRightOnRectangleIcon className="w-4 h-4" />
+                <span>Logout</span>
+              </button>
             </div>
           </div>
         </header>

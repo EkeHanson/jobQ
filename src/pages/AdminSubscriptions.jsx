@@ -17,10 +17,14 @@ export default function AdminSubscriptions() {
   const [showViewModal, setShowViewModal] = useState(false)
   const [showPlans, setShowPlans] = useState(false)
   const [selectedPlan, setSelectedPlan] = useState(null)
+  const [showDeletePlanModal, setShowDeletePlanModal] = useState(false)
+  const [planToDelete, setPlanToDelete] = useState(null)
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const [showSubscribeModal, setShowSubscribeModal] = useState(false)
   const [showChangePlanModal, setShowChangePlanModal] = useState(false)
+  const [showCancelSubscriptionModal, setShowCancelSubscriptionModal] = useState(false)
+  const [subscriptionToCancel, setSubscriptionToCancel] = useState(null)
   const [selectedUser, setSelectedUser] = useState(null)
   const [selectedSubscription, setSelectedSubscription] = useState(null)
   const [newPlan, setNewPlan] = useState({
@@ -33,6 +37,23 @@ export default function AdminSubscriptions() {
     is_active: true,
   })
   const { addToast } = useToast()
+
+  const formatErrorMessages = (errorData) => {
+    if (!errorData || typeof errorData !== 'object') return 'Unable to process request.'
+    return Object.entries(errorData)
+      .map(([field, messages]) => {
+        if (Array.isArray(messages)) {
+          return `${field}: ${messages.join(', ')}`
+        }
+        if (typeof messages === 'object') {
+          return Object.entries(messages)
+            .map(([subField, subMessages]) => `${field}.${subField}: ${Array.isArray(subMessages) ? subMessages.join(', ') : subMessages}`)
+            .join('; ')
+        }
+        return `${field}: ${messages}`
+      })
+      .join('; ')
+  }
 
   useEffect(() => {
     fetchPlans()
@@ -99,7 +120,11 @@ export default function AdminSubscriptions() {
       fetchPlans()
     } catch (err) {
       console.error('Failed to create subscription plan', err)
-      addToast('Unable to create plan. Check required fields and permissions.', 'error')
+      const errorData = err.response?.data
+      addToast(
+        `Unable to create plan. ${formatErrorMessages(errorData)}`,
+        'error',
+      )
     } finally {
       setLoading(false)
     }
@@ -135,7 +160,11 @@ export default function AdminSubscriptions() {
       fetchPlans()
     } catch (err) {
       console.error('Failed to update subscription plan', err)
-      addToast('Unable to update plan. Check permissions.', 'error')
+      const errorData = err.response?.data
+      addToast(
+        `Unable to update plan. ${formatErrorMessages(errorData)}`,
+        'error',
+      )
     } finally {
       setLoading(false)
     }
@@ -146,12 +175,19 @@ export default function AdminSubscriptions() {
     setShowViewModal(true)
   }
 
-  const handleDeletePlan = async (id) => {
-    if (!window.confirm('Delete this subscription plan permanently?')) return
+  const promptDeletePlan = (plan) => {
+    setPlanToDelete(plan)
+    setShowDeletePlanModal(true)
+  }
+
+  const confirmDeletePlan = async () => {
+    if (!planToDelete) return
     try {
       setLoading(true)
-      await adminService.deleteSubscriptionPlan(id)
+      await adminService.deleteSubscriptionPlan(planToDelete.id)
       addToast('Subscription plan deleted successfully.', 'success')
+      setShowDeletePlanModal(false)
+      setPlanToDelete(null)
       fetchPlans()
     } catch (err) {
       console.error('Failed to delete plan', err)
@@ -207,12 +243,19 @@ export default function AdminSubscriptions() {
     }
   }
 
-  const handleCancelSubscription = async (subscription) => {
-    if (!window.confirm(`Cancel subscription for ${subscription.user?.username}?`)) return
+  const promptCancelSubscription = (subscription) => {
+    setSubscriptionToCancel(subscription)
+    setShowCancelSubscriptionModal(true)
+  }
+
+  const confirmCancelSubscription = async () => {
+    if (!subscriptionToCancel) return
     try {
       setLoading(true)
-      await adminService.cancelUserSubscription(subscription.user.id)
-      addToast(`Subscription for ${subscription.user.username} canceled.`, 'success')
+      await adminService.cancelUserSubscription(subscriptionToCancel.user.id)
+      addToast(`Subscription for ${subscriptionToCancel.user.username} canceled.`, 'success')
+      setShowCancelSubscriptionModal(false)
+      setSubscriptionToCancel(null)
       fetchSubscriptions()
     } catch (err) {
       console.error('Failed to cancel subscription', err)
@@ -242,6 +285,13 @@ export default function AdminSubscriptions() {
             <p className="text-gray-600 mt-2 text-sm sm:text-base">Manage subscription plans and view active subscribers.</p>
           </div>
           <div className="flex flex-col sm:flex-row gap-2">
+            <button
+              type="button"
+              onClick={() => setShowCreateForm((prev) => !prev)}
+              className="rounded-xl bg-green-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-green-700 shadow-lg shadow-emerald-500/30 transition-all duration-200 w-full sm:w-auto"
+            >
+              {showCreateForm ? 'Hide create form' : 'Create Plan'}
+            </button>
             <button
               type="button"
               onClick={() => setShowPlans((prev) => !prev)}
@@ -523,7 +573,7 @@ export default function AdminSubscriptions() {
                               </button>
                               {subscription.active ? (
                                 <button
-                                  onClick={() => handleCancelSubscription(subscription)}
+                                  onClick={() => promptCancelSubscription(subscription)}
                                   className="px-2 py-1 text-xs bg-red-500 hover:bg-red-600 text-white rounded"
                                 >
                                   Cancel
@@ -658,7 +708,7 @@ export default function AdminSubscriptions() {
                           <Button
                             type="button"
                             className="px-3 py-1.5 text-xs bg-red-500 hover:bg-red-600 flex-1"
-                            onClick={() => handleDeletePlan(plan.id)}
+                            onClick={() => promptDeletePlan(plan)}
                           >
                             Delete
                           </Button>
@@ -836,6 +886,84 @@ export default function AdminSubscriptions() {
               >
                 Cancel
               </Button>
+            </div>
+          </div>
+        </Modal>
+
+        <Modal
+          isOpen={showDeletePlanModal}
+          onClose={() => {
+            setShowDeletePlanModal(false)
+            setPlanToDelete(null)
+          }}
+          title="Confirm delete subscription plan"
+          size="md"
+        >
+          <div className="space-y-4">
+            <p className="text-sm text-gray-600">
+              Deleting a subscription plan will remove it from the available offerings. Existing subscribers will keep their current plan, but they will no longer be able to switch to this plan.
+            </p>
+            <div className="rounded-xl border border-red-100 bg-red-50 p-4">
+              <p className="text-sm font-semibold text-red-900">{planToDelete?.name || 'Untitled plan'}</p>
+              <p className="text-sm text-gray-700">Price: ₦{planToDelete?.price_cents?.toLocaleString() || '0'}</p>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-3 justify-end">
+              <Button
+                type="button"
+                className="bg-gray-500 hover:bg-gray-600 w-full sm:w-auto"
+                onClick={() => {
+                  setShowDeletePlanModal(false)
+                  setPlanToDelete(null)
+                }}
+              >
+                Cancel
+              </Button>
+              <button
+                type="button"
+                onClick={confirmDeletePlan}
+                className="rounded-xl bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700 w-full sm:w-auto"
+              >
+                Delete plan
+              </button>
+            </div>
+          </div>
+        </Modal>
+
+        <Modal
+          isOpen={showCancelSubscriptionModal}
+          onClose={() => {
+            setShowCancelSubscriptionModal(false)
+            setSubscriptionToCancel(null)
+          }}
+          title="Confirm cancel subscription"
+          size="md"
+        >
+          <div className="space-y-4">
+            <p className="text-sm text-gray-600">
+              Cancelling this subscription will deactivate the user's account benefits immediately. This action can be reversed only by resubscribing them.
+            </p>
+            <div className="rounded-xl border border-red-100 bg-red-50 p-4">
+              <p className="text-sm font-semibold text-red-900">{subscriptionToCancel?.user?.username || 'Unknown user'}</p>
+              <p className="text-sm text-gray-700">Plan: {subscriptionToCancel?.plan?.name || 'No plan'}</p>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-3 justify-end">
+              <Button
+                type="button"
+                className="bg-gray-500 hover:bg-gray-600 w-full sm:w-auto"
+                onClick={() => {
+                  setShowCancelSubscriptionModal(false)
+                  setSubscriptionToCancel(null)
+                }}
+              >
+                Cancel
+              </Button>
+              <button
+                type="button"
+                onClick={confirmCancelSubscription}
+                className="rounded-xl bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700 w-full sm:w-auto"
+              >
+                Cancel subscription
+              </button>
             </div>
           </div>
         </Modal>

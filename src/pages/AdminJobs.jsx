@@ -35,6 +35,8 @@ export default function AdminJobs() {
   const [showCreateForm, setShowCreateForm] = useState(false)
   const [showEditForm, setShowEditForm] = useState(false)
   const [showViewModal, setShowViewModal] = useState(false)
+  const [showDeleteJobModal, setShowDeleteJobModal] = useState(false)
+  const [jobToDelete, setJobToDelete] = useState(null)
   const [selectedJob, setSelectedJob] = useState(null)
   const [newJob, setNewJob] = useState({
     title: '',
@@ -209,15 +211,25 @@ export default function AdminJobs() {
     setShowViewModal(true)
   }
 
-  const handleDelete = async (job) => {
-    if (!window.confirm('Delete this job permanently?')) return
+  const promptDeleteJob = (job) => {
+    setJobToDelete(job)
+    setShowDeleteJobModal(true)
+  }
+
+  const confirmDeleteJob = async () => {
+    if (!jobToDelete) return
     try {
-      await adminService.deleteJob(job.id)
+      setLoading(true)
+      await adminService.deleteJob(jobToDelete.id)
       addToast('Job deleted successfully.', 'success')
+      setShowDeleteJobModal(false)
+      setJobToDelete(null)
       fetchJobs(page)
     } catch (err) {
       console.error('Failed to delete job', err)
       addToast('Unable to delete job. Check permissions.', 'error')
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -614,7 +626,7 @@ export default function AdminJobs() {
                         </button>
                         <button
                           type="button"
-                          onClick={() => handleDelete(job)}
+                          onClick={() => promptDeleteJob(job)}
                           className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                           title="Delete"
                         >
@@ -677,7 +689,7 @@ export default function AdminJobs() {
                   </button>
                   <button
                     type="button"
-                    onClick={() => handleDelete(job)}
+                    onClick={() => promptDeleteJob(job)}
                     className="flex-1 flex items-center justify-center gap-1 px-3 py-2 text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors"
                   >
                     <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -784,6 +796,45 @@ export default function AdminJobs() {
               >
                 Close
               </Button>
+            </div>
+          </div>
+        </Modal>
+        <Modal
+          isOpen={showDeleteJobModal}
+          onClose={() => {
+            setShowDeleteJobModal(false)
+            setJobToDelete(null)
+          }}
+          title="Confirm delete job"
+          size="md"
+        >
+          <div className="space-y-4">
+            <p className="text-sm text-gray-600">
+              This action will permanently delete the selected job posting.
+              It cannot be undone.
+            </p>
+            <div className="rounded-xl border border-red-100 bg-red-50 p-4">
+              <p className="text-sm font-semibold text-red-800">{jobToDelete?.title || 'Untitled job'}</p>
+              <p className="text-sm text-gray-700">{jobToDelete?.company?.name || jobToDelete?.company || ''}</p>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-3 justify-end">
+              <Button
+                type="button"
+                className="bg-gray-500 hover:bg-gray-600 w-full sm:w-auto"
+                onClick={() => {
+                  setShowDeleteJobModal(false)
+                  setJobToDelete(null)
+                }}
+              >
+                Cancel
+              </Button>
+              <button
+                type="button"
+                onClick={confirmDeleteJob}
+                className="rounded-xl bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700 w-full sm:w-auto"
+              >
+                Delete job
+              </button>
             </div>
           </div>
         </Modal>

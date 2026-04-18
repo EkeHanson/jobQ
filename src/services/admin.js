@@ -108,6 +108,26 @@ const adminService = {
     return apiClient.delete(`/subscription/${id}/`)
   },
 
+  subscribeUserToPlan: async (userId, planId) => {
+    return apiClient.post('/subscription/admin-subscribe-user/', {
+      user_id: userId,
+      plan_id: planId,
+    })
+  },
+
+  changeUserPlan: async (userId, planId) => {
+    return apiClient.post('/subscription/admin-change-plan/', {
+      user_id: userId,
+      plan_id: planId,
+    })
+  },
+
+  cancelUserSubscription: async (userId) => {
+    return apiClient.post('/subscription/admin-cancel-subscription/', {
+      user_id: userId,
+    })
+  },
+
   getAdminBlogPosts: async (params = {}) => {
     return apiClient.get('/insights/posts/all/', { params })
   },

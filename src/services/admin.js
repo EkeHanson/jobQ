@@ -5,6 +5,14 @@ const adminService = {
     return apiClient.get('/auth/users/', { params: { page } })
   },
 
+  getAllUsers: async () => {
+    return apiClient.get('/auth/users/', { params: { page_size: 1000 } }) // Large page size to get all users
+  },
+
+  getUserSubscriptions: async () => {
+    return apiClient.get('/subscription/admin-subscriptions/')
+  },
+
   createUser: async (payload) => {
     return apiClient.post('/auth/users/', payload)
   },

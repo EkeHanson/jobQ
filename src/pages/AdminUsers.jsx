@@ -14,6 +14,7 @@ export default function AdminUsers() {
   const [showEditForm, setShowEditForm] = useState(false)
   const [showViewModal, setShowViewModal] = useState(false)
   const [selectedUser, setSelectedUser] = useState(null)
+  const [searchTerm, setSearchTerm] = useState('')
   const [newUser, setNewUser] = useState({
     username: '',
     email: '',
@@ -35,7 +36,30 @@ export default function AdminUsers() {
     try {
       setLoading(true)
       const data = await adminService.getUsers(page)
-      setUsers(data.results || [])
+      let usersWithSubscriptions = data.results || []
+
+      // Load subscription data and merge with users
+      try {
+        const subscriptionData = await adminService.getUserSubscriptions()
+        const subscriptions = subscriptionData || []
+
+        usersWithSubscriptions = usersWithSubscriptions.map(user => {
+          const userSubscription = subscriptions.find(sub => sub.user === user.id)
+          return {
+            ...user,
+            subscription: userSubscription ? {
+              plan_name: userSubscription.plan?.name || 'Unknown',
+              active: userSubscription.active,
+              plan_id: userSubscription.plan?.id
+            } : null
+          }
+        })
+      } catch (err) {
+        console.warn('Failed to load subscription data:', err)
+        // Continue without subscription data
+      }
+
+      setUsers(searchTerm ? filterUsers(usersWithSubscriptions, searchTerm) : usersWithSubscriptions)
       setTotalPages(data.total_pages || 1)
       setCurrentPage(Number(data.current_page) || 1)
     } catch (err) {
@@ -43,6 +67,34 @@ export default function AdminUsers() {
       addToast('Unable to load users. Make sure you are logged in as an admin.', 'error')
     } finally {
       setLoading(false)
+    }
+  }
+
+  const filterUsers = (userList, term) => {
+    if (!term) return userList
+
+    const lowerTerm = term.toLowerCase()
+    return userList.filter(user => {
+      const fullName = `${user.first_name || ''} ${user.last_name || ''}`.toLowerCase().trim()
+      const username = (user.username || '').toLowerCase()
+      const email = (user.email || '').toLowerCase()
+      const subscriptionPlan = (user.subscription?.plan_name || '').toLowerCase()
+
+      return fullName.includes(lowerTerm) ||
+             username.includes(lowerTerm) ||
+             email.includes(lowerTerm) ||
+             subscriptionPlan.includes(lowerTerm)
+    })
+  }
+
+  // Handle search input change
+  const handleSearchChange = (value) => {
+    setSearchTerm(value)
+    if (allUsers.length > 0) {
+      setUsers(filterUsers(allUsers, value))
+    } else {
+      // If we don't have all users loaded, filter current page
+      setUsers(filterUsers(users, value))
     }
   }
 
@@ -165,20 +217,56 @@ export default function AdminUsers() {
         </div>
 
         {/* Header Section */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 sm:mb-8">
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">User Management</h1>
-            <p className="text-gray-600 mt-1 sm:mt-2 text-sm sm:text-base">
-              Manage registered users, create new accounts, and control user permissions.
-            </p>
+        <div className="flex flex-col gap-4 mb-6 sm:mb-8">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">User Management</h1>
+              <p className="text-gray-600 mt-1 sm:mt-2 text-sm sm:text-base">
+                Manage registered users, create new accounts, and control user permissions.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowCreateForm((prev) => !prev)}
+              className="rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-2.5 text-sm font-semibold text-white hover:from-blue-700 hover:to-indigo-700 shadow-lg shadow-blue-500/30 transition-all duration-200 w-full sm:w-auto"
+            >
+              {showCreateForm ? 'Hide create form' : '+ Create new user'}
+            </button>
           </div>
-          <button
-            type="button"
-            onClick={() => setShowCreateForm((prev) => !prev)}
-            className="rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-2.5 text-sm font-semibold text-white hover:from-blue-700 hover:to-indigo-700 shadow-lg shadow-blue-500/30 transition-all duration-200"
-          >
-            {showCreateForm ? 'Hide create form' : '+ Create new user'}
-          </button>
+
+          {/* Search Bar */}
+          <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+            <div className="relative flex-1 max-w-md">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </div>
+              <input
+                type="text"
+                placeholder="Search by name, email, username, or subscription plan..."
+                value={searchTerm}
+                onChange={(e) => handleSearchChange(e.target.value)}
+                className="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-xl leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+              />
+              {searchTerm && (
+                <button
+                  type="button"
+                  onClick={() => handleSearchChange('')}
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                >
+                  <svg className="h-5 w-5 text-gray-400 hover:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              )}
+            </div>
+            {searchTerm && (
+              <div className="text-sm text-gray-600">
+                Found {users.length} user{users.length !== 1 ? 's' : ''} matching "{searchTerm}"
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Create User Form - Fully Responsive */}
@@ -421,6 +509,7 @@ export default function AdminUsers() {
                 <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">ID</th>
                 <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">Username</th>
                 <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">Email</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">Subscription</th>
                 <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">Staff</th>
                 <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">Suspended</th>
                 <th className="px-6 py-4 text-right text-xs font-semibold uppercase tracking-wider text-gray-600">Actions</th>
@@ -429,16 +518,16 @@ export default function AdminUsers() {
             <tbody className="divide-y divide-gray-200 bg-white">
               {loading ? (
                 <tr>
-                  <td colSpan="6" className="px-6 py-16 text-center text-sm text-gray-500">
+                  <td colSpan="7" className="px-6 py-16 text-center text-sm text-gray-500">
                     <div className="flex flex-col items-center gap-3">
                       <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-                      Loading users...
+                      Loading users…
                     </div>
                   </td>
                 </tr>
               ) : users.length === 0 ? (
                 <tr>
-                  <td colSpan="6" className="px-6 py-16 text-center text-sm text-gray-500">No users found.</td>
+                  <td colSpan="7" className="px-6 py-16 text-center text-sm text-gray-500">No users found.</td>
                 </tr>
               ) : (
                 users.map((user, index) => (
@@ -446,6 +535,17 @@ export default function AdminUsers() {
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{index + 1}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{user.username}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{user.email}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                      {user.subscription ? (
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                          user.subscription.active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                        }`}>
+                          {user.subscription.plan_name}
+                        </span>
+                      ) : (
+                        <span className="text-xs text-gray-500">No subscription</span>
+                      )}
+                    </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${user.is_staff ? 'bg-purple-100 text-purple-800' : 'bg-gray-100 text-gray-800'}`}>
                         {user.is_staff ? 'Yes' : 'No'}
@@ -518,6 +618,7 @@ export default function AdminUsers() {
             <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
               <tr>
                 <th className="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">User</th>
+                <th className="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">Plan</th>
                 <th className="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">Status</th>
                 <th className="px-3 py-3 text-right text-xs font-semibold uppercase tracking-wider text-gray-600">Actions</th>
               </tr>
@@ -525,16 +626,16 @@ export default function AdminUsers() {
             <tbody className="divide-y divide-gray-200 bg-white">
               {loading ? (
                 <tr>
-                  <td colSpan="3" className="px-3 py-12 text-center text-sm text-gray-500">
+                  <td colSpan="4" className="px-3 py-12 text-center text-sm text-gray-500">
                     <div className="flex flex-col items-center gap-3">
-                      <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-                      Loading users...
+                      <div className="w-6 h-6 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                      <span>Loading users…</span>
                     </div>
                   </td>
                 </tr>
               ) : users.length === 0 ? (
                 <tr>
-                  <td colSpan="3" className="px-3 py-12 text-center text-sm text-gray-500">No users found.</td>
+                  <td colSpan="4" className="px-3 py-12 text-center text-sm text-gray-500">No users found.</td>
                 </tr>
               ) : (
                 users.map((user) => (
@@ -554,6 +655,11 @@ export default function AdminUsers() {
                           </span>
                         </div>
                       </div>
+                    </td>
+                    <td className="px-3 py-3">
+                      <span className={`text-xs ${user.subscription?.active ? 'text-green-600' : 'text-gray-500'}`}>
+                        {user.subscription?.plan_name || 'None'}
+                      </span>
                     </td>
                     <td className="px-3 py-3">
                       <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${user.is_suspended ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`}>

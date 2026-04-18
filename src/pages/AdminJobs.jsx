@@ -5,6 +5,28 @@ import Modal from '../components/common/Modal'
 import adminService from '../services/admin'
 import { useToast } from '../components/common/Toast'
 
+const INDUSTRY_CHOICES = [
+  'Technology',
+  'Healthcare',
+  'Finance',
+  'Manufacturing',
+  'Security',
+  'Retail',
+  'Education',
+  'Construction',
+  'Transportation',
+  'Hospitality',
+  'Media',
+  'Consulting',
+  'Legal',
+  'Real Estate',
+  'Energy',
+  'Telecommunications',
+  'Government',
+  'Non-Profit',
+  'Other',
+]
+
 export default function AdminJobs() {
   const [jobs, setJobs] = useState([])
   const [loading, setLoading] = useState(true)
@@ -19,9 +41,9 @@ export default function AdminJobs() {
     company_name: '',
     company_website: '',
     location: '',
-    industry: '',
+    industry: 'Other',
     job_type: 'Full-time',
-    experience_level: 'Mid',
+    experience_level: 'Mid-Level',
     application_link: '',
     application_email: '',
     description: '',
@@ -79,9 +101,9 @@ export default function AdminJobs() {
         company_name: '',
         company_website: '',
         location: '',
-        industry: '',
+        industry: 'Other',
         job_type: 'Full-time',
-        experience_level: 'Mid',
+        experience_level: 'Mid-Level',
         application_link: '',
         application_email: '',
         description: '',
@@ -91,7 +113,25 @@ export default function AdminJobs() {
       fetchJobs(page)
     } catch (err) {
       console.error('Failed to create job', err)
-      addToast('Unable to create job. Check permissions or required fields.', 'error')
+      const errorData = err.response?.data
+      if (errorData) {
+        const errorMessages = []
+        for (const [field, messages] of Object.entries(errorData)) {
+          if (Array.isArray(messages)) {
+            errorMessages.push(`${field}: ${messages.join(', ')}`)
+          } else if (typeof messages === 'object') {
+            // Nested like company.website
+            for (const [subField, subMessages] of Object.entries(messages)) {
+              errorMessages.push(`${field}.${subField}: ${subMessages.join(', ')}`)
+            }
+          } else {
+            errorMessages.push(`${field}: ${messages}`)
+          }
+        }
+        addToast(`Validation errors: ${errorMessages.join('; ')}`, 'error')
+      } else {
+        addToast('Unable to create job. Check permissions or required fields.', 'error')
+      }
     } finally {
       setLoading(false)
     }
@@ -106,7 +146,7 @@ export default function AdminJobs() {
       location: job.location || '',
       industry: job.industry || '',
       job_type: job.job_type || 'Full-time',
-      experience_level: job.experience_level || 'Mid',
+      experience_level: job.experience_level || 'Mid-Level',
       application_link: job.application_link || '',
       application_email: job.application_email || '',
       description: job.description || '',
@@ -140,7 +180,25 @@ export default function AdminJobs() {
       fetchJobs(page)
     } catch (err) {
       console.error('Failed to update job', err)
-      addToast('Unable to update job. Check permissions.', 'error')
+      const errorData = err.response?.data
+      if (errorData) {
+        const errorMessages = []
+        for (const [field, messages] of Object.entries(errorData)) {
+          if (Array.isArray(messages)) {
+            errorMessages.push(`${field}: ${messages.join(', ')}`)
+          } else if (typeof messages === 'object') {
+            // Nested like company.website
+            for (const [subField, subMessages] of Object.entries(messages)) {
+              errorMessages.push(`${field}.${subField}: ${subMessages.join(', ')}`)
+            }
+          } else {
+            errorMessages.push(`${field}: ${messages}`)
+          }
+        }
+        addToast(`Validation errors: ${errorMessages.join('; ')}`, 'error')
+      } else {
+        addToast('Unable to update job. Check permissions.', 'error')
+      }
     } finally {
       setLoading(false)
     }
@@ -240,12 +298,18 @@ export default function AdminJobs() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Industry</label>
-                <input
+                <select
                   name="industry"
                   value={newJob.industry}
                   onChange={handleNewJobChange}
                   className="w-full rounded-xl border-gray-300 px-4 py-3 shadow-sm focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-all"
-                />
+                >
+                  {INDUSTRY_CHOICES.map((industry) => (
+                    <option key={industry} value={industry}>
+                      {industry}
+                    </option>
+                  ))}
+                </select>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Job Type</label>
@@ -270,8 +334,8 @@ export default function AdminJobs() {
                   onChange={handleNewJobChange}
                   className="w-full rounded-xl border-gray-300 px-4 py-3 shadow-sm focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-all"
                 >
-                  <option value="Entry">Entry</option>
-                  <option value="Mid">Mid</option>
+                  <option value="Entry">Entry Level</option>
+                  <option value="Mid-Level">Mid-Level</option>
                   <option value="Senior">Senior</option>
                   <option value="Lead">Lead</option>
                   <option value="Executive">Executive</option>

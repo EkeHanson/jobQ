@@ -1,144 +1,196 @@
-import { useEffect, useState } from 'react'
-import AdminLayout from '../components/layout/AdminLayout'
-import Button from '../components/common/Button'
-import Modal from '../components/common/Modal'
-import adminService from '../services/admin'
-import { useToast } from '../components/common/Toast'
-import { useAuth } from '../hooks/useAuth'
+import { useEffect, useState } from "react";
+import AdminLayout from "../components/layout/AdminLayout";
+import Button from "../components/common/Button";
+import Modal from "../components/common/Modal";
+import adminService from "../services/admin";
+import { useToast } from "../components/common/Toast";
+import { useAuth } from "../hooks/useAuth";
 
 export default function AdminBlog() {
-  const [posts, setPosts] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [showCreateForm, setShowCreateForm] = useState(false)
-  const [showEditForm, setShowEditForm] = useState(false)
-  const [showViewModal, setShowViewModal] = useState(false)
-  const [selectedPost, setSelectedPost] = useState(null)
+  const [posts, setPosts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [showEditForm, setShowEditForm] = useState(false);
+  const [showViewModal, setShowViewModal] = useState(false);
+  const [selectedPost, setSelectedPost] = useState(null);
   const [newPost, setNewPost] = useState({
-    title: '',
-    excerpt: '',
-    content: '',
-    category: '',
-    featured_image: '',
-    external_link: '',
+    title: "",
+    excerpt: "",
+    content: "",
+    category: "",
+    featured_image: "",
+    external_link: "",
     is_published: false,
     is_featured: false,
-  })
-  const { addToast } = useToast()
-  const { user } = useAuth()
+  });
+  const [fieldErrors, setFieldErrors] = useState({});
+  const { addToast } = useToast();
+  const { user } = useAuth();
+
+  const BLOG_CATEGORIES = [
+    "Career Advice",
+    "Company",
+    "Industry",
+    "Interview Tips",
+    "News",
+    "Opinion",
+    "Remote Work",
+    "Resume",
+    "Salary",
+    "Tips",
+  ];
 
   useEffect(() => {
-    fetchPosts()
-  }, [])
+    fetchPosts();
+  }, []);
 
   const fetchPosts = async () => {
     try {
-      setLoading(true)
-      const data = await adminService.getAdminBlogPosts({})
-      setPosts(data || [])
+      setLoading(true);
+      const data = await adminService.getAdminBlogPosts({});
+      setPosts(data || []);
     } catch (err) {
-      console.error('Failed to load blog posts', err)
-      addToast('Unable to load blog posts. Make sure you are logged in as an admin.', 'error')
+      console.error("Failed to load blog posts", err);
+      addToast(
+        "Unable to load blog posts. Make sure you are logged in as an admin.",
+        "error",
+      );
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleNewPostChange = (event) => {
-    const { name, value, type, checked } = event.target
+    const { name, value, type, checked } = event.target;
     setNewPost((prev) => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : value,
-    }))
-  }
+      [name]: type === "checkbox" ? checked : value,
+    }));
+  };
 
   const handleCreatePost = async () => {
     try {
-      setLoading(true)
+      setLoading(true);
       const payload = {
         ...newPost,
         author: user?.id,
-      }
-      await adminService.createBlogPost(payload)
-      addToast('Blog post created successfully.', 'success')
+      };
+      await adminService.createBlogPost(payload);
+      addToast("Blog post created successfully.", "success");
+      setFieldErrors({});
       setNewPost({
-        title: '',
-        excerpt: '',
-        content: '',
-        category: '',
-        featured_image: '',
-        external_link: '',
+        title: "",
+        excerpt: "",
+        content: "",
+        category: "",
+        featured_image: "",
+        external_link: "",
         is_published: false,
         is_featured: false,
-      })
-      setShowCreateForm(false)
-      fetchPosts()
+      });
+      setShowCreateForm(false);
+      setFieldErrors({});
+      fetchPosts();
     } catch (err) {
-      console.error('Failed to create blog post', err)
-      addToast('Unable to create the blog post. Check required fields and permissions.', 'error')
+      console.error("Failed to create blog post", err);
+      const errorData = err.response?.data;
+      if (errorData && typeof errorData === "object") {
+        setFieldErrors(errorData);
+        const fieldErrorMessages = Object.entries(errorData)
+          .map(([field, messages]) => {
+            const fieldLabel = field.charAt(0).toUpperCase() + field.slice(1);
+            return `${fieldLabel}: ${Array.isArray(messages) ? messages.join(", ") : messages}`;
+          })
+          .join(" | ");
+        addToast(
+          fieldErrorMessages || "Unable to create the blog post.",
+          "error",
+        );
+      } else {
+        addToast(
+          "Unable to create the blog post. Check required fields and permissions.",
+          "error",
+        );
+      }
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleEditPost = (post) => {
-    setSelectedPost(post)
+    setSelectedPost(post);
     setNewPost({
-      title: post.title || '',
-      excerpt: post.excerpt || '',
-      content: post.content || '',
-      category: post.category || '',
-      featured_image: post.featured_image || '',
-      external_link: post.external_link || '',
+      title: post.title || "",
+      excerpt: post.excerpt || "",
+      content: post.content || "",
+      category: post.category || "",
+      featured_image: post.featured_image || "",
+      external_link: post.external_link || "",
       is_published: post.is_published || false,
       is_featured: post.is_featured || false,
-    })
-    setShowEditForm(true)
-  }
+    });
+    setShowEditForm(true);
+  };
 
   const handleUpdatePost = async () => {
     try {
-      setLoading(true)
-      await adminService.updateBlogPost(selectedPost.slug, newPost)
-      addToast('Blog post updated successfully.', 'success')
-      setShowEditForm(false)
-      setSelectedPost(null)
-      fetchPosts()
+      setLoading(true);
+      await adminService.updateBlogPost(selectedPost.slug, newPost);
+      addToast("Blog post updated successfully.", "success");
+      setShowEditForm(false);
+      setSelectedPost(null);
+      fetchPosts();
     } catch (err) {
-      console.error('Failed to update blog post', err)
-      addToast('Unable to update the blog post. Check permissions.', 'error')
+      console.error("Failed to update blog post", err);
+      const errorData = err.response?.data;
+      if (errorData && typeof errorData === "object") {
+        setFieldErrors(errorData);
+        const fieldErrorMessages = Object.entries(errorData)
+          .map(([field, messages]) => {
+            const fieldLabel = field.charAt(0).toUpperCase() + field.slice(1);
+            return `${fieldLabel}: ${Array.isArray(messages) ? messages.join(", ") : messages}`;
+          })
+          .join(" | ");
+        addToast(
+          fieldErrorMessages || "Unable to update the blog post.",
+          "error",
+        );
+      } else {
+        addToast("Unable to update the blog post. Check permissions.", "error");
+      }
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleViewPost = (post) => {
-    setSelectedPost(post)
-    setShowViewModal(true)
-  }
+    setSelectedPost(post);
+    setShowViewModal(true);
+  };
 
   const toggleFeatured = async (slug) => {
     try {
-      await adminService.featureBlogPost(slug)
-      addToast('Post featured status updated.', 'success')
-      fetchPosts()
+      await adminService.featureBlogPost(slug);
+      addToast("Post featured status updated.", "success");
+      fetchPosts();
     } catch (err) {
-      console.error('Failed to toggle featured', err)
-      addToast('Unable to update featured status.', 'error')
+      console.error("Failed to toggle featured", err);
+      addToast("Unable to update featured status.", "error");
     }
-  }
+  };
 
   const deletePost = async (slug) => {
-    if (!window.confirm('Delete this post permanently?')) return
+    if (!window.confirm("Delete this post permanently?")) return;
 
     try {
-      await adminService.deleteBlogPost(slug)
-      addToast('Post deleted successfully.', 'success')
-      fetchPosts()
+      await adminService.deleteBlogPost(slug);
+      addToast("Post deleted successfully.", "success");
+      fetchPosts();
     } catch (err) {
-      console.error('Failed to delete post', err)
-      addToast('Unable to delete the post.', 'error')
+      console.error("Failed to delete post", err);
+      addToast("Unable to delete the post.", "error");
     }
-  }
+  };
 
   return (
     <AdminLayout>
@@ -173,7 +225,8 @@ export default function AdminBlog() {
               Blog Management
             </h1>
             <p className="text-gray-600 mt-1 sm:mt-2 text-sm sm:text-base max-w-2xl">
-              Manage your blog posts and featured content directly from the React admin console.
+              Manage your blog posts and featured content directly from the
+              React admin console.
             </p>
           </div>
           <button
@@ -183,15 +236,35 @@ export default function AdminBlog() {
           >
             {showCreateForm ? (
               <span className="flex items-center justify-center gap-1">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
                 </svg>
                 Hide create form
               </span>
             ) : (
               <span className="flex items-center justify-center gap-1">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 4v16m8-8H4"
+                  />
                 </svg>
                 Create new post
               </span>
@@ -222,16 +295,35 @@ export default function AdminBlog() {
                 />
               </div>
               <div className="sm:col-span-2 md:col-span-1">
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">Category</label>
-                <input
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                  Category
+                </label>
+                <select
                   name="category"
                   value={newPost.category}
                   onChange={handleNewPostChange}
                   className="w-full rounded-xl border-gray-300 px-4 py-2.5 sm:py-3 shadow-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all"
-                />
+                >
+                  <option value="">Select a category</option>
+                  {BLOG_CATEGORIES.map((cat) => (
+                    <option key={cat} value={cat}>
+                      {cat}
+                    </option>
+                  ))}
+                </select>
+                {fieldErrors.category && (
+                  <p className="mt-1 text-sm text-red-600">
+                    {fieldErrors.category[0]}
+                  </p>
+                )}
               </div>
               <div className="sm:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">Excerpt</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                  Excerpt{" "}
+                  <span className="text-gray-500 text-xs">
+                    (max 500 characters)
+                  </span>
+                </label>
                 <textarea
                   name="excerpt"
                   value={newPost.excerpt}
@@ -239,6 +331,11 @@ export default function AdminBlog() {
                   rows={3}
                   className="w-full rounded-xl border-gray-300 px-4 py-2.5 sm:py-3 shadow-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all"
                 />
+                {fieldErrors.excerpt && (
+                  <p className="mt-1 text-sm text-red-600">
+                    {fieldErrors.excerpt[0]}
+                  </p>
+                )}
               </div>
               <div className="sm:col-span-2">
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">
@@ -265,7 +362,9 @@ export default function AdminBlog() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">External Link</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                  External Link
+                </label>
                 <input
                   name="external_link"
                   value={newPost.external_link}
@@ -282,7 +381,9 @@ export default function AdminBlog() {
                     onChange={handleNewPostChange}
                     className="h-5 w-5 rounded border-gray-300 text-purple-600 focus:ring-purple-500"
                   />
-                  <span className="text-sm text-gray-700">Publish immediately</span>
+                  <span className="text-sm text-gray-700">
+                    Publish immediately
+                  </span>
                 </label>
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input
@@ -339,16 +440,27 @@ export default function AdminBlog() {
                 />
               </div>
               <div className="sm:col-span-2 md:col-span-1">
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">Category</label>
-                <input
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                  Category
+                </label>
+                <select
                   name="category"
                   value={newPost.category}
                   onChange={handleNewPostChange}
                   className="w-full rounded-xl border-gray-300 px-4 py-2.5 sm:py-3 shadow-sm focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all"
-                />
+                >
+                  <option value="">Select a category</option>
+                  {BLOG_CATEGORIES.map((cat) => (
+                    <option key={cat} value={cat}>
+                      {cat}
+                    </option>
+                  ))}
+                </select>
               </div>
               <div className="sm:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">Excerpt</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                  Excerpt
+                </label>
                 <textarea
                   name="excerpt"
                   value={newPost.excerpt}
@@ -382,7 +494,9 @@ export default function AdminBlog() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">External Link</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                  External Link
+                </label>
                 <input
                   name="external_link"
                   value={newPost.external_link}
@@ -419,8 +533,8 @@ export default function AdminBlog() {
                 variant="secondary"
                 className="w-full sm:w-auto px-6 py-2.5"
                 onClick={() => {
-                  setShowEditForm(false)
-                  setSelectedPost(null)
+                  setShowEditForm(false);
+                  setSelectedPost(null);
                 }}
               >
                 Cancel
@@ -464,7 +578,10 @@ export default function AdminBlog() {
             <tbody className="divide-y divide-gray-200 bg-white">
               {loading ? (
                 <tr>
-                  <td colSpan="6" className="px-6 py-16 text-center text-sm text-gray-500">
+                  <td
+                    colSpan="6"
+                    className="px-6 py-16 text-center text-sm text-gray-500"
+                  >
                     <div className="flex flex-col items-center gap-3">
                       <div className="w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
                       <span>Loading blog posts…</span>
@@ -473,43 +590,49 @@ export default function AdminBlog() {
                 </tr>
               ) : posts.length === 0 ? (
                 <tr>
-                  <td colSpan="6" className="px-6 py-16 text-center text-sm text-gray-500">
+                  <td
+                    colSpan="6"
+                    className="px-6 py-16 text-center text-sm text-gray-500"
+                  >
                     No posts available.
                   </td>
                 </tr>
               ) : (
                 posts.map((post) => (
-                  <tr key={post.slug || post.id} className="hover:bg-purple-50/50 transition-colors">
+                  <tr
+                    key={post.slug || post.id}
+                    className="hover:bg-purple-50/50 transition-colors"
+                  >
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                       {post.title}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                      {post.category || 'N/A'}
+                      {post.category || "N/A"}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span
                         className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                           post.is_published
-                            ? 'bg-green-100 text-green-800'
-                            : 'bg-gray-100 text-gray-800'
+                            ? "bg-green-100 text-green-800"
+                            : "bg-gray-100 text-gray-800"
                         }`}
                       >
-                        {post.is_published ? 'Published' : 'Draft'}
+                        {post.is_published ? "Published" : "Draft"}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span
                         className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                           post.is_featured
-                            ? 'bg-amber-100 text-amber-800'
-                            : 'bg-gray-100 text-gray-800'
+                            ? "bg-amber-100 text-amber-800"
+                            : "bg-gray-100 text-gray-800"
                         }`}
                       >
-                        {post.is_featured ? 'Yes' : 'No'}
+                        {post.is_featured ? "Yes" : "No"}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                      {post.author || post.author_name || 'Unknown'}
+                      {post.author || post.author_name || "Unknown"}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex flex-wrap justify-end gap-2">
@@ -532,11 +655,11 @@ export default function AdminBlog() {
                           onClick={() => toggleFeatured(post.slug)}
                           className={`px-3 py-1.5 text-xs rounded-lg shadow-sm transition-colors ${
                             post.is_featured
-                              ? 'bg-gray-500 text-white hover:bg-gray-600'
-                              : 'bg-yellow-500 text-white hover:bg-yellow-600'
+                              ? "bg-gray-500 text-white hover:bg-gray-600"
+                              : "bg-yellow-500 text-white hover:bg-yellow-600"
                           }`}
                         >
-                          {post.is_featured ? 'Unfeature' : 'Feature'}
+                          {post.is_featured ? "Unfeature" : "Feature"}
                         </button>
                         <button
                           type="button"
@@ -562,7 +685,9 @@ export default function AdminBlog() {
               <p className="text-sm text-gray-500">Loading blog posts…</p>
             </div>
           ) : posts.length === 0 ? (
-            <div className="text-center py-16 text-sm text-gray-500">No posts available.</div>
+            <div className="text-center py-16 text-sm text-gray-500">
+              No posts available.
+            </div>
           ) : (
             posts.map((post) => (
               <div
@@ -574,7 +699,9 @@ export default function AdminBlog() {
                     <h3 className="font-semibold text-gray-900 text-base sm:text-lg break-words">
                       {post.title}
                     </h3>
-                    <p className="text-sm text-gray-600 mt-0.5">{post.category || 'Uncategorized'}</p>
+                    <p className="text-sm text-gray-600 mt-0.5">
+                      {post.category || "Uncategorized"}
+                    </p>
                   </div>
                   <div className="flex gap-2">
                     {post.is_published && (
@@ -590,7 +717,7 @@ export default function AdminBlog() {
                   </div>
                 </div>
                 <p className="text-sm text-gray-600 mb-4">
-                  By {post.author || post.author_name || 'Unknown'}
+                  By {post.author || post.author_name || "Unknown"}
                 </p>
                 <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-2">
                   <button
@@ -612,11 +739,11 @@ export default function AdminBlog() {
                     onClick={() => toggleFeatured(post.slug)}
                     className={`px-3 py-2 text-xs rounded-lg transition-colors ${
                       post.is_featured
-                        ? 'bg-gray-500 text-white hover:bg-gray-600'
-                        : 'bg-yellow-500 text-white hover:bg-yellow-600'
+                        ? "bg-gray-500 text-white hover:bg-gray-600"
+                        : "bg-yellow-500 text-white hover:bg-yellow-600"
                     }`}
                   >
-                    {post.is_featured ? 'Unfeature' : 'Feature'}
+                    {post.is_featured ? "Unfeature" : "Feature"}
                   </button>
                   <button
                     type="button"
@@ -644,43 +771,57 @@ export default function AdminBlog() {
               <div className="space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="bg-gray-50 rounded-xl p-3 sm:p-4">
-                    <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Title</p>
+                    <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+                      Title
+                    </p>
                     <p className="text-sm sm:text-base font-semibold text-gray-900 mt-1 break-words">
                       {selectedPost.title}
                     </p>
                   </div>
                   <div className="bg-gray-50 rounded-xl p-3 sm:p-4">
-                    <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Slug</p>
+                    <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+                      Slug
+                    </p>
                     <p className="text-sm sm:text-base font-semibold text-gray-900 mt-1 break-words">
                       {selectedPost.slug}
                     </p>
                   </div>
                   <div className="bg-gray-50 rounded-xl p-3 sm:p-4">
-                    <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Category</p>
+                    <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+                      Category
+                    </p>
                     <p className="text-sm sm:text-base font-semibold text-gray-900 mt-1">
-                      {selectedPost.category || '—'}
+                      {selectedPost.category || "—"}
                     </p>
                   </div>
                   <div className="bg-gray-50 rounded-xl p-3 sm:p-4">
-                    <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Author</p>
+                    <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+                      Author
+                    </p>
                     <p className="text-sm sm:text-base font-semibold text-gray-900 mt-1">
-                      {selectedPost.author || selectedPost.author_name || '—'}
+                      {selectedPost.author || selectedPost.author_name || "—"}
                     </p>
                   </div>
                   <div className="bg-gray-50 rounded-xl p-3 sm:p-4">
-                    <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Published</p>
+                    <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+                      Published
+                    </p>
                     <p className="text-sm sm:text-base font-semibold text-gray-900 mt-1">
-                      {selectedPost.is_published ? 'Yes' : 'No'}
+                      {selectedPost.is_published ? "Yes" : "No"}
                     </p>
                   </div>
                   <div className="bg-gray-50 rounded-xl p-3 sm:p-4">
-                    <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Featured</p>
+                    <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+                      Featured
+                    </p>
                     <p className="text-sm sm:text-base font-semibold text-gray-900 mt-1">
-                      {selectedPost.is_featured ? 'Yes' : 'No'}
+                      {selectedPost.is_featured ? "Yes" : "No"}
                     </p>
                   </div>
                   <div className="bg-gray-50 rounded-xl p-3 sm:p-4">
-                    <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">View Count</p>
+                    <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+                      View Count
+                    </p>
                     <p className="text-sm sm:text-base font-semibold text-gray-900 mt-1">
                       {selectedPost.view_count || 0}
                     </p>
@@ -692,13 +833,15 @@ export default function AdminBlog() {
                     <p className="text-sm sm:text-base font-semibold text-gray-900 mt-1">
                       {selectedPost.published_date
                         ? new Date(selectedPost.published_date).toLocaleString()
-                        : '—'}
+                        : "—"}
                     </p>
                   </div>
                 </div>
                 {selectedPost.excerpt && (
                   <div className="bg-gray-50 rounded-xl p-3 sm:p-4">
-                    <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Excerpt</p>
+                    <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+                      Excerpt
+                    </p>
                     <p className="text-sm sm:text-base text-gray-900 mt-1 break-words">
                       {selectedPost.excerpt}
                     </p>
@@ -706,7 +849,9 @@ export default function AdminBlog() {
                 )}
                 {selectedPost.content && (
                   <div className="bg-gray-50 rounded-xl p-3 sm:p-4">
-                    <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Content</p>
+                    <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+                      Content
+                    </p>
                     <div className="text-sm sm:text-base text-gray-900 mt-1 max-h-48 overflow-y-auto break-words whitespace-pre-wrap">
                       {selectedPost.content}
                     </div>
@@ -752,5 +897,5 @@ export default function AdminBlog() {
         </Modal>
       </div>
     </AdminLayout>
-  )
+  );
 }

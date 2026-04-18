@@ -53,6 +53,11 @@ apiClient.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config
 
+    // Detect timeout and convert to a user-friendly error
+    if (error.code === 'ECONNABORTED' || (error.message && error.message.toLowerCase().includes('timeout'))) {
+      return Promise.reject(new Error('The request timed out. Please try again or check your network connection.'))
+    }
+
     // Handle 401 - Token expired, try to refresh
     if (error.response?.status === 401 && !originalRequest._retry) {
       // If already refreshing, wait for it to complete

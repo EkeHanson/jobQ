@@ -116,10 +116,12 @@ export default function Login() {
       toast.success('Login successful!')
       navigate(getDestinationPath(response?.user))
     } catch (err) {
-      // Check if error is due to account suspension or timeout
+      const isTimeoutError = err?.message?.toLowerCase().includes('timed out')
       const errorMessage =
         err?.response?.data?.detail ||
-        err?.message ||
+        (isTimeoutError
+          ? 'Login request timed out. Please check your network and try again.'
+          : err?.message) ||
         'Login failed. Please try again.'
       toast.error(errorMessage)
     }

@@ -15,7 +15,10 @@ export const login = createAsyncThunk(
       return response
     } catch (error) {
       // Handle API error response
-      if (error.response?.data?.detail) {
+      if (error?.detail) {
+        return rejectWithValue(error.detail)
+      }
+      if (error?.response?.data?.detail) {
         return rejectWithValue(error.response.data.detail)
       }
       return rejectWithValue(error.message || 'Login failed')

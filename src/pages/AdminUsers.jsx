@@ -17,6 +17,11 @@ export default function AdminUsers() {
   const [showViewModal, setShowViewModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [subscriptionPlans, setSubscriptionPlans] = useState([]);
+  const [showSubscriptionModal, setShowSubscriptionModal] = useState(false);
+  const [selectedUserForSubscription, setSelectedUserForSubscription] = useState(null);
+  const [selectedPlanId, setSelectedPlanId] = useState(null);
+  const [subscriptionModalLoading, setSubscriptionModalLoading] = useState(false);
   const [statistics, setStatistics] = useState({
     totalUsers: 0,
     activeUsers: 0,
@@ -39,8 +44,15 @@ export default function AdminUsers() {
 
   useEffect(() => {
     fetchUsers(currentPage);
-    fetchStatistics();
+    fetchSubscriptionPlans();
   }, [currentPage]);
+
+  // Separate useEffect for statistics to run after users are loaded or filtered
+  useEffect(() => {
+    if (users.length > 0) {
+      fetchStatistics();
+    }
+  }, [users]);
 
   const fetchUsers = async (page = 1) => {
     try {
@@ -51,11 +63,13 @@ export default function AdminUsers() {
       // Load subscription data and merge with users
       try {
         const subscriptionData = await adminService.getUserSubscriptions();
-        const subscriptions = subscriptionData || [];
+        const subscriptions = Array.isArray(subscriptionData)
+          ? subscriptionData
+          : subscriptionData.results || subscriptionData || [];
 
         usersWithSubscriptions = usersWithSubscriptions.map((user) => {
           const userSubscription = subscriptions.find(
-            (sub) => sub.user === user.id,
+            (sub) => sub.user?.id === user.id || sub.user === user.id,
           );
           return {
             ...user,
@@ -94,20 +108,29 @@ export default function AdminUsers() {
 
   const fetchStatistics = async () => {
     try {
-      // Calculate statistics from all loaded users
-      const totalUsers = allUsers.length;
-      const activeUsers = allUsers.filter((user) => user.is_active).length;
-      const staffUsers = allUsers.filter((user) => user.is_staff).length;
-      const suspendedUsers = allUsers.filter((user) => user.is_suspended).length;
+      // Calculate statistics from currently displayed users (includes search filtering)
+      const totalUsers = users.length;
+      const activeUsers = users.filter((user) => user.is_active).length;
+      const staffUsers = users.filter((user) => user.is_staff).length;
+      const suspendedUsers = users.filter((user) => user.is_suspended).length;
 
-      // Get subscription data for premium users calculation
+      // Get subscription data for premium users calculation, filtered by displayed users
       let premiumUsers = 0;
       try {
         const subscriptionData = await adminService.getUserSubscriptions();
-        const subscriptions = subscriptionData || [];
-        premiumUsers = subscriptions.filter(
-          (sub) => sub.active && sub.plan?.name !== "Free",
-        ).length;
+        const subscriptions = Array.isArray(subscriptionData)
+          ? subscriptionData
+          : subscriptionData.results || subscriptionData || [];
+        // Only count premium subscriptions for users currently displayed
+        const displayedUserIds = users.map((user) => user.id);
+        premiumUsers = subscriptions.filter((sub) => {
+          const subscriptionUserId = sub.user?.id || sub.user;
+          return (
+            sub.active &&
+            sub.plan?.name !== "Free" &&
+            displayedUserIds.includes(subscriptionUserId)
+          );
+        }).length;
       } catch (err) {
         console.warn("Failed to load subscription data for statistics:", err);
         // Continue without subscription data
@@ -154,6 +177,77 @@ export default function AdminUsers() {
         subscriptionPlan.includes(lowerTerm)
       );
     });
+  };
+
+  const fetchSubscriptionPlans = async () => {
+    try {
+      const data = await adminService.getSubscriptionPlans();
+      const plans = Array.isArray(data)
+        ? data
+        : data.results || data || [];
+      setSubscriptionPlans(plans);
+      if (!selectedPlanId && plans.length > 0) {
+        setSelectedPlanId(plans[0].id);
+      }
+    } catch (err) {
+      console.warn("Failed to load subscription plans:", err);
+    }
+  };
+
+  const handleOpenSubscriptionModal = (user) => {
+    setSelectedUserForSubscription(user);
+    setSelectedPlanId(user.subscription?.plan_id || subscriptionPlans[0]?.id || null);
+    setShowSubscriptionModal(true);
+  };
+
+  const handleConfirmSubscription = async () => {
+    if (!selectedUserForSubscription || !selectedPlanId) return;
+
+    try {
+      setSubscriptionModalLoading(true);
+      if (selectedUserForSubscription.subscription?.plan_id) {
+        await adminService.changeUserPlan(selectedUserForSubscription.id, selectedPlanId);
+        addToast(
+          `User ${selectedUserForSubscription.username} plan changed successfully.`,
+          "success",
+        );
+      } else {
+        await adminService.subscribeUserToPlan(selectedUserForSubscription.id, selectedPlanId);
+        addToast(
+          `User ${selectedUserForSubscription.username} subscribed successfully.`,
+          "success",
+        );
+      }
+      setShowSubscriptionModal(false);
+      setSelectedUserForSubscription(null);
+      await fetchUsers(currentPage);
+    } catch (err) {
+      console.error("Failed to update subscription", err);
+      addToast("Unable to update subscription. Check permissions.", "error");
+    } finally {
+      setSubscriptionModalLoading(false);
+    }
+  };
+
+  const handleCancelUserSubscription = async () => {
+    if (!selectedUserForSubscription) return;
+
+    try {
+      setSubscriptionModalLoading(true);
+      await adminService.cancelUserSubscription(selectedUserForSubscription.id);
+      addToast(
+        `Subscription for ${selectedUserForSubscription.username} canceled.`,
+        "success",
+      );
+      setShowSubscriptionModal(false);
+      setSelectedUserForSubscription(null);
+      await fetchUsers(currentPage);
+    } catch (err) {
+      console.error("Failed to cancel subscription", err);
+      addToast("Unable to cancel subscription. Check permissions.", "error");
+    } finally {
+      setSubscriptionModalLoading(false);
+    }
   };
 
   // Handle search input change
@@ -898,6 +992,26 @@ export default function AdminUsers() {
                         </button>
                         <button
                           type="button"
+                          onClick={() => handleOpenSubscriptionModal(user)}
+                          className="p-1.5 text-slate-700 hover:bg-slate-100 rounded-lg transition-colors"
+                          title="Manage subscription"
+                        >
+                          <svg
+                            className="w-4 h-4"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M12 8c-1.333 0-2.667.667-3.333 1.833m6.666 0C14.667 8.667 13.333 8 12 8m0 0v8m0-8l-3 3m3-3l3 3"
+                            />
+                          </svg>
+                        </button>
+                        <button
+                          type="button"
                           onClick={() => handleToggleSuspension(user)}
                           className={`p-1.5 rounded-lg transition-colors ${user.is_suspended ? "text-green-600 hover:bg-green-50" : "text-orange-600 hover:bg-orange-50"}`}
                           title={user.is_suspended ? "Unsuspend" : "Suspend"}
@@ -1085,6 +1199,26 @@ export default function AdminUsers() {
                         </button>
                         <button
                           type="button"
+                          onClick={() => handleOpenSubscriptionModal(user)}
+                          className="p-1.5 text-slate-700 hover:bg-slate-100 rounded-lg transition-colors"
+                          title="Manage subscription"
+                        >
+                          <svg
+                            className="w-4 h-4"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M12 8c-1.333 0-2.667.667-3.333 1.833m6.666 0C14.667 8.667 13.333 8 12 8m0 0v8m0-8l-3 3m3-3l3 3"
+                            />
+                          </svg>
+                        </button>
+                        <button
+                          type="button"
                           onClick={() => handleToggleSuspension(user)}
                           className={`p-1.5 rounded-lg transition-colors ${user.is_suspended ? "text-green-600 hover:bg-green-50" : "text-orange-600 hover:bg-orange-50"}`}
                           title={user.is_suspended ? "Unsuspend" : "Suspend"}
@@ -1169,6 +1303,117 @@ export default function AdminUsers() {
             </button>
           </div>
         </div>
+
+        {/* Manage User Subscription Modal */}
+        <Modal
+          isOpen={showSubscriptionModal}
+          onClose={() => {
+            setShowSubscriptionModal(false)
+            setSelectedUserForSubscription(null)
+          }}
+          title={
+            selectedUserForSubscription
+              ? `Manage subscription for ${selectedUserForSubscription.username}`
+              : "Manage subscription"
+          }
+          size="lg"
+        >
+          {selectedUserForSubscription ? (
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div className="rounded-xl border border-gray-200 bg-gray-50 p-4">
+                  <p className="text-xs uppercase tracking-wide text-gray-400">
+                    Current plan
+                  </p>
+                  <p className="mt-2 text-sm font-semibold text-gray-900">
+                    {selectedUserForSubscription.subscription?.plan_name || "None"}
+                  </p>
+                  <p className="mt-1 text-sm text-gray-500">
+                    {selectedUserForSubscription.subscription?.active
+                      ? "Active subscription"
+                      : "No active subscription"}
+                  </p>
+                </div>
+                <div className="rounded-xl border border-gray-200 bg-gray-50 p-4">
+                  <p className="text-xs uppercase tracking-wide text-gray-400">
+                    User details
+                  </p>
+                  <p className="mt-2 text-sm font-semibold text-gray-900">
+                    {selectedUserForSubscription.email}
+                  </p>
+                  <p className="mt-1 text-sm text-gray-500">
+                    ID: {selectedUserForSubscription.id}
+                  </p>
+                </div>
+              </div>
+
+              <div className="rounded-2xl border border-gray-200 bg-white p-5">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Select a subscription plan
+                </label>
+                {subscriptionPlans.length > 0 ? (
+                  <select
+                    value={selectedPlanId || ""}
+                    onChange={(e) => setSelectedPlanId(Number(e.target.value))}
+                    className="w-full rounded-xl border-gray-300 px-4 py-3 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                  >
+                    {subscriptionPlans.map((plan) => (
+                      <option key={plan.id} value={plan.id}>
+                        {plan.name} - {plan.price_cents ? `₦${(plan.price_cents / 100).toFixed(2)}` : "Free"}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <p className="text-sm text-gray-500">
+                    No subscription plans available. Please create plans first.
+                  </p>
+                )}
+              </div>
+
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  {selectedUserForSubscription.subscription?.plan_id && (
+                    <button
+                      type="button"
+                      onClick={handleCancelUserSubscription}
+                      disabled={subscriptionModalLoading}
+                      className="w-full sm:w-auto rounded-xl bg-red-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-red-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Cancel subscription
+                    </button>
+                  )}
+                </div>
+                <div className="flex gap-3 w-full sm:w-auto justify-end">
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    onClick={() => {
+                      setShowSubscriptionModal(false)
+                      setSelectedUserForSubscription(null)
+                    }}
+                    className="w-full sm:w-auto"
+                  >
+                    Close
+                  </Button>
+                  <Button
+                    type="button"
+                    onClick={handleConfirmSubscription}
+                    disabled={!selectedPlanId || subscriptionModalLoading || subscriptionPlans.length === 0}
+                    className="w-full sm:w-auto"
+                  >
+                    {selectedUserForSubscription.subscription?.plan_id
+                      ? "Update plan"
+                      : "Subscribe user"}
+                  </Button>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="py-10 text-center text-sm text-gray-500">
+              Select a user to manage subscription.
+            </div>
+          )}
+        </Modal>
 
         {/* View User Modal - Fully Responsive */}
         <Modal isOpen={showViewModal} onClose={() => setShowViewModal(false)}>

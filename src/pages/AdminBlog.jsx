@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import AdminLayout from "../components/layout/AdminLayout";
 import Button from "../components/common/Button";
 import Modal from "../components/common/Modal";
+import StatisticsCard from "../components/common/StatisticsCard";
 import adminService from "../services/admin";
 import { useToast } from "../components/common/Toast";
 import { useAuth } from "../hooks/useAuth";
@@ -24,6 +25,13 @@ export default function AdminBlog() {
     external_link: "",
     is_published: false,
     is_featured: false,
+  });
+  const [statistics, setStatistics] = useState({
+    totalPosts: 0,
+    publishedPosts: 0,
+    featuredPosts: 0,
+    draftPosts: 0,
+    categoriesCount: 0
   });
   const [fieldErrors, setFieldErrors] = useState({});
   const { addToast } = useToast();
@@ -48,6 +56,7 @@ export default function AdminBlog() {
 
   useEffect(() => {
     fetchPosts();
+    fetchStatistics();
   }, []);
 
   const fetchPosts = async () => {
@@ -63,6 +72,38 @@ export default function AdminBlog() {
       );
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchStatistics = async () => {
+    try {
+      // Get all blog posts for statistics
+      const allPosts = await adminService.getAdminBlogPosts({})
+
+      // Calculate statistics
+      const totalPosts = allPosts.length
+      const publishedPosts = allPosts.filter(post => post.is_published).length
+      const featuredPosts = allPosts.filter(post => post.is_featured).length
+      const draftPosts = allPosts.filter(post => !post.is_published).length
+      const categoriesCount = new Set(allPosts.map(post => post.category).filter(Boolean)).size
+
+      setStatistics({
+        totalPosts,
+        publishedPosts,
+        featuredPosts,
+        draftPosts,
+        categoriesCount
+      })
+    } catch (err) {
+      console.warn('Failed to load blog statistics:', err)
+      // Set default values if API fails
+      setStatistics({
+        totalPosts: 0,
+        publishedPosts: 0,
+        featuredPosts: 0,
+        draftPosts: 0,
+        categoriesCount: 0
+      })
     }
   };
 
@@ -286,6 +327,60 @@ export default function AdminBlog() {
               </span>
             )}
           </button>
+        </div>
+
+        {/* Statistics Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 sm:gap-6 mb-6 sm:mb-8">
+          <StatisticsCard
+            title="Total Posts"
+            value={statistics.totalPosts}
+            color="blue"
+            icon={
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+            }
+          />
+          <StatisticsCard
+            title="Published"
+            value={statistics.publishedPosts}
+            color="green"
+            icon={
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+            }
+          />
+          <StatisticsCard
+            title="Featured"
+            value={statistics.featuredPosts}
+            color="amber"
+            icon={
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+              </svg>
+            }
+          />
+          <StatisticsCard
+            title="Drafts"
+            value={statistics.draftPosts}
+            color="gray"
+            icon={
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+              </svg>
+            }
+          />
+          <StatisticsCard
+            title="Categories"
+            value={statistics.categoriesCount}
+            color="purple"
+            icon={
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+              </svg>
+            }
+          />
         </div>
 
         {/* Create Form */}

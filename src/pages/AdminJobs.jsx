@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import AdminLayout from '../components/layout/AdminLayout'
 import Button from '../components/common/Button'
 import Modal from '../components/common/Modal'
+import StatisticsCard from '../components/common/StatisticsCard'
 import adminService from '../services/admin'
 import { useToast } from '../components/common/Toast'
 
@@ -51,11 +52,25 @@ export default function AdminJobs() {
     description: '',
     requirements: '',
   })
+  const [statistics, setStatistics] = useState({
+    totalJobs: 0,
+    activeJobs: 0,
+    remoteJobs: 0,
+    fullTimeJobs: 0,
+    featuredJobs: 0
+  })
   const { addToast } = useToast()
 
   useEffect(() => {
     fetchJobs(page)
   }, [page])
+
+  // Separate useEffect for statistics to run after jobs are loaded
+  useEffect(() => {
+    if (jobs.length > 0) {
+      fetchStatistics()
+    }
+  }, [jobs])
 
   const fetchJobs = async (pageNumber = 1) => {
     try {
@@ -72,6 +87,35 @@ export default function AdminJobs() {
       setLoading(false)
     }
   }
+
+  const fetchStatistics = async () => {
+    try {
+      // Calculate statistics from all loaded jobs
+      const totalJobs = jobs.length;
+      const activeJobs = jobs.filter(job => job.is_active !== false).length;
+      const remoteJobs = jobs.filter(job => job.location?.toLowerCase().includes('remote')).length;
+      const fullTimeJobs = jobs.filter(job => job.job_type === 'Full-time').length;
+      const featuredJobs = jobs.filter(job => job.is_featured).length;
+
+      setStatistics({
+        totalJobs,
+        activeJobs,
+        remoteJobs,
+        fullTimeJobs,
+        featuredJobs
+      });
+    } catch (err) {
+      console.warn('Failed to calculate job statistics:', err);
+      // Set default values if calculation fails
+      setStatistics({
+        totalJobs: 0,
+        activeJobs: 0,
+        remoteJobs: 0,
+        fullTimeJobs: 0,
+        featuredJobs: 0
+      });
+    }
+  };
 
   const handleNewJobChange = (event) => {
     const { name, value } = event.target
@@ -259,6 +303,60 @@ export default function AdminJobs() {
           >
             {showCreateForm ? 'Hide create form' : '+ Create new job'}
           </button>
+        </div>
+
+        {/* Statistics Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 sm:gap-6">
+          <StatisticsCard
+            title="Total Jobs"
+            value={statistics.totalJobs}
+            color="blue"
+            icon={
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m8 0V6a2 2 0 012 2v6a2 2 0 01-2 2H6a2 2 0 01-2-2V8a2 2 0 012-2V6m8 0H8" />
+              </svg>
+            }
+          />
+          <StatisticsCard
+            title="Active Jobs"
+            value={statistics.activeJobs}
+            color="green"
+            icon={
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            }
+          />
+          <StatisticsCard
+            title="Remote Jobs"
+            value={statistics.remoteJobs}
+            color="purple"
+            icon={
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            }
+          />
+          <StatisticsCard
+            title="Full-time"
+            value={statistics.fullTimeJobs}
+            color="cyan"
+            icon={
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            }
+          />
+          <StatisticsCard
+            title="Featured"
+            value={statistics.featuredJobs}
+            color="amber"
+            icon={
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+              </svg>
+            }
+          />
         </div>
 
         {/* Create Form */}

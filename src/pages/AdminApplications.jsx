@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import AdminLayout from '../components/layout/AdminLayout'
 import Button from '../components/common/Button'
 import Modal from '../components/common/Modal'
+import StatisticsCard from '../components/common/StatisticsCard'
 import adminService from '../services/admin'
 import { useToast } from '../components/common/Toast'
 
@@ -12,11 +13,25 @@ export default function AdminApplications() {
   const [totalPages, setTotalPages] = useState(1)
   const [showViewModal, setShowViewModal] = useState(false)
   const [selectedApplication, setSelectedApplication] = useState(null)
+  const [statistics, setStatistics] = useState({
+    totalApplications: 0,
+    pendingApplications: 0,
+    approvedApplications: 0,
+    rejectedApplications: 0,
+    archivedApplications: 0
+  })
   const { addToast } = useToast()
 
   useEffect(() => {
     fetchApplications(page)
-  }, [page])
+  }, [page]);
+
+  // Separate useEffect for statistics to run after applications are loaded
+  useEffect(() => {
+    if (applications.length > 0) {
+      fetchStatistics();
+    }
+  }, [applications]);
 
   const fetchApplications = async (pageNumber = 1) => {
     try {
@@ -33,6 +48,35 @@ export default function AdminApplications() {
       setLoading(false)
     }
   }
+
+  const fetchStatistics = async () => {
+    try {
+      // Calculate statistics from all loaded applications
+      const totalApplications = applications.length;
+      const pendingApplications = applications.filter(app => app.status === 'pending').length;
+      const approvedApplications = applications.filter(app => app.status === 'approved').length;
+      const rejectedApplications = applications.filter(app => app.status === 'rejected').length;
+      const archivedApplications = applications.filter(app => app.archived).length;
+
+      setStatistics({
+        totalApplications,
+        pendingApplications,
+        approvedApplications,
+        rejectedApplications,
+        archivedApplications
+      });
+    } catch (err) {
+      console.warn('Failed to calculate application statistics:', err);
+      // Set default values if calculation fails
+      setStatistics({
+        totalApplications: 0,
+        pendingApplications: 0,
+        approvedApplications: 0,
+        rejectedApplications: 0,
+        archivedApplications: 0
+      });
+    }
+  };
 
   const handleArchiveToggle = async (application) => {
     try {
@@ -95,6 +139,60 @@ export default function AdminApplications() {
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Applications</h1>
           <p className="text-gray-600 mt-2 text-sm sm:text-base">View all applications in the system. Staff users may archive, soft delete, or restore records.</p>
+        </div>
+
+        {/* Statistics Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 sm:gap-6">
+          <StatisticsCard
+            title="Total Applications"
+            value={statistics.totalApplications}
+            color="blue"
+            icon={
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+            }
+          />
+          <StatisticsCard
+            title="Pending"
+            value={statistics.pendingApplications}
+            color="amber"
+            icon={
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            }
+          />
+          <StatisticsCard
+            title="Approved"
+            value={statistics.approvedApplications}
+            color="green"
+            icon={
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            }
+          />
+          <StatisticsCard
+            title="Rejected"
+            value={statistics.rejectedApplications}
+            color="red"
+            icon={
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            }
+          />
+          <StatisticsCard
+            title="Archived"
+            value={statistics.archivedApplications}
+            color="gray"
+            icon={
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+              </svg>
+            }
+          />
         </div>
 
         {/* Applications Table - Desktop */}

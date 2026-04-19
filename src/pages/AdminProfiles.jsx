@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import AdminLayout from '../components/layout/AdminLayout'
 import Button from '../components/common/Button'
 import Modal from '../components/common/Modal'
+import StatisticsCard from '../components/common/StatisticsCard'
 import adminService from '../services/admin'
 import { useToast } from '../components/common/Toast'
 
@@ -10,11 +11,25 @@ export default function AdminProfiles() {
   const [loading, setLoading] = useState(true)
   const [showViewModal, setShowViewModal] = useState(false)
   const [selectedProfile, setSelectedProfile] = useState(null)
+  const [statistics, setStatistics] = useState({
+    totalProfiles: 0,
+    completeProfiles: 0,
+    incompleteProfiles: 0,
+    verifiedProfiles: 0,
+    unverifiedProfiles: 0
+  })
   const { addToast } = useToast()
 
   useEffect(() => {
     fetchProfiles()
   }, [])
+
+  // Separate useEffect for statistics to run after profiles are loaded
+  useEffect(() => {
+    if (profiles.length > 0) {
+      fetchStatistics()
+    }
+  }, [profiles])
 
   const fetchProfiles = async () => {
     try {
@@ -26,6 +41,46 @@ export default function AdminProfiles() {
       addToast('Unable to load profiles. Check permissions.', 'error')
     } finally {
       setLoading(false)
+    }
+  }
+
+  const fetchStatistics = async () => {
+    try {
+      // Calculate statistics from all loaded profiles
+      const totalProfiles = profiles.length
+
+      // Consider a profile complete if it has basic required fields
+      const completeProfiles = profiles.filter(profile =>
+        profile.first_name &&
+        profile.last_name &&
+        profile.bio &&
+        profile.location &&
+        profile.skills?.length > 0
+      ).length
+
+      const incompleteProfiles = totalProfiles - completeProfiles
+
+      // For verification, we'll check if profiles have been verified (assuming a verified field exists)
+      const verifiedProfiles = profiles.filter(profile => profile.is_verified || profile.verified).length
+      const unverifiedProfiles = totalProfiles - verifiedProfiles
+
+      setStatistics({
+        totalProfiles,
+        completeProfiles,
+        incompleteProfiles,
+        verifiedProfiles,
+        unverifiedProfiles
+      })
+    } catch (err) {
+      console.warn('Failed to calculate profile statistics:', err)
+      // Set default values if calculation fails
+      setStatistics({
+        totalProfiles: 0,
+        completeProfiles: 0,
+        incompleteProfiles: 0,
+        verifiedProfiles: 0,
+        unverifiedProfiles: 0
+      })
     }
   }
 
@@ -63,6 +118,60 @@ export default function AdminProfiles() {
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Profiles</h1>
           <p className="text-gray-600 mt-2 text-sm sm:text-base">Review user profiles stored in the system.</p>
+        </div>
+
+        {/* Statistics Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 sm:gap-6">
+          <StatisticsCard
+            title="Total Profiles"
+            value={statistics.totalProfiles}
+            color="blue"
+            icon={
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+            }
+          />
+          <StatisticsCard
+            title="Complete"
+            value={statistics.completeProfiles}
+            color="green"
+            icon={
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            }
+          />
+          <StatisticsCard
+            title="Incomplete"
+            value={statistics.incompleteProfiles}
+            color="amber"
+            icon={
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+              </svg>
+            }
+          />
+          <StatisticsCard
+            title="Verified"
+            value={statistics.verifiedProfiles}
+            color="purple"
+            icon={
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            }
+          />
+          <StatisticsCard
+            title="Unverified"
+            value={statistics.unverifiedProfiles}
+            color="gray"
+            icon={
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            }
+          />
         </div>
 
         {/* Profiles Table - Desktop */}

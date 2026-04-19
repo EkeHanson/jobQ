@@ -16,7 +16,7 @@ export default function FollowUpReminders() {
     try {
       const response = await applicationService.getFollowUps()
       // Filter to only show upcoming follow-ups (not sent yet)
-      const upcoming = response.data.filter(fu => !fu.follow_up_sent)
+      const upcoming = response.data ? response.data.filter(fu => !fu.follow_up_sent) : []
       setFollowUps(upcoming.slice(0, 5)) // Show max 5
     } catch (error) {
       console.error('Failed to fetch follow-ups:', error)

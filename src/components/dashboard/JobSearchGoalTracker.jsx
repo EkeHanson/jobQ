@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import usersService from '../../services/users'
 import { BookmarkSquareIcon, ArrowTrendingUpIcon, CheckCircleIcon } from '@heroicons/react/24/outline'
 
-export default function JobSearchGoalTracker() {
+export default function JobSearchGoalTracker({ onGoalStatusChange }) {
   const [goal, setGoal] = useState(null)
   const [loading, setLoading] = useState(true)
   const [isEditing, setIsEditing] = useState(false)
@@ -12,6 +12,13 @@ export default function JobSearchGoalTracker() {
   useEffect(() => {
     fetchGoal()
   }, [])
+
+  useEffect(() => {
+    // Notify parent about goal status
+    if (onGoalStatusChange) {
+      onGoalStatusChange(!!goal)
+    }
+  }, [goal, onGoalStatusChange])
 
   const fetchGoal = async () => {
     try {

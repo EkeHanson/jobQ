@@ -30,10 +30,12 @@ const INDUSTRY_CHOICES = [
 
 export default function AdminJobs() {
   const [jobs, setJobs] = useState([])
+  const [jobsCount, setJobsCount] = useState(0)
   const [loading, setLoading] = useState(true)
   const [page, setPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const [showCreateForm, setShowCreateForm] = useState(false)
+  const PAGE_SIZE = 12
   const [showEditForm, setShowEditForm] = useState(false)
   const [showViewModal, setShowViewModal] = useState(false)
   const [showDeleteJobModal, setShowDeleteJobModal] = useState(false)
@@ -55,31 +57,26 @@ export default function AdminJobs() {
   const [statistics, setStatistics] = useState({
     totalJobs: 0,
     activeJobs: 0,
+    archivedJobs: 0,
     remoteJobs: 0,
-    fullTimeJobs: 0,
-    featuredJobs: 0
+    fullTimeJobs: 0
   })
   const { addToast } = useToast()
 
   useEffect(() => {
     fetchJobs(page)
+    fetchJobStats()
   }, [page])
-
-  // Separate useEffect for statistics to run after jobs are loaded
-  useEffect(() => {
-    if (jobs.length > 0) {
-      fetchStatistics()
-    }
-  }, [jobs])
 
   const fetchJobs = async (pageNumber = 1) => {
     try {
       setLoading(true)
-      const data = await adminService.getJobs({ page: pageNumber })
+      const data = await adminService.getJobs({ page: pageNumber, page_size: PAGE_SIZE })
       const results = data.results || data
       setJobs(results || [])
-      setTotalPages(data.total_pages || 1)
-      setPage(Number(data.current_page) || pageNumber)
+      setJobsCount(data.count || 0)
+      setTotalPages(Math.max(1, Math.ceil((data.count || 0) / PAGE_SIZE)))
+      setPage(Number(pageNumber) || 1)
     } catch (err) {
       console.error('Failed to load jobs', err)
       addToast('Unable to load jobs. Check permissions or backend status.', 'error')
@@ -88,38 +85,46 @@ export default function AdminJobs() {
     }
   }
 
-  const fetchStatistics = async () => {
+  const fetchJobStats = async () => {
     try {
-      // Calculate statistics from all loaded jobs
-      const totalJobs = jobs.length;
-      const activeJobs = jobs.filter(job => job.is_active !== false).length;
-      const remoteJobs = jobs.filter(job => job.location?.toLowerCase().includes('remote')).length;
-      const fullTimeJobs = jobs.filter(job => job.job_type === 'Full-time').length;
-      const featuredJobs = jobs.filter(job => job.is_featured).length;
-
+      const data = await adminService.getJobStats()
       setStatistics({
-        totalJobs,
-        activeJobs,
-        remoteJobs,
-        fullTimeJobs,
-        featuredJobs
-      });
+        totalJobs: data.total_jobs || 0,
+        activeJobs: data.active_jobs || 0,
+        archivedJobs: data.archived_jobs || 0,
+        remoteJobs: data.remote_jobs || 0,
+        fullTimeJobs: data.full_time_jobs || 0,
+      })
     } catch (err) {
-      console.warn('Failed to calculate job statistics:', err);
-      // Set default values if calculation fails
+      console.warn('Failed to load job statistics:', err)
       setStatistics({
         totalJobs: 0,
         activeJobs: 0,
+        archivedJobs: 0,
         remoteJobs: 0,
         fullTimeJobs: 0,
-        featuredJobs: 0
-      });
+      })
     }
-  };
+  }
 
   const handleNewJobChange = (event) => {
     const { name, value } = event.target
     setNewJob((prev) => ({ ...prev, [name]: value }))
+  }
+
+  const handleArchiveJob = async (job) => {
+    try {
+      setLoading(true)
+      await adminService.archiveJob(job.id)
+      addToast('Job archived successfully.', 'success')
+      fetchJobs(page)
+      fetchJobStats()
+    } catch (err) {
+      console.error('Failed to archive job', err)
+      addToast('Unable to archive job. Check permissions or backend status.', 'error')
+    } finally {
+      setLoading(false)
+    }
   }
 
   const handleCreateJob = async () => {
@@ -328,6 +333,16 @@ export default function AdminJobs() {
             }
           />
           <StatisticsCard
+            title="Archived Jobs"
+            value={statistics.archivedJobs}
+            color="gray"
+            icon={
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7h16M10 11v6M14 11v6M5 7V5a2 2 0 012-2h10a2 2 0 012 2v2m-2 0H7" />
+              </svg>
+            }
+          />
+          <StatisticsCard
             title="Remote Jobs"
             value={statistics.remoteJobs}
             color="purple"
@@ -344,16 +359,6 @@ export default function AdminJobs() {
             icon={
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            }
-          />
-          <StatisticsCard
-            title="Featured"
-            value={statistics.featuredJobs}
-            color="amber"
-            icon={
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
               </svg>
             }
           />
@@ -444,6 +449,7 @@ export default function AdminJobs() {
                   onChange={handleNewJobChange}
                   className="w-full rounded-xl border-gray-300 px-4 py-3 shadow-sm focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-all"
                 >
+                  <option value="Trainee">Trainee</option>
                   <option value="Entry">Entry Level</option>
                   <option value="Mid-Level">Mid-Level</option>
                   <option value="Senior">Senior</option>
@@ -724,6 +730,16 @@ export default function AdminJobs() {
                         </button>
                         <button
                           type="button"
+                          onClick={() => handleArchiveJob(job)}
+                          className="p-1.5 text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"
+                          title="Archive"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7h16M10 11v6M14 11v6M5 7V5a2 2 0 012-2h10a2 2 0 012 2v2m-2 0H7" />
+                          </svg>
+                        </button>
+                        <button
+                          type="button"
                           onClick={() => promptDeleteJob(job)}
                           className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                           title="Delete"
@@ -784,6 +800,16 @@ export default function AdminJobs() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                     </svg>
                     Edit
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleArchiveJob(job)}
+                    className="flex-1 flex items-center justify-center gap-1 px-3 py-2 text-xs font-medium text-amber-600 bg-amber-50 hover:bg-amber-100 rounded-lg transition-colors"
+                  >
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7h16M10 11v6M14 11v6M5 7V5a2 2 0 012-2h10a2 2 0 012 2v2m-2 0H7" />
+                    </svg>
+                    Archive 
                   </button>
                   <button
                     type="button"

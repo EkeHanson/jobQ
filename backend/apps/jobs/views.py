@@ -7,7 +7,7 @@ from django.db.models import Q
 from django.utils import timezone
 
 from .models import Job, Company, ExtractionTask, JobBookmark
-from .serializers import JobSerializer, CompanySerializer, ExtractionTaskSerializer, JobBookmarkSerializer
+from .serializers import JobSerializer, CompanySerializer, ExtractionTaskSerializer, JobBookmarkSerializer, BulkJobCreateSerializer
 
 # AI extraction helper
 from apps.ai.services import extract_job_data
@@ -16,7 +16,7 @@ from apps.ai.services import extract_job_data
 class JobPagination(pagination.PageNumberPagination):
     page_size = 12
     page_size_query_param = 'page_size'
-    max_page_size = 100
+    max_page_size = 1000
 
 
 class JobViewSet(viewsets.ModelViewSet):
@@ -68,6 +68,22 @@ class JobViewSet(viewsets.ModelViewSet):
         industry = self.request.query_params.get('industry')
         if industry:
             qs = qs.filter(industry=industry)
+
+        # Bookmarked filter
+        bookmarked = self.request.query_params.get('bookmarked')
+        if bookmarked and bookmarked.lower() == 'true':
+            if self.request.user and self.request.user.is_authenticated:
+                qs = qs.filter(bookmarks__user=self.request.user)
+            else:
+                qs = qs.none()
+
+        archived = self.request.query_params.get('archived')
+        if archived is None:
+            qs = qs.filter(is_archived=False)
+        elif archived.lower() == 'true':
+            qs = qs.filter(is_archived=True)
+        else:
+            qs = qs.filter(is_archived=False)
         
         return qs
 
@@ -143,6 +159,105 @@ class JobViewSet(viewsets.ModelViewSet):
             },
             status=status.HTTP_201_CREATED
         )
+
+    @action(detail=True, methods=['post'], permission_classes=[permissions.IsAdminUser])
+    def archive(self, request, pk=None):
+        """Archive a job so it is hidden from active job listings."""
+        job = self.get_object()
+        job.is_archived = True
+        job.archived_at = timezone.now()
+        job.save(update_fields=['is_archived', 'archived_at'])
+        return Response({'status': 'archived', 'archived_at': job.archived_at})
+
+    @action(detail=True, methods=['post'], permission_classes=[permissions.IsAdminUser])
+    def unarchive(self, request, pk=None):
+        """Restore an archived job."""
+        job = self.get_object()
+        job.is_archived = False
+        job.archived_at = None
+        job.save(update_fields=['is_archived', 'archived_at'])
+        return Response({'status': 'unarchived'})
+
+    @action(detail=False, methods=['post'], permission_classes=[permissions.IsAdminUser])
+    def bulk_create(self, request):
+        """Bulk create jobs from a list of job data"""
+        serializer = BulkJobCreateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
+        jobs_data = serializer.validated_data['jobs']
+        created_jobs = []
+        errors = []
+        
+        for idx, job_data in enumerate(jobs_data):
+            try:
+                company_data = job_data.get('company')
+                company = None
+                
+                if company_data:
+                    company_name = company_data.get('name') if isinstance(company_data, dict) else company_data
+                    company, _ = Company.objects.get_or_create(
+                        name=company_name,
+                        defaults={
+                            'website': company_data.get('website', '') if isinstance(company_data, dict) else '',
+                            'description': company_data.get('description', '') if isinstance(company_data, dict) else ''
+                        }
+                    )
+                else:
+                    company, _ = Company.objects.get_or_create(name='Unknown Company')
+                
+                job = Job.objects.create(
+                    title=job_data.get('title', 'Untitled'),
+                    company=company,
+                    location=job_data.get('location', ''),
+                    industry=job_data.get('industry', 'Other'),
+                    description=job_data.get('description', ''),
+                    requirements=job_data.get('requirements', ''),
+                    skills=job_data.get('skills', ''),
+                    job_type=job_data.get('job_type', 'Full-time'),
+                    experience_level=job_data.get('experience_level', 'Mid-Level'),
+                    salary_min=job_data.get('salary_min'),
+                    salary_max=job_data.get('salary_max'),
+                    salary_currency=job_data.get('salary_currency', 'USD'),
+                    application_link=job_data.get('application_link'),
+                    application_email=job_data.get('application_email'),
+                    created_by=request.user if request.user.is_authenticated else None
+                )
+                created_jobs.append(job)
+            except Exception as e:
+                errors.append({'index': idx, 'error': str(e), 'data': job_data})
+        
+        if created_jobs:
+            jobs_serializer = JobSerializer(created_jobs, many=True, context={'request': request})
+            return Response({
+                'created': len(created_jobs),
+                'jobs': jobs_serializer.data,
+                'errors': errors if errors else None
+            }, status=status.HTTP_201_CREATED if not errors else status.HTTP_207_MULTI_STATUS)
+        
+        return Response(
+            {'detail': 'No jobs were created', 'errors': errors},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    @action(detail=False, methods=['get'], permission_classes=[permissions.IsAdminUser])
+    def stats(self, request):
+        """Return aggregated job statistics for admin dashboard."""
+        total_jobs = Job.objects.count()
+        active_qs = Job.objects.filter(is_archived=False)
+        active_jobs = active_qs.count()
+        archived_jobs = Job.objects.filter(is_archived=True).count()
+        remote_jobs = active_qs.filter(
+            Q(job_type__icontains='remote') | Q(location__icontains='remote')
+        ).count()
+        full_time_jobs = active_qs.filter(job_type__icontains='Full-time').count()
+
+        return Response({
+            'total_jobs': total_jobs,
+            'active_jobs': active_jobs,
+            'archived_jobs': archived_jobs,
+            'remote_jobs': remote_jobs,
+            'full_time_jobs': full_time_jobs,
+        })
 
 
 class CompanyViewSet(viewsets.ModelViewSet):

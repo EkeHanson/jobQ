@@ -72,6 +72,18 @@ const adminService = {
     return apiClient.get('/jobs/', { params })
   },
 
+  archiveJob: async (id) => {
+    return apiClient.post(`/jobs/${id}/archive/`)
+  },
+
+  unarchiveJob: async (id) => {
+    return apiClient.post(`/jobs/${id}/unarchive/`)
+  },
+
+  getJobStats: async () => {
+    return apiClient.get('/jobs/stats/')
+  },
+
   createJob: async (payload) => {
     return apiClient.post('/jobs/', payload)
   },

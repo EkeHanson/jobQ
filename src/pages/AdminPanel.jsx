@@ -179,7 +179,7 @@ export default function AdminPanel() {
               <div>
                 <h1 className="text-3xl font-bold text-gray-900">Administration Dashboard</h1>
                 <p className="mt-2 text-lg text-gray-600">
-                  Manage and monitor your platform operations
+                  Manage and monitor the platform operations
                 </p>
               </div>
               <div className="flex items-center space-x-3">

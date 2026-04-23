@@ -94,7 +94,7 @@ function JobCard({ job, onView, onToggleBookmark }) {
             </div>
           </div>
           <button 
-            onClick={(e) => { e.stopPropagation(); onToggleBookmark?.(job) }}
+            onClick={(e) => { e.stopPropagation(); onToggleBookmark?.(job.id, isSaved) }}
             className={`p-2 rounded-lg transition-colors ${isSaved ? 'bg-primary-100 text-primary-600' : 'text-gray-400 hover:text-primary-500 hover:bg-primary-50'}`}
           >
             <BookmarkIcon className={`w-5 h-5 ${isSaved ? 'fill-current' : ''}`} />
@@ -323,6 +323,7 @@ export default function Jobs() {
   const [selectedExperience, setSelectedExperience] = useState('All')
   const [selectedIndustry, setSelectedIndustry] = useState('All')
   const [showFilters, setShowFilters] = useState(false)
+  const [showBookmarkedOnly, setShowBookmarkedOnly] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
   
   // Build filters for API - LIFO (Last In First Out) with ordering by -posted_at
@@ -334,7 +335,8 @@ export default function Jobs() {
     job_type: selectedJobType !== 'All' ? selectedJobType : undefined,
     experience_level: selectedExperience !== 'All' ? selectedExperience : undefined,
     industry: selectedIndustry !== 'All' ? selectedIndustry : undefined,
-  }), [currentPage, searchQuery, selectedJobType, selectedExperience, selectedIndustry])
+    bookmarked: showBookmarkedOnly ? true : undefined,
+  }), [currentPage, searchQuery, selectedJobType, selectedExperience, selectedIndustry, showBookmarkedOnly])
 
   const { jobs, loading, pagination } = useJobs(jobFilters)
 
@@ -348,15 +350,16 @@ export default function Jobs() {
   // Reset to page 1 when filters change
   useEffect(() => {
     setCurrentPage(1)
-  }, [searchQuery, selectedJobType, selectedExperience, selectedIndustry])
+  }, [searchQuery, selectedJobType, selectedExperience, selectedIndustry, showBookmarkedOnly])
 
-  const hasActiveFilters = searchQuery || selectedJobType !== 'All' || selectedExperience !== 'All' || selectedIndustry !== 'All'
+  const hasActiveFilters = searchQuery || selectedJobType !== 'All' || selectedExperience !== 'All' || selectedIndustry !== 'All' || showBookmarkedOnly
 
   const handleClearFilters = () => {
     setSearchQuery('')
     setSelectedJobType('All')
     setSelectedExperience('All')
     setSelectedIndustry('All')
+    setShowBookmarkedOnly(false)
     setCurrentPage(1)
   }
 
@@ -374,13 +377,13 @@ export default function Jobs() {
         await jobService.bookmarkJob(jobId)
         toast.success('Job added to bookmarks')
       }
-      // Refresh the jobs list to get updated bookmark status
-      dispatch(fetchJobs({ page: currentPage, page_size: ITEMS_PER_PAGE }))
+      // Refresh the jobs list to get updated bookmark status and keep filters intact
+      dispatch(fetchJobs(jobFilters))
     } catch (error) {
       console.error('Bookmark error:', error)
       toast.error('Failed to update bookmark')
     }
-  }, [currentPage, dispatch])
+  }, [dispatch, jobFilters])
 
   // Filter jobs (client-side for dummy data)
   const filteredJobs = useMemo(() => {
@@ -493,6 +496,18 @@ export default function Jobs() {
                         onClick={() => setSelectedExperience(level)}
                       />
                     ))}
+                  </div>
+                </div>
+
+                {/* Bookmarked Filter */}
+                <div className="flex-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Bookmarks</label>
+                  <div className="flex flex-wrap gap-2">
+                    <FilterChip
+                      label="Bookmarked"
+                      isActive={showBookmarkedOnly}
+                      onClick={() => setShowBookmarkedOnly((current) => !current)}
+                    />
                   </div>
                 </div>
 

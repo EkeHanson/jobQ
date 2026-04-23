@@ -18,7 +18,7 @@ class JobSerializer(serializers.ModelSerializer):
             'id', 'title', 'company', 'location', 'industry', 
             'description', 'requirements', 'skills',
             'job_type', 'experience_level', 'salary_min', 'salary_max',
-            'salary_currency', 'application_link', 'application_email', 'posted_at',
+            'salary_currency', 'application_link', 'application_email', 'is_archived', 'archived_at', 'posted_at',
             'is_bookmarked'
         ]
 
@@ -64,3 +64,11 @@ class JobBookmarkSerializer(serializers.ModelSerializer):
     class Meta:
         model = JobBookmark
         fields = ['id', 'job', 'created_at']
+
+
+class BulkJobCreateSerializer(serializers.Serializer):
+    jobs = serializers.ListField(
+        child=serializers.DictField(),
+        min_length=1,
+        max_length=100
+    )

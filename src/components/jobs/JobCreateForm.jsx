@@ -77,6 +77,7 @@ const JobCreateForm = ({ initialData = null, onCancel, onSuccess }) => {
   const handleSubmit = async (e) => {
     e.preventDefault()
     
+    // Validate required fields
     if (!formData.title.trim()) {
       toast.error('Job title is required')
       return
@@ -124,196 +125,316 @@ const JobCreateForm = ({ initialData = null, onCancel, onSuccess }) => {
 
   const isEdit = !!initialData
 
-  const InputField = ({ label, name, type = "text", placeholder, required, icon: Icon }) => (
-    <div>
-      <label className="block text-xs font-medium text-gray-700 mb-1">
-        {label} {required && <span className="text-red-500">*</span>}
-      </label>
-      <div className="relative">
-        {Icon && (
-          <Icon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-        )}
-        <input
-          type={type}
-          name={name}
-          value={formData[name]}
-          onChange={handleChange}
-          className={`w-full px-3 py-2 ${Icon ? 'pl-9' : ''} text-sm rounded-lg border border-gray-200 focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 transition-all`}
-          placeholder={placeholder}
-        />
-      </div>
-    </div>
-  )
-
-  const SelectField = ({ label, name, options, value }) => (
-    <div>
-      <label className="block text-xs font-medium text-gray-700 mb-1">{label}</label>
-      <select
-        name={name}
-        value={value}
-        onChange={handleChange}
-        className="w-full px-3 py-2 text-sm rounded-lg border border-gray-200 focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 transition-all"
-      >
-        {options.map(option => (
-          <option key={option} value={option}>{option}</option>
-        ))}
-      </select>
-    </div>
-  )
-
-  const TextAreaField = ({ label, name, rows = 3, placeholder }) => (
-    <div>
-      <label className="block text-xs font-medium text-gray-700 mb-1">{label}</label>
-      <textarea
-        name={name}
-        value={formData[name]}
-        onChange={handleChange}
-        rows={rows}
-        className="w-full px-3 py-2 text-sm rounded-lg border border-gray-200 focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 transition-all resize-none"
-        placeholder={placeholder}
-      />
-    </div>
-  )
-
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-100">
-      {/* Compact Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
-        <div>
-          <h2 className="text-base font-semibold text-gray-900">
-            {isEdit ? 'Edit Job' : 'New Job'}
-          </h2>
-          <p className="text-xs text-gray-500 mt-0.5">
-            Fill in the details below
-          </p>
-        </div>
+    <div className="bg-white rounded-2xl shadow-lg border border-gray-100">
+      <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+        <h2 className="text-xl font-bold text-gray-900">
+          {isEdit ? 'Edit Job' : 'Create New Job'}
+        </h2>
         <button
           onClick={onCancel}
-          className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-lg transition-colors"
+          className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-lg transition-colors"
         >
-          <XMarkIcon className="w-4 h-4" />
+          <XMarkIcon className="w-5 h-5" />
         </button>
       </div>
 
-      <form onSubmit={handleSubmit} className="p-4 space-y-4">
+      <form onSubmit={handleSubmit} className="p-6 space-y-6">
         {error && (
-          <div className="bg-red-50 text-red-600 p-2 rounded-lg text-xs">
+          <div className="bg-red-50 text-red-600 p-4 rounded-lg text-sm">
             {error}
           </div>
         )}
 
-        {/* Basic Info - 2 Column Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <InputField label="Job Title" name="title" placeholder="e.g., Senior Software Engineer" required />
-          <InputField label="Location" name="location" placeholder="e.g., San Francisco, CA" required />
-          <SelectField label="Job Type" name="job_type" options={JOB_TYPES} value={formData.job_type} />
-          <SelectField label="Experience" name="experience_level" options={EXPERIENCE_LEVELS} value={formData.experience_level} />
+        {/* Basic Information */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-100 pb-2">
+            Basic Information
+          </h3>
+          
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Job Title *
+              </label>
+              <input
+                type="text"
+                name="title"
+                value={formData.title}
+                onChange={handleChange}
+                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 transition-all"
+                placeholder="Senior Software Engineer"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Location *
+              </label>
+              <input
+                type="text"
+                name="location"
+                value={formData.location}
+                onChange={handleChange}
+                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 transition-all"
+                placeholder="San Francisco, CA"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Job Type
+              </label>
+              <select
+                name="job_type"
+                value={formData.job_type}
+                onChange={handleChange}
+                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 transition-all"
+              >
+                {JOB_TYPES.map(type => (
+                  <option key={type} value={type}>{type}</option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Experience Level
+              </label>
+              <select
+                name="experience_level"
+                value={formData.experience_level}
+                onChange={handleChange}
+                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 transition-all"
+              >
+                {EXPERIENCE_LEVELS.map(level => (
+                  <option key={level} value={level}>{level}</option>
+                ))}
+              </select>
+            </div>
+          </div>
         </div>
 
-        {/* Company Info - 2 Column */}
-        <div className="pt-2">
-          <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Company Details</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <InputField label="Company Name" name="company.name" placeholder="e.g., TechCorp Inc." required />
-            <InputField label="Company Website" name="company.website" type="url" placeholder="https://example.com" />
-            <SelectField label="Industry" name="industry" options={INDUSTRIES} value={formData.industry} />
+        {/* Company Information */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-100 pb-2">
+            Company Information
+          </h3>
+          
+          <div className="grid grid-cols-1 gap-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Company Name *
+              </label>
+              <input
+                type="text"
+                name="company.name"
+                value={formData.company?.name || ''}
+                onChange={handleChange}
+                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 transition-all"
+                placeholder="TechCorp Inc."
+              />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Company Website
+                </label>
+                <input
+                  type="url"
+                  name="company.website"
+                  value={formData.company?.website || ''}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 transition-all"
+                  placeholder="https://example.com"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Industry
+                </label>
+                <select
+                  name="industry"
+                  value={formData.industry}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 transition-all"
+                >
+                  {INDUSTRIES.map(industry => (
+                    <option key={industry} value={industry}>{industry}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
           </div>
         </div>
 
         {/* Job Description */}
-        <div className="pt-2">
-          <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Job Description</h3>
-          <div className="space-y-3">
-            <TextAreaField 
-              label="Description" 
-              name="description" 
-              rows={3}
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-100 pb-2">
+            Job Description
+          </h3>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Description *
+            </label>
+            <textarea
+              name="description"
+              value={formData.description}
+              onChange={handleChange}
+              rows="4"
+              className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 transition-all"
               placeholder="Describe the role, responsibilities, and what you're looking for..."
             />
-            <TextAreaField 
-              label="Requirements" 
-              name="requirements" 
-              rows={2}
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Requirements
+            </label>
+            <textarea
+              name="requirements"
+              value={formData.requirements}
+              onChange={handleChange}
+              rows="3"
+              className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 transition-all"
               placeholder="List the required skills and qualifications..."
             />
-            <InputField 
-              label="Skills" 
-              name="skills" 
-              placeholder="JavaScript, React, Node.js (comma separated)"
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Skills (comma separated)
+            </label>
+            <input
+              type="text"
+              name="skills"
+              value={formData.skills}
+              onChange={handleChange}
+              className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 transition-all"
+              placeholder="JavaScript, React, Node.js, SQL"
             />
           </div>
         </div>
 
-        {/* Salary - Compact Row */}
-        <div className="pt-2">
-          <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Salary (Optional)</h3>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+        {/* Salary Information */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-100 pb-2">
+            Salary Information
+          </h3>
+          
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">Min ($)</label>
-              <input
-                type="number"
-                name="salary_min"
-                value={formData.salary_min}
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Min Salary
+              </label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">
+                  $
+                </span>
+                <input
+                  type="number"
+                  name="salary_min"
+                  value={formData.salary_min}
+                  onChange={handleChange}
+                  className="w-full pl-8 pr-4 py-3 rounded-xl border border-gray-200 focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 transition-all"
+                  placeholder="50000"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Max Salary
+              </label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">
+                  $
+                </span>
+                <input
+                  type="number"
+                  name="salary_max"
+                  value={formData.salary_max}
+                  onChange={handleChange}
+                  className="w-full pl-8 pr-4 py-3 rounded-xl border border-gray-200 focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 transition-all"
+                  placeholder="100000"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Currency
+              </label>
+              <select
+                name="salary_currency"
+                value={formData.salary_currency}
                 onChange={handleChange}
-                className="w-full px-3 py-2 text-sm rounded-lg border border-gray-200 focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 transition-all"
-                placeholder="50,000"
+                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 transition-all"
+              >
+                {SALARY_CURRENCIES.map(currency => (
+                  <option key={currency} value={currency}>{currency}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+        </div>
+
+        {/* Application Information */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-100 pb-2">
+            Application Information
+          </h3>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Application Link
+              </label>
+              <input
+                type="url"
+                name="application_link"
+                value={formData.application_link}
+                onChange={handleChange}
+                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 transition-all"
+                placeholder="https://company.com/careers/123"
               />
             </div>
+
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">Max ($)</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Application Email
+              </label>
               <input
-                type="number"
-                name="salary_max"
-                value={formData.salary_max}
+                type="email"
+                name="application_email"
+                value={formData.application_email}
                 onChange={handleChange}
-                className="w-full px-3 py-2 text-sm rounded-lg border border-gray-200 focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 transition-all"
-                placeholder="100,000"
+                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 transition-all"
+                placeholder="careers@company.com"
               />
             </div>
-            <SelectField label="Currency" name="salary_currency" options={SALARY_CURRENCIES} value={formData.salary_currency} />
           </div>
         </div>
 
-        {/* Application Info */}
-        <div className="pt-2">
-          <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">How to Apply</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <InputField 
-              label="Application Link" 
-              name="application_link" 
-              type="url"
-              placeholder="https://company.com/careers/123"
-            />
-            <InputField 
-              label="Application Email" 
-              name="application_email" 
-              type="email"
-              placeholder="careers@company.com"
-            />
-          </div>
-          <p className="text-xs text-gray-400 mt-2">
-            Provide at least one application method (link or email)
-          </p>
-        </div>
-
-        {/* Action Buttons - Compact */}
-        <div className="flex items-center justify-end gap-2 pt-3 border-t border-gray-100">
+        {/* Submit Buttons */}
+        <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-100">
           <Button
             variant="outline"
             onClick={onCancel}
             disabled={loading}
-            size="sm"
-            className="px-4 py-1.5 text-sm"
+            className="px-6"
           >
             Cancel
           </Button>
           <Button
             type="submit"
             loading={loading}
-            size="sm"
-            className="px-4 py-1.5 text-sm"
+            className="px-6"
           >
-            {isEdit ? 'Update' : 'Create'}
+            {isEdit ? 'Update Job' : 'Create Job'}
           </Button>
         </div>
       </form>

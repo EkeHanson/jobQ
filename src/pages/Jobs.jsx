@@ -335,6 +335,7 @@ export default function Jobs() {
     job_type: selectedJobType !== 'All' ? selectedJobType : undefined,
     experience_level: selectedExperience !== 'All' ? selectedExperience : undefined,
     industry: selectedIndustry !== 'All' ? selectedIndustry : undefined,
+    approval_status: 'approved',
     bookmarked: showBookmarkedOnly ? true : undefined,
   }), [currentPage, searchQuery, selectedJobType, selectedExperience, selectedIndustry, showBookmarkedOnly])
 

@@ -416,15 +416,25 @@ export default function Jobs() {
   return (
     <DashboardLayout>
       <div className="space-y-6">
-        {/* Header Section */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Job Listings</h1>
-            <p className="text-gray-500 mt-1">
-              Discover exciting job opportunities
-            </p>
-          </div>
-        </div>
+         {/* Header Section */}
+         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+           <div>
+             <h1 className="text-3xl font-bold text-gray-900">Job Listings</h1>
+             <p className="text-gray-500 mt-1">
+               Discover exciting job opportunities
+             </p>
+           </div>
+           <div className="flex items-center gap-3">
+             <Link to="/jobs/create">
+               <Button className="bg-primary-600 hover:bg-primary-700">
+                 <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                 </svg>
+                 Create Job
+               </Button>
+             </Link>
+           </div>
+         </div>
 
         {/* Search and Filter Bar */}
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">

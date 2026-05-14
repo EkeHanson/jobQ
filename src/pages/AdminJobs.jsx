@@ -66,8 +66,6 @@ const INDUSTRIES = [
   "Other",
 ];
 
-const [searchQuery, setSearchQuery] = useState("");
-
 function FilterChip({ label, isActive, onClick }) {
   return (
     <button
@@ -84,6 +82,8 @@ function FilterChip({ label, isActive, onClick }) {
 }
 
 export default function AdminJobs() {
+  const { addToast } = useToast();
+  const [searchQuery, setSearchQuery] = useState("");
   const [jobs, setJobs] = useState([]);
   const [jobsCount, setJobsCount] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -94,8 +94,23 @@ export default function AdminJobs() {
   const [showEditForm, setShowEditForm] = useState(false);
   const [showViewModal, setShowViewModal] = useState(false);
   const [showDeleteJobModal, setShowDeleteJobModal] = useState(false);
+  const [actionModalOpen, setActionModalOpen] = useState(false);
+  const [actionModalType, setActionModalType] = useState(null);
+  const [actionModalJob, setActionModalJob] = useState(null);
+  const [actionModalReason, setActionModalReason] = useState("");
   const [jobToDelete, setJobToDelete] = useState(null);
   const [selectedJob, setSelectedJob] = useState(null);
+  const [selectedJobType, setSelectedJobType] = useState("All");
+  const [selectedExperience, setSelectedExperience] = useState("All");
+  const [selectedIndustry, setSelectedIndustry] = useState("All");
+  const [showFilters, setShowFilters] = useState(false);
+  const [statistics, setStatistics] = useState({
+    totalJobs: 0,
+    activeJobs: 0,
+    archivedJobs: 0,
+    remoteJobs: 0,
+    fullTimeJobs: 0,
+  });
   const [newJob, setNewJob] = useState({
     title: "",
     company_name: "",
@@ -112,7 +127,12 @@ export default function AdminJobs() {
 
   useEffect(() => {
     fetchJobStats();
+    fetchJobs();
   }, []);
+
+  useEffect(() => {
+    fetchJobs(1);
+  }, [searchQuery, selectedJobType, selectedExperience, selectedIndustry]);
 
   const fetchJobs = async (pageNumber = 1) => {
     try {
@@ -149,6 +169,29 @@ export default function AdminJobs() {
     selectedExperience !== "All" ||
     selectedIndustry !== "All";
 
+  const fetchJobStats = async () => {
+    try {
+      const data = await adminService.getJobs({ page_size: 1000 });
+      const allJobs = data.results || data || [];
+      
+      const totalJobs = data.count || allJobs.length;
+      const activeJobs = allJobs.filter(job => job.approval_status === 'approved').length;
+      const archivedJobs = allJobs.filter(job => job.approval_status === 'rejected').length;
+      const remoteJobs = allJobs.filter(job => job.location?.toLowerCase().includes('remote')).length;
+      const fullTimeJobs = allJobs.filter(job => job.job_type === 'Full-time').length;
+
+      setStatistics({
+        totalJobs,
+        activeJobs,
+        archivedJobs,
+        remoteJobs,
+        fullTimeJobs,
+      });
+    } catch (err) {
+      console.error("Failed to load job statistics", err);
+    }
+  };
+
   const handleClearFilters = () => {
     setSearchQuery("");
     setSelectedJobType("All");
@@ -167,22 +210,76 @@ export default function AdminJobs() {
     setNewJob((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleArchiveJob = async (job) => {
+  const handleApproveJob = async (job) => {
     try {
       setLoading(true);
-      await adminService.archiveJob(job.id);
-      addToast("Job archived successfully.", "success");
+      await adminService.approveJob(job.id);
+      addToast("Job approved successfully.", "success");
       fetchJobs(page);
       fetchJobStats();
     } catch (err) {
-      console.error("Failed to archive job", err);
+      console.error("Failed to approve job", err);
       addToast(
-        "Unable to archive job. Check permissions or backend status.",
+        "Unable to approve job. Check permissions or backend status.",
         "error",
       );
     } finally {
       setLoading(false);
     }
+  };
+
+  const openRejectModal = (job) => {
+    setActionModalType("reject");
+    setActionModalJob(job);
+    setActionModalReason("");
+    setActionModalOpen(true);
+  };
+
+  const openRequestChangesModal = (job) => {
+    setActionModalType("request_changes");
+    setActionModalJob(job);
+    setActionModalReason("");
+    setActionModalOpen(true);
+  };
+
+  const handleActionConfirm = async () => {
+    if (!actionModalReason.trim() || !actionModalJob || !actionModalType) {
+      return;
+    }
+
+    try {
+      setLoading(true);
+      if (actionModalType === "reject") {
+        await adminService.rejectJob(actionModalJob.id, actionModalReason.trim());
+        addToast("Job rejected successfully.", "success");
+        fetchJobStats();
+      } else {
+        await adminService.requestChanges(actionModalJob.id, actionModalReason.trim());
+        addToast("Change request sent successfully.", "success");
+      }
+      fetchJobs(page);
+      setActionModalOpen(false);
+      setActionModalJob(null);
+      setActionModalType(null);
+      setActionModalReason("");
+    } catch (err) {
+      console.error("Failed to process action", err);
+      addToast(
+        actionModalType === "reject"
+          ? "Unable to reject job. Check permissions or backend status."
+          : "Unable to request changes. Check permissions or backend status.",
+        "error",
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const closeActionModal = () => {
+    setActionModalOpen(false);
+    setActionModalJob(null);
+    setActionModalType(null);
+    setActionModalReason("");
   };
 
   const handleCreateJob = async () => {
@@ -1012,6 +1109,9 @@ export default function AdminJobs() {
                 <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-600 w-32">
                   Location
                 </th>
+                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-600 w-24">
+                  Status
+                </th>
                 <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-600 w-28">
                   Job Type
                 </th>
@@ -1073,12 +1173,53 @@ export default function AdminJobs() {
                       </div>
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap">
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${job.approval_status === 'approved' ? 'bg-green-100 text-green-800' : job.approval_status === 'rejected' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'}`}>
+                        {job.approval_status || 'pending'}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap">
                       <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-cyan-100 text-cyan-800">
                         {job.job_type || "N/A"}
                       </span>
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap text-right text-sm font-medium">
-                      <div className="flex justify-end gap-1">
+                      <div className="flex justify-end flex-wrap gap-1">
+                        {job.approval_status !== 'approved' && (
+                          <button
+                            type="button"
+                            onClick={() => handleApproveJob(job)}
+                            className="p-1.5 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                            title="Approve"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                            </svg>
+                          </button>
+                        )}
+                        {job.approval_status !== 'rejected' && (
+                          <button
+                            type="button"
+                            onClick={() => openRejectModal(job)}
+                            className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                            title="Reject"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                          </button>
+                        )}
+                        {job.approval_status === 'pending' && (
+                          <button
+                            type="button"
+                            onClick={() => openRequestChangesModal(job)}
+                            className="p-1.5 text-yellow-600 hover:bg-yellow-50 rounded-lg transition-colors"
+                            title="Request changes"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5h2m-1 0v14m0 0H7m4 0h6" />
+                            </svg>
+                          </button>
+                        )}
                         <button
                           type="button"
                           onClick={() => handleViewJob(job)}
@@ -1216,7 +1357,39 @@ export default function AdminJobs() {
                 >
                   {job.location}
                 </p>
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2 mb-3">
+                  <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${job.approval_status === 'approved' ? 'bg-green-100 text-green-800' : job.approval_status === 'rejected' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'}`}>
+                    {job.approval_status || 'pending'}
+                  </span>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {job.approval_status !== 'approved' && (
+                    <button
+                      type="button"
+                      onClick={() => handleApproveJob(job)}
+                      className="flex-1 flex items-center justify-center gap-1 px-3 py-2 text-xs font-medium text-green-600 bg-green-50 hover:bg-green-100 rounded-lg transition-colors"
+                    >
+                      Approve
+                    </button>
+                  )}
+                  {job.approval_status !== 'rejected' && (
+                    <button
+                      type="button"
+                      onClick={() => handleRejectJob(job)}
+                      className="flex-1 flex items-center justify-center gap-1 px-3 py-2 text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors"
+                    >
+                      Reject
+                    </button>
+                  )}
+                  {job.approval_status === 'pending' && (
+                    <button
+                      type="button"
+                      onClick={() => handleRequestChanges(job)}
+                      className="flex-1 flex items-center justify-center gap-1 px-3 py-2 text-xs font-medium text-yellow-600 bg-yellow-50 hover:bg-yellow-100 rounded-lg transition-colors"
+                    >
+                      Request Changes
+                    </button>
+                  )}
                   <button
                     type="button"
                     onClick={() => handleViewJob(job)}
@@ -1452,6 +1625,60 @@ export default function AdminJobs() {
               <Button type="button" onClick={() => setShowViewModal(false)}>
                 Close
               </Button>
+            </div>
+          </div>
+        </Modal>
+        <Modal
+          isOpen={actionModalOpen}
+          onClose={closeActionModal}
+          title={actionModalType === "reject" ? "Reject job" : "Request changes"}
+          size="md"
+        >
+          <div className="space-y-4">
+            <p className="text-sm text-gray-600">
+              {actionModalType === "reject"
+                ? "Provide a rejection reason so the poster can adjust their job post."
+                : "Provide reviewer feedback so the poster can make the requested changes."
+              }
+            </p>
+            <div className="bg-gray-50 border border-gray-200 rounded-xl p-4">
+              <p className="text-sm font-semibold text-gray-900">
+                {actionModalJob?.title || "Selected job"}
+              </p>
+              <p className="text-sm text-gray-600 mt-1">
+                {actionModalJob?.company?.name || actionModalJob?.company || "No company data."}
+              </p>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                {actionModalType === "reject" ? "Rejection reason" : "Change request comments"}
+              </label>
+              <textarea
+                value={actionModalReason}
+                onChange={(event) => setActionModalReason(event.target.value)}
+                rows={5}
+                className="w-full rounded-xl border border-gray-200 px-4 py-3 focus:border-primary-500 focus:ring-primary-500/20 focus:outline-none"
+                placeholder={actionModalType === "reject"
+                  ? "Explain why this job was rejected."
+                  : "Describe the changes you want the job poster to make."
+                }
+              />
+            </div>
+            <div className="flex flex-col sm:flex-row gap-3 justify-end">
+              <Button
+                type="button"
+                className="bg-gray-500 hover:bg-gray-600 w-full sm:w-auto"
+                onClick={closeActionModal}
+              >
+                Cancel
+              </Button>
+              <button
+                type="button"
+                onClick={handleActionConfirm}
+                className="rounded-xl bg-primary-600 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-700 w-full sm:w-auto"
+              >
+                {actionModalType === "reject" ? "Reject Job" : "Send Request"}
+              </button>
             </div>
           </div>
         </Modal>

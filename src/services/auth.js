@@ -31,6 +31,22 @@ const authService = {
     return apiClient.get('/auth/me/')
   },
 
+  getJobPostingPermissions: async () => {
+    return apiClient.get('/auth/posting/permissions/')
+  },
+
+  getPosterStats: async () => {
+    return apiClient.get('/auth/poster-stats/')
+  },
+
+  fetchJobs: async (params = {}) => {
+    return apiClient.get('/jobs/', { params })
+  },
+
+  getJobReviewHistory: async (jobId) => {
+    return apiClient.get(`/jobs/${jobId}/review_history/`)
+  },
+
   updateProfile: async (data) => {
     return apiClient.patch('/auth/me/', data)
   },

@@ -27,5 +27,14 @@ export default function PrivateRoute() {
     return <Navigate to="/login" replace />
   }
 
+  // Job posters should only access job poster dashboard
+  if (user?.is_staff_poster) {
+    const currentPath = window.location.pathname
+    const allowedPaths = ['/job-poster-dashboard']
+    if (!allowedPaths.includes(currentPath)) {
+      return <Navigate to="/job-poster-dashboard" replace />
+    }
+  }
+
   return <Outlet />
 }

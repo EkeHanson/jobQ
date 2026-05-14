@@ -77,7 +77,13 @@ export default function Login() {
   }
 
   const getDestinationPath = (user) => {
-    return user?.is_staff || user?.is_superuser ? '/admin' : '/dashboard'
+    if (user?.is_staff || user?.is_superuser) {
+      return '/admin'
+    } else if (user?.is_staff_poster) {
+      return '/job-poster-dashboard'
+    } else {
+      return '/dashboard'
+    }
   }
 
   const handleGoogleResponse = async (response) => {

@@ -26,6 +26,7 @@ const Dashboard = lazy(() => import('../pages/Dashboard'))
 const Applications = lazy(() => import('../pages/Applications'))
 const AIPaste = lazy(() => import('../pages/AIPaste'))
 const Jobs = lazy(() => import('../pages/Jobs'))
+const JobCreate = lazy(() => import('../pages/JobCreate'))
 const JobDetails = lazy(() => import('../pages/JobDetails'))
 const Profile = lazy(() => import('../pages/Profile'))
 const Settings = lazy(() => import('../pages/Settings'))
@@ -44,6 +45,7 @@ const AdminApplications = lazy(() => import('../pages/AdminApplications'))
 const AdminJobs = lazy(() => import('../pages/AdminJobs'))
 const AdminProfiles = lazy(() => import('../pages/AdminProfiles'))
 const AdminSubscriptions = lazy(() => import('../pages/AdminSubscriptions'))
+const JobPosterDashboard = lazy(() => import('../pages/JobPosterDashboard'))
 const PublicView = lazy(() => import('../pages/PublicView'))
 
 const Loading = () => (
@@ -93,6 +95,14 @@ export default function AppRoutes() {
           }
         />
         <Route
+          path="/job-poster-dashboard"
+          element={
+            <Suspense fallback={<Loading />}>
+              <JobPosterDashboard />
+            </Suspense>
+          }
+        />
+        <Route
           path="/jobs"
           element={
             <Suspense fallback={<Loading />}>
@@ -105,6 +115,14 @@ export default function AppRoutes() {
           element={
             <Suspense fallback={<Loading />}>
               <JobDetails />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/jobs/create"
+          element={
+            <Suspense fallback={<Loading />}>
+              <JobCreate />
             </Suspense>
           }
         />

@@ -92,6 +92,22 @@ const adminService = {
     return apiClient.put(`/jobs/${id}/`, payload)
   },
 
+  approveJob: async (id) => {
+    return apiClient.post(`/jobs/${id}/approve/`)
+  },
+
+  rejectJob: async (id, rejection_reason) => {
+    return apiClient.post(`/jobs/${id}/reject/`, { rejection_reason })
+  },
+
+  requestChanges: async (id, comment) => {
+    return apiClient.post(`/jobs/${id}/request_changes/`, { comment })
+  },
+
+  getReviewHistory: async (id) => {
+    return apiClient.get(`/jobs/${id}/review_history/`)
+  },
+
   deleteJob: async (id) => {
     return apiClient.delete(`/jobs/${id}/`)
   },

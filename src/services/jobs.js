@@ -15,7 +15,7 @@ const jobService = {
   },
 
   updateJob: async (id, data) => {
-    return apiClient.put(`/jobs/${id}`)
+    return apiClient.put(`/jobs/${id}/`, data)
   },
 
   deleteJob: async (id) => {
@@ -64,6 +64,22 @@ const jobService = {
   // Save job as application
   saveApplication: async (jobId, status = 'saved') => {
     return apiClient.post(`/jobs/${jobId}/save_application/`, { status })
+  },
+
+  approveJob: async (jobId) => {
+    return apiClient.post(`/jobs/${jobId}/approve/`)
+  },
+
+  rejectJob: async (jobId, rejectionReason) => {
+    return apiClient.post(`/jobs/${jobId}/reject/`, { rejection_reason: rejectionReason })
+  },
+
+  requestChanges: async (jobId, comment) => {
+    return apiClient.post(`/jobs/${jobId}/request_changes/`, { comment })
+  },
+
+  getReviewHistory: async (jobId) => {
+    return apiClient.get(`/jobs/${jobId}/review_history/`)
   },
 }
 

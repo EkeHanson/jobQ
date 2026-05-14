@@ -33,6 +33,7 @@ export default function AdminUsers() {
     phone: "",
     location: "",
     is_staff: false,
+    is_staff_poster: false,
     is_active: true,
   });
   const { addToast } = useToast();
@@ -198,6 +199,7 @@ export default function AdminUsers() {
         phone: "",
         location: "",
         is_staff: false,
+        is_staff_poster: false,
         is_active: true,
       });
       setShowCreateForm(false);
@@ -224,6 +226,7 @@ export default function AdminUsers() {
       phone: user.phone || "",
       location: user.location || "",
       is_staff: user.is_staff || false,
+      is_staff_poster: user.is_staff_poster || false,
       is_active: user.is_active !== false,
     });
     setShowEditForm(true);
@@ -594,6 +597,16 @@ export default function AdminUsers() {
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input
                     type="checkbox"
+                    name="is_staff_poster"
+                    checked={newUser.is_staff_poster}
+                    onChange={handleNewUserChange}
+                    className="h-5 w-5 rounded border-gray-300 text-green-600 focus:ring-green-500"
+                  />
+                  <span className="text-sm text-gray-700">Job Poster</span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
                     name="is_active"
                     checked={newUser.is_active}
                     onChange={handleNewUserChange}
@@ -728,6 +741,16 @@ export default function AdminUsers() {
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input
                     type="checkbox"
+                    name="is_staff_poster"
+                    checked={newUser.is_staff_poster}
+                    onChange={handleNewUserChange}
+                    className="h-5 w-5 rounded border-gray-300 text-green-600 focus:ring-green-500"
+                  />
+                  <span className="text-sm text-gray-700">Job Poster</span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
                     name="is_active"
                     checked={newUser.is_active}
                     onChange={handleNewUserChange}
@@ -781,6 +804,9 @@ export default function AdminUsers() {
                   Staff
                 </th>
                 <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">
+                  Job Poster
+                </th>
+                <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">
                   Suspended
                 </th>
                 <th className="px-6 py-4 text-right text-xs font-semibold uppercase tracking-wider text-gray-600">
@@ -792,7 +818,7 @@ export default function AdminUsers() {
               {loading ? (
                 <tr>
                   <td
-                    colSpan="7"
+                    colSpan="8"
                     className="px-6 py-16 text-center text-sm text-gray-500"
                   >
                     <div className="flex flex-col items-center gap-3">
@@ -804,7 +830,7 @@ export default function AdminUsers() {
               ) : users.length === 0 ? (
                 <tr>
                   <td
-                    colSpan="7"
+                    colSpan="8"
                     className="px-6 py-16 text-center text-sm text-gray-500"
                   >
                     No users found.
@@ -847,6 +873,13 @@ export default function AdminUsers() {
                         className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${user.is_staff ? "bg-purple-100 text-purple-800" : "bg-gray-100 text-gray-800"}`}
                       >
                         {user.is_staff ? "Yes" : "No"}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${user.is_staff_poster ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"}`}
+                      >
+                        {user.is_staff_poster ? "Yes" : "No"}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">

@@ -39,6 +39,9 @@ const JobCreateForm = ({ initialData = null, onCancel, onSuccess }) => {
     application_email: ''
   })
   
+  // State for field-specific errors
+  const [fieldErrors, setFieldErrors] = useState({})
+  
   useEffect(() => {
     if (initialData) {
       setFormData({
@@ -63,6 +66,11 @@ const JobCreateForm = ({ initialData = null, onCancel, onSuccess }) => {
   const handleChange = (e) => {
     const { name, value } = e.target
     
+    // Clear error for this field when user starts typing
+    if (fieldErrors[name]) {
+      setFieldErrors(prev => ({ ...prev, [name]: undefined }))
+    }
+    
     if (name.startsWith('company.')) {
       const field = name.split('.')[1]
       setFormData(prev => ({
@@ -74,8 +82,39 @@ const JobCreateForm = ({ initialData = null, onCancel, onSuccess }) => {
     }
   }
 
+  // Helper function to format error messages from server
+  const formatErrorMessage = (errorData) => {
+    if (typeof errorData === 'string') {
+      return errorData
+    }
+    
+    if (Array.isArray(errorData)) {
+      return errorData.join(', ')
+    }
+    
+    if (typeof errorData === 'object') {
+      // Handle nested errors (like company.name)
+      const messages = []
+      for (const [key, value] of Object.entries(errorData)) {
+        if (Array.isArray(value)) {
+          messages.push(`${key}: ${value.join(', ')}`)
+        } else if (typeof value === 'object') {
+          for (const [subKey, subValue] of Object.entries(value)) {
+            if (Array.isArray(subValue)) {
+              messages.push(`${key}.${subKey}: ${subValue.join(', ')}`)
+            }
+          }
+        }
+      }
+      return messages.join('; ')
+    }
+    
+    return 'An error occurred'
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
+    setFieldErrors({}) // Clear previous errors
     
     // Validate required fields
     if (!formData.title.trim()) {
@@ -119,8 +158,56 @@ const JobCreateForm = ({ initialData = null, onCancel, onSuccess }) => {
       if (onCancel) onCancel()
     } catch (err) {
       console.error('Failed to save job:', err)
-      toast.error(err.message || 'Failed to save job')
+      
+      // Handle field-specific validation errors from server
+      if (err.response?.data) {
+        const errorData = err.response.data
+        
+        // Check if it's a field-specific error object
+        if (typeof errorData === 'object') {
+          // Set field-specific errors
+          setFieldErrors(errorData)
+          
+          // Also show a summary toast
+          const errorMessages = []
+          for (const [field, messages] of Object.entries(errorData)) {
+            if (Array.isArray(messages)) {
+              const fieldLabel = field.replace('_', ' ').replace('.', ' ')
+              errorMessages.push(`${fieldLabel}: ${messages.join(', ')}`)
+            } else if (typeof messages === 'object') {
+              for (const [subField, subMessages] of Object.entries(messages)) {
+                if (Array.isArray(subMessages)) {
+                  errorMessages.push(`${field}.${subField}: ${subMessages.join(', ')}`)
+                }
+              }
+            }
+          }
+          
+          if (errorMessages.length > 0) {
+            toast.error(errorMessages.join('; '))
+          } else {
+            toast.error(formatErrorMessage(errorData))
+          }
+        } else {
+          toast.error(err.message || 'Failed to save job')
+        }
+      } else {
+        toast.error(err.message || 'Failed to save job')
+      }
     }
+  }
+
+  // Helper to render error message for a field
+  const renderFieldError = (fieldName) => {
+    const error = fieldErrors[fieldName]
+    if (!error) return null
+    
+    const errorMessage = Array.isArray(error) ? error.join(', ') : error
+    return (
+      <p className="mt-1 text-xs text-red-600">
+        {errorMessage}
+      </p>
+    )
   }
 
   const isEdit = !!initialData
@@ -140,7 +227,7 @@ const JobCreateForm = ({ initialData = null, onCancel, onSuccess }) => {
       </div>
 
       <form onSubmit={handleSubmit} className="p-6 space-y-6">
-        {error && (
+        {error && !fieldErrors && (
           <div className="bg-red-50 text-red-600 p-4 rounded-lg text-sm">
             {error}
           </div>
@@ -162,9 +249,12 @@ const JobCreateForm = ({ initialData = null, onCancel, onSuccess }) => {
                 name="title"
                 value={formData.title}
                 onChange={handleChange}
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 transition-all"
+                className={`w-full px-4 py-3 rounded-xl border ${
+                  fieldErrors.title ? 'border-red-500 focus:border-red-500' : 'border-gray-200 focus:border-primary-500'
+                } focus:ring-4 focus:ring-primary-500/10 transition-all`}
                 placeholder="Senior Software Engineer"
               />
+              {renderFieldError('title')}
             </div>
 
             <div>
@@ -176,9 +266,12 @@ const JobCreateForm = ({ initialData = null, onCancel, onSuccess }) => {
                 name="location"
                 value={formData.location}
                 onChange={handleChange}
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 transition-all"
+                className={`w-full px-4 py-3 rounded-xl border ${
+                  fieldErrors.location ? 'border-red-500 focus:border-red-500' : 'border-gray-200 focus:border-primary-500'
+                } focus:ring-4 focus:ring-primary-500/10 transition-all`}
                 placeholder="San Francisco, CA"
               />
+              {renderFieldError('location')}
             </div>
 
             <div>
@@ -195,6 +288,7 @@ const JobCreateForm = ({ initialData = null, onCancel, onSuccess }) => {
                   <option key={type} value={type}>{type}</option>
                 ))}
               </select>
+              {renderFieldError('job_type')}
             </div>
 
             <div>
@@ -211,6 +305,7 @@ const JobCreateForm = ({ initialData = null, onCancel, onSuccess }) => {
                   <option key={level} value={level}>{level}</option>
                 ))}
               </select>
+              {renderFieldError('experience_level')}
             </div>
           </div>
         </div>
@@ -231,9 +326,15 @@ const JobCreateForm = ({ initialData = null, onCancel, onSuccess }) => {
                 name="company.name"
                 value={formData.company?.name || ''}
                 onChange={handleChange}
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 transition-all"
+                className={`w-full px-4 py-3 rounded-xl border ${
+                  fieldErrors['company.name'] || fieldErrors.company?.name ? 'border-red-500 focus:border-red-500' : 'border-gray-200 focus:border-primary-500'
+                } focus:ring-4 focus:ring-primary-500/10 transition-all`}
                 placeholder="TechCorp Inc."
               />
+              {renderFieldError('company.name')}
+              {fieldErrors.company?.name && (
+                <p className="mt-1 text-xs text-red-600">{fieldErrors.company.name.join(', ')}</p>
+              )}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -246,9 +347,12 @@ const JobCreateForm = ({ initialData = null, onCancel, onSuccess }) => {
                   name="company.website"
                   value={formData.company?.website || ''}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 transition-all"
+                  className={`w-full px-4 py-3 rounded-xl border ${
+                    fieldErrors['company.website'] ? 'border-red-500 focus:border-red-500' : 'border-gray-200 focus:border-primary-500'
+                  } focus:ring-4 focus:ring-primary-500/10 transition-all`}
                   placeholder="https://example.com"
                 />
+                {renderFieldError('company.website')}
               </div>
 
               <div>
@@ -265,6 +369,7 @@ const JobCreateForm = ({ initialData = null, onCancel, onSuccess }) => {
                     <option key={industry} value={industry}>{industry}</option>
                   ))}
                 </select>
+                {renderFieldError('industry')}
               </div>
             </div>
           </div>
@@ -285,9 +390,12 @@ const JobCreateForm = ({ initialData = null, onCancel, onSuccess }) => {
               value={formData.description}
               onChange={handleChange}
               rows="4"
-              className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 transition-all"
+              className={`w-full px-4 py-3 rounded-xl border ${
+                fieldErrors.description ? 'border-red-500 focus:border-red-500' : 'border-gray-200 focus:border-primary-500'
+              } focus:ring-4 focus:ring-primary-500/10 transition-all`}
               placeholder="Describe the role, responsibilities, and what you're looking for..."
             />
+            {renderFieldError('description')}
           </div>
 
           <div>
@@ -299,9 +407,12 @@ const JobCreateForm = ({ initialData = null, onCancel, onSuccess }) => {
               value={formData.requirements}
               onChange={handleChange}
               rows="3"
-              className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 transition-all"
+              className={`w-full px-4 py-3 rounded-xl border ${
+                fieldErrors.requirements ? 'border-red-500 focus:border-red-500' : 'border-gray-200 focus:border-primary-500'
+              } focus:ring-4 focus:ring-primary-500/10 transition-all`}
               placeholder="List the required skills and qualifications..."
             />
+            {renderFieldError('requirements')}
           </div>
 
           <div>
@@ -313,9 +424,12 @@ const JobCreateForm = ({ initialData = null, onCancel, onSuccess }) => {
               name="skills"
               value={formData.skills}
               onChange={handleChange}
-              className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 transition-all"
+              className={`w-full px-4 py-3 rounded-xl border ${
+                fieldErrors.skills ? 'border-red-500 focus:border-red-500' : 'border-gray-200 focus:border-primary-500'
+              } focus:ring-4 focus:ring-primary-500/10 transition-all`}
               placeholder="JavaScript, React, Node.js, SQL"
             />
+            {renderFieldError('skills')}
           </div>
         </div>
 
@@ -339,10 +453,13 @@ const JobCreateForm = ({ initialData = null, onCancel, onSuccess }) => {
                   name="salary_min"
                   value={formData.salary_min}
                   onChange={handleChange}
-                  className="w-full pl-8 pr-4 py-3 rounded-xl border border-gray-200 focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 transition-all"
+                  className={`w-full pl-8 pr-4 py-3 rounded-xl border ${
+                    fieldErrors.salary_min ? 'border-red-500 focus:border-red-500' : 'border-gray-200 focus:border-primary-500'
+                  } focus:ring-4 focus:ring-primary-500/10 transition-all`}
                   placeholder="50000"
                 />
               </div>
+              {renderFieldError('salary_min')}
             </div>
 
             <div>
@@ -358,10 +475,13 @@ const JobCreateForm = ({ initialData = null, onCancel, onSuccess }) => {
                   name="salary_max"
                   value={formData.salary_max}
                   onChange={handleChange}
-                  className="w-full pl-8 pr-4 py-3 rounded-xl border border-gray-200 focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 transition-all"
+                  className={`w-full pl-8 pr-4 py-3 rounded-xl border ${
+                    fieldErrors.salary_max ? 'border-red-500 focus:border-red-500' : 'border-gray-200 focus:border-primary-500'
+                  } focus:ring-4 focus:ring-primary-500/10 transition-all`}
                   placeholder="100000"
                 />
               </div>
+              {renderFieldError('salary_max')}
             </div>
 
             <div>
@@ -378,6 +498,7 @@ const JobCreateForm = ({ initialData = null, onCancel, onSuccess }) => {
                   <option key={currency} value={currency}>{currency}</option>
                 ))}
               </select>
+              {renderFieldError('salary_currency')}
             </div>
           </div>
         </div>
@@ -398,9 +519,19 @@ const JobCreateForm = ({ initialData = null, onCancel, onSuccess }) => {
                 name="application_link"
                 value={formData.application_link}
                 onChange={handleChange}
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 transition-all"
+                className={`w-full px-4 py-3 rounded-xl border ${
+                  fieldErrors.application_link ? 'border-red-500 focus:border-red-500' : 'border-gray-200 focus:border-primary-500'
+                } focus:ring-4 focus:ring-primary-500/10 transition-all`}
                 placeholder="https://company.com/careers/123"
               />
+              {renderFieldError('application_link')}
+              {fieldErrors.application_link && (
+                <p className="mt-1 text-xs text-red-600">
+                  {Array.isArray(fieldErrors.application_link) 
+                    ? fieldErrors.application_link.join(', ') 
+                    : fieldErrors.application_link}
+                </p>
+              )}
             </div>
 
             <div>
@@ -412,11 +543,17 @@ const JobCreateForm = ({ initialData = null, onCancel, onSuccess }) => {
                 name="application_email"
                 value={formData.application_email}
                 onChange={handleChange}
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 transition-all"
+                className={`w-full px-4 py-3 rounded-xl border ${
+                  fieldErrors.application_email ? 'border-red-500 focus:border-red-500' : 'border-gray-200 focus:border-primary-500'
+                } focus:ring-4 focus:ring-primary-500/10 transition-all`}
                 placeholder="careers@company.com"
               />
+              {renderFieldError('application_email')}
             </div>
           </div>
+          <p className="text-xs text-gray-500 mt-1">
+            * Either Application Link or Application Email is required
+          </p>
         </div>
 
         {/* Submit Buttons */}

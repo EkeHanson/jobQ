@@ -336,25 +336,27 @@ const JobPosterDashboard = () => {
     </div>
   );
 
-  const renderMyJobs = () => (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 sm:p-6">
-      <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-4 sm:mb-6">My Jobs</h2>
-      {myJobs.length === 0 ? (
-        <div className="text-center py-8 sm:py-12">
-          <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <FaClipboardCheck className="text-3xl sm:text-4xl text-gray-400" />
-          </div>
-          <p className="text-gray-500 text-sm sm:text-base mb-4">You haven't posted any jobs yet.</p>
-          <button
-            onClick={() => setActiveTab("post-new")}
-            className="bg-primary-600 text-white px-6 py-2 rounded-lg hover:bg-primary-700 transition-colors"
-          >
-            Post Your First Job
-          </button>
+const renderMyJobs = () => (
+  <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 sm:p-6">
+    <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-4 sm:mb-6">My Jobs</h2>
+    {myJobs.length === 0 ? (
+      <div className="text-center py-8 sm:py-12">
+        <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <FaClipboardCheck className="text-3xl sm:text-4xl text-gray-400" />
         </div>
-      ) : (
-        <div className="space-y-3 sm:space-y-4">
-          {myJobs.map((job) => (
+        <p className="text-gray-500 text-sm sm:text-base mb-4">You haven't posted any jobs yet.</p>
+        <button
+          onClick={() => setActiveTab("post-new")}
+          className="bg-primary-600 text-white px-6 py-2 rounded-lg hover:bg-primary-700 transition-colors"
+        >
+          Post Your First Job
+        </button>
+      </div>
+    ) : (
+      <div className="space-y-3 sm:space-y-4">
+        {myJobs
+          .filter(job => !job.is_approved) // Filter out approved jobs
+          .map((job) => (
             <div
               key={job.id}
               className="border border-gray-200 rounded-lg p-4 sm:p-5 hover:shadow-md transition-all"
@@ -426,10 +428,10 @@ const JobPosterDashboard = () => {
               </div>
             </div>
           ))}
-        </div>
-      )}
-    </div>
-  );
+      </div>
+    )}
+  </div>
+);
 
   const renderPostNewJob = () => (
   <div className="space-y-4">

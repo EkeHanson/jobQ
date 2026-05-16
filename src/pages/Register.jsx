@@ -9,12 +9,28 @@ import Input from '../components/common/Input'
 import Spinner from '../components/common/Spinner'
 import toast from 'react-hot-toast'
 import { APP_NAME } from '../utils/config'
-import { CheckIcon, ArrowLeftIcon } from '@heroicons/react/24/outline'
+import { 
+  CheckIcon, 
+  ArrowLeftIcon,
+  EnvelopeIcon,
+  LockClosedIcon,
+  UserIcon,
+  BriefcaseIcon,
+  ChartBarIcon,
+  CalendarIcon,
+  SparklesIcon,
+  EyeIcon,
+  EyeSlashIcon
+} from '@heroicons/react/24/outline'
+import { ChevronRightIcon } from '@heroicons/react/24/solid'
 import { FaGoogle, FaLinkedin } from 'react-icons/fa'
 
 export default function Register() {
   const navigate = useNavigate()
   const { register: authRegister, loading, error } = useAuth()
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  
   const {
     register,
     handleSubmit,
@@ -39,173 +55,277 @@ export default function Register() {
   }
 
   return (
-    <div className="min-h-screen flex">
-      {/* Left Panel - Visual */}
-      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-accent-600 via-primary-600 to-brand-500" />
-        <div className="absolute inset-0 floating-shapes opacity-30" />
+    <div className="min-h-screen bg-white flex">
+      {/* Left Panel - Editorial, minimal visual storytelling */}
+      <div className="hidden lg:flex lg:w-1/2 relative bg-gray-50">
+        {/* Subtle texture instead of gradient */}
+        <div className="absolute inset-0 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:16px_16px] opacity-30" />
         
-        {/* Content */}
-        <div className="relative z-10 flex flex-col justify-center items-center w-full p-12 text-white">
-          <div className="max-w-md text-center">
-            {/* Logo */}
-            <div className="flex justify-center mb-8">
-              <div className="w-20 h-20 bg-white/20 backdrop-blur-xl rounded-2xl flex items-center justify-center text-white font-bold text-3xl shadow-2xl">
-                J
+        <div className="relative z-10 flex flex-col justify-between w-full p-12">
+          {/* Logo and back link */}
+          <div>
+            <Link to="/" className="inline-flex items-center gap-2 group">
+              <div className="w-8 h-8 bg-gray-900 rounded-lg flex items-center justify-center text-white font-medium text-sm">
+                JT
               </div>
-            </div>
-            
-            <h2 className="text-4xl font-bold mb-4">Start Your Journey!</h2>
-            <p className="text-white/80 text-lg mb-8">
-              Join thousands of job seekers who have transformed their search with AI-powered insights.
-            </p>
+              <span className="font-medium text-gray-900 tracking-tight">{APP_NAME}</span>
+            </Link>
+          </div>
 
-            {/* Stats */}
-            <div className="grid grid-cols-3 gap-4 mb-8">
-              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
-                <div className="text-2xl font-bold">50K+</div>
-                <div className="text-xs text-white/70">Active Users</div>
+          {/* Main content - editorial, story-driven */}
+          <div className="max-w-sm mx-auto">
+            <div className="mb-12">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-gray-100 shadow-sm mb-8">
+                <SparklesIcon className="w-3.5 h-3.5 text-gray-500" />
+                <span className="text-xs font-medium text-gray-500">Join 50,000+ job seekers</span>
               </div>
-              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
-                <div className="text-2xl font-bold">92%</div>
-                <div className="text-xs text-white/70">Satisfaction</div>
-              </div>
-              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
-                <div className="text-2xl font-bold">3.2x</div>
-                <div className="text-xs text-white/70">Interview Rate</div>
-              </div>
+              
+              <h2 className="text-3xl font-bold tracking-tight text-gray-900 mb-4 leading-tight">
+                Start tracking your job search like a pro
+              </h2>
+              <p className="text-gray-500 leading-relaxed">
+                Used by engineers, product managers, and designers at companies like Stripe, Notion, and Linear.
+              </p>
             </div>
 
-            {/* Features List */}
-            <div className="space-y-4 text-left">
+            {/* Stats - clean, no gradients */}
+            <div className="grid grid-cols-3 gap-3 mb-12">
+              <div className="bg-white border border-gray-100 rounded-lg p-3 text-center">
+                <div className="text-xl font-bold text-gray-900">47K+</div>
+                <div className="text-xs text-gray-400">applications</div>
+              </div>
+              <div className="bg-white border border-gray-100 rounded-lg p-3 text-center">
+                <div className="text-xl font-bold text-gray-900">73%</div>
+                <div className="text-xs text-gray-400">faster tracking</div>
+              </div>
+              <div className="bg-white border border-gray-100 rounded-lg p-3 text-center">
+                <div className="text-xl font-bold text-gray-900">892</div>
+                <div className="text-xs text-gray-400">offers landed</div>
+              </div>
+            </div>
+
+            {/* Features - minimal list */}
+            <div className="space-y-3">
+              <p className="text-sm font-medium text-gray-700 mb-2">What you get:</p>
               {[
-                'AI-powered job extraction',
-                'Real-time application tracking',
-                'Smart interview reminders',
-                'Advanced analytics dashboard'
+                'AI-powered job description parsing',
+                'Centralized application tracking',
+                'Interview preparation tools',
+                'Performance analytics dashboard'
               ].map((feature, index) => (
-                <div key={index} className="flex items-center gap-3 text-white/90">
-                  <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
-                    <CheckIcon className="w-4 h-4 text-white" />
-                  </div>
-                  {feature}
+                <div key={index} className="flex items-center gap-2.5">
+                  <CheckIcon className="w-4 h-4 text-gray-400" />
+                  <span className="text-sm text-gray-600">{feature}</span>
                 </div>
               ))}
             </div>
           </div>
+
+          {/* Footer note */}
+          <div className="text-xs text-gray-400">
+            <p>Trusted by job seekers at top tech companies worldwide.</p>
+          </div>
         </div>
       </div>
 
-      {/* Right Panel - Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-white/50 backdrop-blur-sm">
+      {/* Right Panel - Clean form, premium feel */}
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-8 bg-white">
         <div className="w-full max-w-md">
-          {/* Back to Home Link */}
-          <div className="mb-4">
-            <Link to="/" className="inline-flex items-center gap-2 text-gray-600 hover:text-primary-600 transition-colors">
-              <ArrowLeftIcon className="w-5 h-5" />
-              Back to Home
+          {/* Mobile back link */}
+          <div className="lg:hidden mb-6">
+            <Link to="/" className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-900 transition-colors">
+              <ArrowLeftIcon className="w-4 h-4" />
+              Back
             </Link>
           </div>
 
-          {/* Mobile Logo */}
+          {/* Mobile logo */}
           <div className="lg:hidden flex justify-center mb-8">
-            <Link to="/" className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-gradient-to-br from-primary-600 to-accent-500 rounded-xl flex items-center justify-center text-white font-bold text-xl shadow-lg">
-                J
+            <Link to="/" className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-gray-900 rounded-lg flex items-center justify-center text-white font-medium text-sm">
+                JT
               </div>
-              <span className="font-bold text-2xl text-gray-900">{APP_NAME}</span>
+              <span className="font-medium text-gray-900 tracking-tight">{APP_NAME}</span>
             </Link>
           </div>
 
           {/* Header */}
-          <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold text-gray-900">Create Account</h2>
-            <p className="mt-2 text-gray-600">
+          <div className="mb-8">
+            <h1 className="text-2xl font-bold tracking-tight text-gray-900">Create an account</h1>
+            <p className="mt-1.5 text-sm text-gray-500">
               Already have an account?{' '}
-              <Link to="/login" className="text-primary-600 hover:text-primary-500 font-semibold">
+              <Link to="/login" className="font-medium text-gray-900 hover:text-gray-600 transition-colors">
                 Sign in
               </Link>
             </p>
           </div>
 
           {/* Form */}
-          <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
-            <div className="grid grid-cols-2 gap-4">
-              <Input
-                label="First Name"
-                type="text"
-                placeholder="John"
-                {...register('firstName')}
-                error={errors.firstName?.message}
-              />
-              <Input
-                label="Last Name"
-                type="text"
-                placeholder="Doe"
-                {...register('lastName')}
-                error={errors.lastName?.message}
-              />
+          <form className="space-y-5" onSubmit={handleSubmit(onSubmit)}>
+            {/* Name fields - side by side */}
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-1.5">
+                  First name
+                </label>
+                <input
+                  id="firstName"
+                  type="text"
+                  placeholder="John"
+                  className={`w-full px-3 py-2 border rounded-lg text-sm transition-all focus:outline-none focus:ring-1 ${
+                    errors.firstName
+                      ? 'border-red-300 focus:border-red-500 focus:ring-red-500'
+                      : 'border-gray-200 focus:border-gray-400 focus:ring-gray-400'
+                  }`}
+                  {...register('firstName')}
+                />
+                {errors.firstName && (
+                  <p className="mt-1 text-xs text-red-500">{errors.firstName.message}</p>
+                )}
+              </div>
+              <div>
+                <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-1.5">
+                  Last name
+                </label>
+                <input
+                  id="lastName"
+                  type="text"
+                  placeholder="Doe"
+                  className={`w-full px-3 py-2 border rounded-lg text-sm transition-all focus:outline-none focus:ring-1 ${
+                    errors.lastName
+                      ? 'border-red-300 focus:border-red-500 focus:ring-red-500'
+                      : 'border-gray-200 focus:border-gray-400 focus:ring-gray-400'
+                  }`}
+                  {...register('lastName')}
+                />
+                {errors.lastName && (
+                  <p className="mt-1 text-xs text-red-500">{errors.lastName.message}</p>
+                )}
+              </div>
             </div>
 
-            <Input
-              label="Email address"
-              type="email"
-              placeholder="name@example.com"
-              {...register('email')}
-              error={errors.email?.message}
-            />
-
-            <div className="space-y-1">
-              <Input
-                label="Password"
-                type="password"
-                placeholder="••••••••"
-                showPasswordToggle={true}
-                {...register('password')}
-                error={errors.password?.message}
+            {/* Email */}
+            <div>
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1.5">
+                Email address
+              </label>
+              <input
+                id="email"
+                type="email"
+                placeholder="name@example.com"
+                className={`w-full px-3 py-2 border rounded-lg text-sm transition-all focus:outline-none focus:ring-1 ${
+                  errors.email
+                    ? 'border-red-300 focus:border-red-500 focus:ring-red-500'
+                    : 'border-gray-200 focus:border-gray-400 focus:ring-gray-400'
+                }`}
+                {...register('email')}
               />
+              {errors.email && (
+                <p className="mt-1 text-xs text-red-500">{errors.email.message}</p>
+              )}
             </div>
 
-            <div className="space-y-1">
-              <Input
-                label="Confirm Password"
-                type="password"
-                placeholder="••••••••"
-                showPasswordToggle={true}
-                {...register('confirmPassword')}
-                error={errors.confirmPassword?.message}
-              />
+            {/* Password with toggle */}
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1.5">
+                Password
+              </label>
+              <div className="relative">
+                <input
+                  id="password"
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder="Create a password"
+                  className={`w-full px-3 py-2 border rounded-lg text-sm transition-all focus:outline-none focus:ring-1 pr-10 ${
+                    errors.password
+                      ? 'border-red-300 focus:border-red-500 focus:ring-red-500'
+                      : 'border-gray-200 focus:border-gray-400 focus:ring-gray-400'
+                  }`}
+                  {...register('password')}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+                >
+                  {showPassword ? (
+                    <EyeSlashIcon className="h-4 w-4" />
+                  ) : (
+                    <EyeIcon className="h-4 w-4" />
+                  )}
+                </button>
+              </div>
+              {errors.password && (
+                <p className="mt-1 text-xs text-red-500">{errors.password.message}</p>
+              )}
             </div>
 
+            {/* Confirm Password with toggle */}
+            <div>
+              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1.5">
+                Confirm password
+              </label>
+              <div className="relative">
+                <input
+                  id="confirmPassword"
+                  type={showConfirmPassword ? 'text' : 'password'}
+                  placeholder="Confirm your password"
+                  className={`w-full px-3 py-2 border rounded-lg text-sm transition-all focus:outline-none focus:ring-1 pr-10 ${
+                    errors.confirmPassword
+                      ? 'border-red-300 focus:border-red-500 focus:ring-red-500'
+                      : 'border-gray-200 focus:border-gray-400 focus:ring-gray-400'
+                  }`}
+                  {...register('confirmPassword')}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+                >
+                  {showConfirmPassword ? (
+                    <EyeSlashIcon className="h-4 w-4" />
+                  ) : (
+                    <EyeIcon className="h-4 w-4" />
+                  )}
+                </button>
+              </div>
+              {errors.confirmPassword && (
+                <p className="mt-1 text-xs text-red-500">{errors.confirmPassword.message}</p>
+              )}
+            </div>
+
+            {/* Error message */}
             {error && (
-              <div className="bg-red-50/80 backdrop-blur-sm border border-red-200 text-red-700 px-4 py-3 rounded-xl">
+              <div className="bg-red-50 border border-red-100 text-red-600 px-4 py-2.5 rounded-lg text-sm">
                 {error}
               </div>
             )}
 
-            <div className="flex items-start">
+            {/* Terms agreement */}
+            <div className="flex items-start gap-2.5">
               <input
                 type="checkbox"
                 id="agree"
-                className="h-5 w-5 mt-0.5 text-primary-600 border-gray-300 rounded focus:ring-primary-500/20"
+                className="mt-0.5 w-4 h-4 text-gray-900 border-gray-300 rounded focus:ring-gray-900/20"
                 required
               />
-              <label htmlFor="agree" className="ml-3 block text-sm text-gray-700">
-                I agree to the{' '}
-                <Link to="#" className="text-primary-600 hover:text-primary-500 font-medium">
+              <label htmlFor="agree" className="text-xs text-gray-500 leading-relaxed">
+                By creating an account, I agree to the{' '}
+                <Link to="/terms" className="text-gray-900 hover:underline">
                   Terms of Service
                 </Link>{' '}
                 and{' '}
-                <Link to="#" className="text-primary-600 hover:text-primary-500 font-medium">
+                <Link to="/privacy" className="text-gray-900 hover:underline">
                   Privacy Policy
                 </Link>
+                .
               </label>
             </div>
 
+            {/* Submit button */}
             <button
               type="submit"
               disabled={loading}
-              className="btn-gradient w-full py-4 rounded-xl font-semibold text-lg shadow-xl shadow-primary-500/25"
+              className="w-full bg-gray-900 text-white py-2.5 rounded-lg font-medium text-sm hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? (
                 <span className="flex items-center justify-center gap-2">
@@ -217,32 +337,39 @@ export default function Register() {
               )}
             </button>
 
+            {/* Divider */}
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-200"></div>
+                <div className="w-full border-t border-gray-100"></div>
               </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-4 bg-white text-gray-500">Or sign up with</span>
+              <div className="relative flex justify-center text-xs">
+                <span className="px-3 bg-white text-gray-400">Or continue with</span>
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            {/* Social buttons */}
+            <div className="grid grid-cols-2 gap-3">
               <button
                 type="button"
-                className="flex items-center justify-center gap-2 px-4 py-3 border-2 border-gray-200 rounded-xl hover:border-gray-300 hover:bg-gray-50 transition-colors"
+                className="flex items-center justify-center gap-2 px-4 py-2 border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-colors"
               >
-                <FaGoogle className="w-5 h-5" />
+                <FaGoogle className="w-4 h-4" />
                 Google
               </button>
               <button
                 type="button"
-                className="flex items-center justify-center gap-2 px-4 py-3 border-2 border-gray-200 rounded-xl hover:border-gray-300 hover:bg-gray-50 transition-colors"
+                className="flex items-center justify-center gap-2 px-4 py-2 border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-colors"
               >
-                <FaLinkedin className="w-5 h-5" />
+                <FaLinkedin className="w-4 h-4" />
                 LinkedIn
               </button>
             </div>
           </form>
+
+          {/* Help text */}
+          <p className="mt-6 text-center text-xs text-gray-400">
+            No credit card required. Free plan includes all core features.
+          </p>
         </div>
       </div>
     </div>

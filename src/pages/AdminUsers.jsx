@@ -17,12 +17,13 @@ export default function AdminUsers() {
   const [showViewModal, setShowViewModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [activeFilter, setActiveFilter] = useState(null); // Track active filter
   const [statistics, setStatistics] = useState({
     totalUsers: 0,
     activeUsers: 0,
     staffUsers: 0,
     suspendedUsers: 0,
-    premiumUsers: 0
+    jobPosters: 0
   });
   const [newUser, setNewUser] = useState({
     username: "",
@@ -80,12 +81,18 @@ export default function AdminUsers() {
         // Continue without subscription data
       }
 
-      setUsers(
-        searchTerm
-          ? filterUsers(usersWithSubscriptions, searchTerm)
-          : usersWithSubscriptions,
-      );
       setAllUsers(usersWithSubscriptions);
+      
+      // Apply active filter if exists
+      let filteredUsers = usersWithSubscriptions;
+      if (activeFilter) {
+        filteredUsers = applyFilter(usersWithSubscriptions, activeFilter);
+      }
+      if (searchTerm) {
+        filteredUsers = filterUsers(filteredUsers, searchTerm);
+      }
+      
+      setUsers(filteredUsers);
       setTotalPages(data.total_pages || 1);
       setCurrentPage(Number(data.current_page) || 1);
     } catch (err) {
@@ -99,35 +106,63 @@ export default function AdminUsers() {
     }
   };
 
+  // Apply filter based on filter type
+  const applyFilter = (userList, filterType) => {
+    if (!filterType) return userList;
+    
+    switch (filterType) {
+      case 'totalUsers':
+        return userList;
+      case 'activeUsers':
+        return userList.filter((user) => user.is_active && !user.is_suspended);
+      case 'staffUsers':
+        return userList.filter((user) => user.is_staff);
+      case 'suspendedUsers':
+        return userList.filter((user) => user.is_suspended);
+      case 'jobPosters':
+        return userList.filter((user) => user.is_staff_poster === true);
+      default:
+        return userList;
+    }
+  };
+
+  // Handle filter click
+  const handleFilterClick = (filterType) => {
+    if (activeFilter === filterType) {
+      // If same filter is clicked, clear it
+      setActiveFilter(null);
+      if (searchTerm) {
+        setUsers(filterUsers(allUsers, searchTerm));
+      } else {
+        setUsers(allUsers);
+      }
+    } else {
+      // Apply new filter
+      setActiveFilter(filterType);
+      let filtered = applyFilter(allUsers, filterType);
+      if (searchTerm) {
+        filtered = filterUsers(filtered, searchTerm);
+      }
+      setUsers(filtered);
+    }
+    setCurrentPage(1);
+  };
+
   const fetchStatistics = async () => {
     try {
-      // Calculate statistics from currently displayed users (includes search filtering)
-      const totalUsers = users.length;
-      const activeUsers = users.filter((user) => user.is_active).length;
-      const staffUsers = users.filter((user) => user.is_staff).length;
-      const suspendedUsers = users.filter((user) => user.is_suspended).length;
-
-      // Get subscription data for premium users calculation, filtered by displayed users
-      let premiumUsers = 0;
-      try {
-        const subscriptionData = await adminService.getUserSubscriptions();
-        const subscriptions = subscriptionData || [];
-        // Only count premium subscriptions for users currently displayed
-        const displayedUserIds = users.map(user => user.id);
-        premiumUsers = subscriptions.filter(
-          (sub) => sub.active && sub.plan?.name !== "Free" && displayedUserIds.includes(sub.user)
-        ).length;
-      } catch (err) {
-        console.warn("Failed to load subscription data for statistics:", err);
-        // Continue without subscription data
-      }
+      // Calculate statistics from all users
+      const totalUsers = allUsers.length;
+      const activeUsers = allUsers.filter((user) => user.is_active && !user.is_suspended).length;
+      const staffUsers = allUsers.filter((user) => user.is_staff).length;
+      const suspendedUsers = allUsers.filter((user) => user.is_suspended).length;
+      const jobPosters = allUsers.filter((user) => user.is_staff_poster === true).length;
 
       setStatistics({
         totalUsers,
         activeUsers,
         staffUsers,
         suspendedUsers,
-        premiumUsers,
+        jobPosters,
       });
     } catch (err) {
       console.warn("Failed to calculate user statistics:", err);
@@ -137,7 +172,7 @@ export default function AdminUsers() {
         activeUsers: 0,
         staffUsers: 0,
         suspendedUsers: 0,
-        premiumUsers: 0,
+        jobPosters: 0,
       });
     }
   };
@@ -169,12 +204,20 @@ export default function AdminUsers() {
   const handleSearchChange = (value) => {
     setSearchTerm(value);
     setCurrentPage(1);
-    if (allUsers.length > 0) {
-      setUsers(filterUsers(allUsers, value));
-    } else {
-      // If we don't have all users loaded, filter current page
-      setUsers(filterUsers(users, value));
+    
+    let filtered = allUsers;
+    
+    // Apply active filter first if exists
+    if (activeFilter) {
+      filtered = applyFilter(allUsers, activeFilter);
     }
+    
+    // Then apply search
+    if (value) {
+      filtered = filterUsers(filtered, value);
+    }
+    
+    setUsers(filtered);
   };
 
   const handleNewUserChange = (event) => {
@@ -284,6 +327,13 @@ export default function AdminUsers() {
     }
   };
 
+  // Clear all filters
+  const clearFilters = () => {
+    setActiveFilter(null);
+    setSearchTerm("");
+    setUsers(allUsers);
+  };
+
   return (
     <AdminLayout>
       <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
@@ -331,108 +381,148 @@ export default function AdminUsers() {
             </button>
           </div>
 
-          {/* Statistics Cards */}
+          {/* Active Filter Indicator */}
+          {(activeFilter || searchTerm) && (
+            <div className="flex items-center justify-between bg-blue-50 rounded-xl p-3">
+              <div className="text-sm text-blue-800">
+                {activeFilter && (
+                  <span className="font-semibold">
+                    Filter: {activeFilter === 'totalUsers' && 'All Users'}
+                    {activeFilter === 'activeUsers' && 'Active Users'}
+                    {activeFilter === 'staffUsers' && 'Staff Members'}
+                    {activeFilter === 'suspendedUsers' && 'Suspended Users'}
+                    {activeFilter === 'jobPosters' && 'Job Posters'}
+                  </span>
+                )}
+                {searchTerm && activeFilter && ' | '}
+                {searchTerm && (
+                  <span>Search: "{searchTerm}"</span>
+                )}
+                <span className="ml-2">
+                  ({users.length} results)
+                </span>
+              </div>
+              <button
+                onClick={clearFilters}
+                className="text-xs text-blue-600 hover:text-blue-800 font-medium"
+              >
+                Clear all filters
+              </button>
+            </div>
+          )}
+
+          {/* Statistics Cards - Now Clickable */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 sm:gap-6 mb-6 sm:mb-8">
-            <StatisticsCard
-              title="Total Users"
-              value={statistics.totalUsers}
-              color="blue"
-              icon={
-                <svg
-                  className="w-6 h-6"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"
-                  />
-                </svg>
-              }
-            />
-            <StatisticsCard
-              title="Active Users"
-              value={statistics.activeUsers}
-              color="green"
-              icon={
-                <svg
-                  className="w-6 h-6"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
-              }
-            />
-            <StatisticsCard
-              title="Staff Members"
-              value={statistics.staffUsers}
-              color="purple"
-              icon={
-                <svg
-                  className="w-6 h-6"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M5.121 17.804A9 9 0 1112 21h0a9 9 0 01-6.879-3.196m6.879-12.804a3 3 0 11-6 0 3 3 0 016 0z"
-                  />
-                </svg>
-              }
-            />
-            <StatisticsCard
-              title="Suspended"
-              value={statistics.suspendedUsers}
-              color="red"
-              icon={
-                <svg
-                  className="w-6 h-6"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"
-                  />
-                </svg>
-              }
-            />
-            <StatisticsCard
-              title="Premium Users"
-              value={statistics.premiumUsers}
-              color="amber"
-              icon={
-                <svg
-                  className="w-6 h-6"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"
-                  />
-                </svg>
-              }
-            />
+            <div onClick={() => handleFilterClick('totalUsers')} className="cursor-pointer transition-transform hover:scale-105">
+              <StatisticsCard
+                title="Total Users"
+                value={statistics.totalUsers}
+                color={activeFilter === 'totalUsers' ? "blue" : "blue"}
+                icon={
+                  <svg
+                    className="w-6 h-6"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"
+                    />
+                  </svg>
+                }
+              />
+            </div>
+            <div onClick={() => handleFilterClick('activeUsers')} className="cursor-pointer transition-transform hover:scale-105">
+              <StatisticsCard
+                title="Active Users"
+                value={statistics.activeUsers}
+                color={activeFilter === 'activeUsers' ? "green" : "green"}
+                icon={
+                  <svg
+                    className="w-6 h-6"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                }
+              />
+            </div>
+            <div onClick={() => handleFilterClick('staffUsers')} className="cursor-pointer transition-transform hover:scale-105">
+              <StatisticsCard
+                title="Staff Members"
+                value={statistics.staffUsers}
+                color={activeFilter === 'staffUsers' ? "purple" : "purple"}
+                icon={
+                  <svg
+                    className="w-6 h-6"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M5.121 17.804A9 9 0 1112 21h0a9 9 0 01-6.879-3.196m6.879-12.804a3 3 0 11-6 0 3 3 0 016 0z"
+                    />
+                  </svg>
+                }
+              />
+            </div>
+            <div onClick={() => handleFilterClick('suspendedUsers')} className="cursor-pointer transition-transform hover:scale-105">
+              <StatisticsCard
+                title="Suspended"
+                value={statistics.suspendedUsers}
+                color={activeFilter === 'suspendedUsers' ? "red" : "red"}
+                icon={
+                  <svg
+                    className="w-6 h-6"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"
+                    />
+                  </svg>
+                }
+              />
+            </div>
+            <div onClick={() => handleFilterClick('jobPosters')} className="cursor-pointer transition-transform hover:scale-105">
+              <StatisticsCard
+                title="Job Posters"
+                value={statistics.jobPosters}
+                color={activeFilter === 'jobPosters' ? "amber" : "amber"}
+                icon={
+                  <svg
+                    className="w-6 h-6"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                    />
+                  </svg>
+                }
+              />
+            </div>
           </div>
 
           {/* Search Bar */}
@@ -1050,10 +1140,15 @@ export default function AdminUsers() {
                         <span className="text-xs text-gray-500 truncate">
                           {user.email}
                         </span>
-                        <div className="flex gap-1 mt-1">
+                        <div className="flex gap-1 mt-1 flex-wrap">
                           {user.is_staff && (
                             <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-800">
                               Staff
+                            </span>
+                          )}
+                          {user.is_staff_poster && (
+                            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
+                              Job Poster
                             </span>
                           )}
                           <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600">
@@ -1290,15 +1385,23 @@ export default function AdminUsers() {
                   </div>
                   <div className="rounded-xl border border-gray-200 bg-white p-4">
                     <p className="text-xs uppercase tracking-wide text-gray-400">
+                      Job Poster
+                    </p>
+                    <p className="mt-2 text-sm font-semibold text-gray-900">
+                      {selectedUser.is_staff_poster ? "Yes" : "No"}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div className="rounded-xl border border-gray-200 bg-white p-4">
+                    <p className="text-xs uppercase tracking-wide text-gray-400">
                       Suspension
                     </p>
                     <p className="mt-2 text-sm font-semibold text-gray-900">
                       {selectedUser.is_suspended ? "Suspended" : "Clear"}
                     </p>
                   </div>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div className="rounded-xl border border-gray-200 bg-white p-4">
                     <p className="text-xs uppercase tracking-wide text-gray-400">
                       2FA
@@ -1316,16 +1419,6 @@ export default function AdminUsers() {
                         ? new Date(
                             selectedUser.date_joined,
                           ).toLocaleDateString()
-                        : "—"}
-                    </p>
-                  </div>
-                  <div className="rounded-xl border border-gray-200 bg-white p-4">
-                    <p className="text-xs uppercase tracking-wide text-gray-400">
-                      Last login
-                    </p>
-                    <p className="mt-2 text-sm font-semibold text-gray-900">
-                      {selectedUser.last_login
-                        ? new Date(selectedUser.last_login).toLocaleDateString()
                         : "—"}
                     </p>
                   </div>

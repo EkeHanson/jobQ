@@ -39,12 +39,26 @@ const JobPosterDashboard = () => {
   const [myJobs, setMyJobs] = useState([]);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [jobFilter, setJobFilter] = useState(null);
+  const [profileData, setProfileData] = useState({
+    first_name: user?.first_name || '',
+    last_name: user?.last_name || '',
+    phone_number: user?.phone_number || '',
+    email: user?.email || '',
+  });
+  const [profileLoading, setProfileLoading] = useState(false);
 
   useEffect(() => {
     if (user && token) {
       fetchPermissions();
       fetchStats();
       fetchMyJobs();
+      // Initialize profile data from user
+      setProfileData({
+        first_name: user.first_name || '',
+        last_name: user.last_name || '',
+        phone_number: user.phone_number || '',
+        email: user.email || '',
+      });
     }
   }, [user, token]);
 
@@ -115,12 +129,28 @@ const JobPosterDashboard = () => {
     setReviewComments([]);
   };
 
-  const handleEditJob = (job) => {
-    setSelectedJobToEdit(job);
-    setShowEditModal(true);
-  };
+   const handleEditJob = (job) => {
+     setSelectedJobToEdit(job);
+     setShowEditModal(true);
+   };
 
-  const closeEditModal = () => {
+   const handleProfileUpdate = async (e) => {
+     e.preventDefault();
+     setProfileLoading(true);
+     try {
+       const response = await authService.updateProfile(profileData);
+       toast.success('Profile updated successfully!');
+       // Update user data in context if needed
+       // Note: This assumes the auth context updates automatically or we need to refresh
+       setProfileLoading(false);
+     } catch (error) {
+       console.error('Failed to update profile:', error);
+       toast.error('Failed to update profile. Please try again.');
+       setProfileLoading(false);
+     }
+   };
+
+   const closeEditModal = () => {
     setSelectedJobToEdit(null);
     setShowEditModal(false);
   };
@@ -164,12 +194,13 @@ const JobPosterDashboard = () => {
     );
   }
 
-  const tabs = [
-    { id: "overview", label: "Overview", icon: FaChartBar },
-    { id: "jobs", label: "My Jobs", icon: FaList },
-    { id: "post-new", label: "Post Job", icon: FaPlus },
-    { id: "support", label: "Support", icon: FaUsers },
-  ];
+const tabs = [
+  { id: "overview", label: "Overview", icon: FaChartBar },
+  { id: "profile", label: "Profile", icon: FaUser },
+  { id: "jobs", label: "My Jobs", icon: FaList },
+  { id: "post-new", label: "Post Job", icon: FaPlus },
+  { id: "support", label: "Support", icon: FaUsers },
+];
 
   const StatCard = ({ title, value, icon: Icon, color, bgColor, onClick }) => (
     <div 
@@ -550,154 +581,261 @@ const renderOverview = () => (
     </div>
   );
 
-  const renderSupport = () => (
-    <div className="space-y-6">
-      {/* Success Center */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 sm:p-6">
-        <div className="flex items-start justify-between gap-4 mb-6">
-          <div>
-            <h2 className="text-lg sm:text-xl font-bold text-gray-900">
-              Job Posting Success Center
-            </h2>
-            <p className="text-sm text-gray-600 mt-1">
-              Improve your approval rate and attract better candidates with these recommendations.
-            </p>
-          </div>
+   const renderSupport = () => (
+     <div className="space-y-6">
+       {/* Success Center */}
+       <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 sm:p-6">
+         <div className="flex items-start justify-between gap-4 mb-6">
+           <div>
+             <h2 className="text-lg sm:text-xl font-bold text-gray-900">
+               Job Posting Success Center
+             </h2>
+             <p className="text-sm text-gray-600 mt-1">
+               Improve your approval rate and attract better candidates with these recommendations.
+             </p>
+           </div>
 
-          <div className="hidden sm:flex w-14 h-14 bg-primary-50 rounded-full items-center justify-center">
-            <FaChartBar className="text-2xl text-primary-600" />
-          </div>
-        </div>
+           <div className="hidden sm:flex w-14 h-14 bg-primary-50 rounded-full items-center justify-center">
+             <FaChartBar className="text-2xl text-primary-600" />
+           </div>
+         </div>
 
-        {/* Tips Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {[
-            {
-              title: "Use Clear Job Titles",
-              text: "Specific titles like 'Frontend React Developer' perform better than generic titles.",
-              icon: FaClipboardCheck,
-              color: "bg-blue-50 text-blue-600",
-            },
-            {
-              title: "Add Salary Information",
-              text: "Jobs with salary ranges usually attract more applications and faster approvals.",
-              icon: FaCheckCircle,
-              color: "bg-green-50 text-green-600",
-            },
-            {
-              title: "Write Detailed Requirements",
-              text: "Clearly list skills, experience, and expectations to reduce low-quality applications.",
-              icon: FaList,
-              color: "bg-purple-50 text-purple-600",
-            },
-            {
-              title: "Keep Descriptions Professional",
-              text: "Avoid incomplete or unclear job descriptions to improve approval chances.",
-              icon: FaUsers,
-              color: "bg-orange-50 text-orange-600",
-            },
-          ].map((tip, index) => {
-            const Icon = tip.icon;
+         {/* Tips Grid */}
+         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+           {[
+             {
+               title: "Use Clear Job Titles",
+               text: "Specific titles like 'Frontend React Developer' perform better than generic titles.",
+               icon: FaClipboardCheck,
+               color: "bg-blue-50 text-blue-600",
+             },
+             {
+               title: "Add Salary Information",
+               text: "Jobs with salary ranges usually attract more applications and faster approvals.",
+               icon: FaCheckCircle,
+               color: "bg-green-50 text-green-600",
+             },
+             {
+               title: "Write Detailed Requirements",
+               text: "Clearly list skills, experience, and expectations to reduce low-quality applications.",
+               icon: FaList,
+               color: "bg-purple-50 text-purple-600",
+             },
+             {
+               title: "Keep Descriptions Professional",
+               text: "Avoid incomplete or unclear job descriptions to improve approval chances.",
+               icon: FaUsers,
+               color: "bg-orange-50 text-orange-600",
+             },
+           ].map((tip, index) => {
+             const Icon = tip.icon;
 
-            return (
-              <div
-                key={index}
-                className="border border-gray-100 rounded-xl p-4 hover:shadow-md transition-all"
-              >
-                <div
-                  className={`w-12 h-12 rounded-xl flex items-center justify-center mb-3 ${tip.color}`}
-                >
-                  <Icon className="text-lg" />
-                </div>
+             return (
+               <div
+                 key={index}
+                 className="border border-gray-100 rounded-xl p-4 hover:shadow-md transition-all"
+               >
+                 <div
+                   className={`w-12 h-12 rounded-xl flex items-center justify-center mb-3 ${tip.color}`}
+                 >
+                   <Icon className="text-lg" />
+                 </div>
 
-                <h3 className="font-semibold text-gray-900 mb-2">
-                  {tip.title}
-                </h3>
+                 <h3 className="font-semibold text-gray-900 mb-2">
+                   {tip.title}
+                 </h3>
 
-                <p className="text-sm text-gray-600 leading-relaxed">
-                  {tip.text}
-                </p>
-              </div>
-            );
-          })}
-        </div>
-      </div>
+                 <p className="text-sm text-gray-600 leading-relaxed">
+                   {tip.text}
+                 </p>
+               </div>
+             );
+           })}
+         </div>
+       </div>
 
-      {/* Smart Insights */}
-      <div className="bg-gradient-to-r from-primary-600 to-primary-700 rounded-xl p-5 sm:p-6 text-white">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <div>
-            <h3 className="text-lg font-semibold">
-              Smart Recommendation
-            </h3>
+       {/* Smart Insights */}
+       <div className="bg-gradient-to-r from-primary-600 to-primary-700 rounded-xl p-5 sm:p-6 text-white">
+         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+           <div>
+             <h3 className="text-lg font-semibold">
+               Smart Recommendation
+             </h3>
 
-            <p className="text-sm text-primary-100 mt-2 max-w-2xl">
-              Posters with complete job descriptions, salary ranges, and clear
-              requirements typically receive faster approvals and more qualified applicants.
-            </p>
-          </div>
+             <p className="text-sm text-primary-100 mt-2 max-w-2xl">
+               Posters with complete job descriptions, salary ranges, and clear
+               requirements typically receive faster approvals and more qualified applicants.
+             </p>
+           </div>
 
-          <button
-            onClick={() => setActiveTab("post-new")}
-            className="bg-white text-primary-700 px-5 py-2.5 rounded-lg font-medium hover:bg-gray-100 transition-colors whitespace-nowrap"
-          >
-            Post Better Jobs
-          </button>
-        </div>
-      </div>
+           <button
+             onClick={() => setActiveTab("post-new")}
+             className="bg-white text-primary-700 px-5 py-2.5 rounded-lg font-medium hover:bg-gray-100 transition-colors whitespace-nowrap"
+           >
+             Post Better Jobs
+           </button>
+         </div>
+       </div>
 
-      {/* Performance Summary */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 sm:p-6">
-        <div className="flex items-center justify-between mb-5">
-          <h3 className="text-lg font-semibold text-gray-900">
-            Your Posting Performance
-          </h3>
+       {/* Performance Summary */}
+       <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 sm:p-6">
+         <div className="flex items-center justify-between mb-5">
+           <h3 className="text-lg font-semibold text-gray-900">
+             Your Posting Performance
+           </h3>
 
-          <div className="text-xs bg-primary-50 text-primary-700 px-3 py-1 rounded-full">
-            Live Insights
-          </div>
-        </div>
+           <div className="text-xs bg-primary-50 text-primary-700 px-3 py-1 rounded-full">
+             Live Insights
+           </div>
+         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="bg-gray-50 rounded-xl p-4 text-center">
-            <p className="text-2xl font-bold text-gray-900">
-              {stats?.total_jobs_posted || 0}
-            </p>
-            <p className="text-xs text-gray-500 mt-1">
-              Total Jobs
-            </p>
-          </div>
+         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+           <div className="bg-gray-50 rounded-xl p-4 text-center">
+             <p className="text-2xl font-bold text-gray-900">
+               {stats?.total_jobs_posted || 0}
+             </p>
+             <p className="text-xs text-gray-500 mt-1">
+               Total Jobs
+             </p>
+           </div>
 
-          <div className="bg-green-50 rounded-xl p-4 text-center">
-            <p className="text-2xl font-bold text-green-700">
-              {stats?.approval_rate || 0}%
-            </p>
-            <p className="text-xs text-green-600 mt-1">
-              Approval Rate
-            </p>
-          </div>
+           <div className="bg-green-50 rounded-xl p-4 text-center">
+             <p className="text-2xl font-bold text-green-700">
+               {stats?.approval_rate || 0}%
+             </p>
+             <p className="text-xs text-green-600 mt-1">
+               Approval Rate
+             </p>
+           </div>
 
-          <div className="bg-yellow-50 rounded-xl p-4 text-center">
-            <p className="text-2xl font-bold text-yellow-700">
-              {stats?.total_jobs_pending || 0}
-            </p>
-            <p className="text-xs text-yellow-600 mt-1">
-              Pending Review
-            </p>
-          </div>
+           <div className="bg-yellow-50 rounded-xl p-4 text-center">
+             <p className="text-2xl font-bold text-yellow-700">
+               {stats?.total_jobs_pending || 0}
+             </p>
+             <p className="text-xs text-yellow-600 mt-1">
+               Pending Review
+             </p>
+           </div>
 
-          <div className="bg-blue-50 rounded-xl p-4 text-center">
-            <p className="text-2xl font-bold text-blue-700">
-              {permissions?.limits?.posted_this_month || 0}
-            </p>
-            <p className="text-xs text-blue-600 mt-1">
-              Posted This Month
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+           <div className="bg-blue-50 rounded-xl p-4 text-center">
+             <p className="text-2xl font-bold text-blue-700">
+               {permissions?.limits?.posted_this_month || 0}
+             </p>
+             <p className="text-xs text-blue-600 mt-1">
+               Posted This Month
+             </p>
+           </div>
+         </div>
+       </div>
+     </div>
+   );
+
+   const renderProfile = () => {
+     return (
+       <div className="space-y-6">
+         {/* Profile Header */}
+         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 sm:p-6">
+           <div className="flex items-center justify-between mb-4">
+             <h2 className="text-lg sm:text-xl font-bold text-gray-900">
+               Profile Settings
+             </h2>
+             <div className="flex items-center gap-2">
+               <FaUser className="text-primary-600 w-8 h-8" />
+               <span className="font-medium text-gray-900">
+                 {user?.first_name || user?.username || 'User'}
+               </span>
+             </div>
+           </div>
+           <p className="text-sm text-gray-600">
+             Update your personal information and account details.
+           </p>
+         </div>
+
+         {/* Profile Form */}
+         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 sm:p-6">
+           <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">
+             Personal Information
+           </h3>
+           <form onSubmit={handleProfileUpdate}>
+             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+               <div>
+                 <label className="block text-sm font-medium text-gray-700 mb-2">
+                   First Name
+                 </label>
+                 <input
+                   type="text"
+                   value={profileData.first_name}
+                   onChange={(e) => setProfileData({ ...profileData, first_name: e.target.value })}
+                   className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                   placeholder="Enter your first name"
+                 />
+               </div>
+               <div>
+                 <label className="block text-sm font-medium text-gray-700 mb-2">
+                   Last Name
+                 </label>
+                 <input
+                   type="text"
+                   value={profileData.last_name}
+                   onChange={(e) => setProfileData({ ...profileData, last_name: e.target.value })}
+                   className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                   placeholder="Enter your last name"
+                 />
+               </div>
+               <div>
+                 <label className="block text-sm font-medium text-gray-700 mb-2">
+                   Phone Number
+                 </label>
+                 <input
+                   type="tel"
+                   value={profileData.phone_number}
+                   onChange={(e) => setProfileData({ ...profileData, phone_number: e.target.value })}
+                   className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                   placeholder="Enter your phone number"
+                 />
+               </div>
+               <div>
+                 <label className="block text-sm font-medium text-gray-700 mb-2">
+                   Email
+                 </label>
+                 <input
+                   type="email"
+                   value={profileData.email}
+                   onChange={(e) => setProfileData({ ...profileData, email: e.target.value })}
+                   className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                   placeholder="Enter your email"
+                 />
+               </div>
+             </div>
+             <div className="mt-6">
+               <button
+                 type="submit"
+                 className="bg-primary-600 text-white px-6 py-2 rounded-lg hover:bg-primary-700 transition-colors w-full sm:w-auto"
+               >
+                 Update Profile
+               </button>
+             </div>
+           </form>
+         </div>
+
+         {/* Security Section */}
+         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 sm:p-6">
+           <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">
+             Account Security
+           </h3>
+           <p className="text-sm text-gray-600 mb-4">
+             For security reasons, password changes should be done through the account settings page.
+           </p>
+           <button
+             onClick={() => navigate("/settings")}
+             className="border border-primary-300 text-primary-600 px-4 py-2 rounded-lg hover:bg-primary-50 transition-colors"
+           >
+             Go to Account Settings
+           </button>
+         </div>
+       </div>
+     );
+   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
@@ -797,13 +935,14 @@ const renderOverview = () => (
           </nav>
         </div>
 
-        {/* Content */}
-        <div className="mt-4 lg:mt-0">
-          {activeTab === "overview" && renderOverview()}
-          {activeTab === "jobs" && renderMyJobs()}
-          {activeTab === "post-new" && renderPostNewJob()}
-          {activeTab === "support" && renderSupport()}
-        </div>
+         {/* Content */}
+         <div className="mt-4 lg:mt-0">
+           {activeTab === "overview" && renderOverview()}
+           {activeTab === "profile" && renderProfile()}
+           {activeTab === "jobs" && renderMyJobs()}
+           {activeTab === "post-new" && renderPostNewJob()}
+           {activeTab === "support" && renderSupport()}
+         </div>
       </div>
 
       <Modal

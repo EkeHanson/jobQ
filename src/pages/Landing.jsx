@@ -53,6 +53,10 @@ export default function Landing() {
     navigate('/')
   }
 
+  const handleWatchDemo = () => {
+    navigate('/demo')
+  }
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -178,7 +182,7 @@ export default function Landing() {
             
             <div className="hidden md:flex items-center gap-8">
               <Link to="/features" className="text-sm text-gray-500 hover:text-gray-900 transition-colors">Features</Link>
-              <Link to="/subscription" className="text-sm text-gray-500 hover:text-gray-900 transition-colors">Pricing</Link>
+              <Link to="/pricing" className="text-sm text-gray-500 hover:text-gray-900 transition-colors">Pricing</Link>
               <Link to="/customers" className="text-sm text-gray-500 hover:text-gray-900 transition-colors">Customers</Link>
               <Link to="/insights" className="text-sm text-gray-500 hover:text-gray-900 transition-colors">Insights</Link>
             </div>
@@ -292,7 +296,10 @@ export default function Landing() {
                   </button>
                 </Link>
                 {!isAuthenticated && (
-                  <button className="border border-gray-200 text-gray-700 px-6 py-3 rounded-lg text-base font-medium hover:bg-gray-50 transition-colors">
+                  <button 
+                    onClick={handleWatchDemo}
+                    className="border border-gray-200 text-gray-700 px-6 py-3 rounded-lg text-base font-medium hover:bg-gray-50 transition-colors"
+                  >
                     Watch demo
                   </button>
                 )}
@@ -406,10 +413,13 @@ export default function Landing() {
                 <h3 className="text-2xl font-semibold text-gray-900 mb-3">{step.title}</h3>
                 <p className="text-gray-500 leading-relaxed">{step.description}</p>
                 <div className="mt-6">
-                  <Link to="/demo" className="text-sm font-medium text-gray-900 inline-flex items-center gap-1 group">
+                  <button 
+                    onClick={handleWatchDemo}
+                    className="text-sm font-medium text-gray-900 inline-flex items-center gap-1 group hover:text-gray-600 transition-colors"
+                  >
                     Learn more 
                     <ArrowRightIcon className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
-                  </Link>
+                  </button>
                 </div>
               </div>
               <div className={`bg-gray-50 rounded-xl border border-gray-100 aspect-video flex items-center justify-center ${index % 2 === 1 ? 'md:order-1' : ''}`}>
@@ -474,14 +484,14 @@ export default function Landing() {
                 const priceInNaira = plan.price_cents === 0 ? 0 : (plan.price_cents)
                 const price = plan.price_cents === 0 ? 'Free' : `₦${priceInNaira.toLocaleString('en-NG')}`
                 
-                const features = []
-                if (plan.max_applications > 0) features.push(`${plan.max_applications} applications/month`)
-                else features.push('Unlimited applications')
-                if (plan.max_ai_pastes > 0) features.push(`${plan.max_ai_pastes} AI extractions/month`)
-                else features.push('Unlimited AI extractions')
+                const featuresList = []
+                if (plan.max_applications > 0) featuresList.push(`${plan.max_applications} applications/month`)
+                else featuresList.push('Unlimited applications')
+                if (plan.max_ai_pastes > 0) featuresList.push(`${plan.max_ai_pastes} AI extractions/month`)
+                else featuresList.push('Unlimited AI extractions')
                 if (plan.description) {
                   plan.description.split('\n').forEach(line => {
-                    if (line.trim()) features.push(line.trim())
+                    if (line.trim()) featuresList.push(line.trim())
                   })
                 }
                 
@@ -508,7 +518,7 @@ export default function Landing() {
                       {plan.price_cents > 0 && <span className="text-gray-400 text-sm">/month</span>}
                     </div>
                     <ul className="space-y-2 mb-6">
-                      {features.slice(0, 4).map((feature, i) => (
+                      {featuresList.slice(0, 4).map((feature, i) => (
                         <li key={i} className="flex items-center gap-2 text-sm text-gray-500">
                           <CheckCircleIcon className="w-3.5 h-3.5 text-gray-400" />
                           {feature}
@@ -577,7 +587,7 @@ export default function Landing() {
               <h4 className="text-xs font-semibold text-gray-900 uppercase tracking-wider mb-3">Product</h4>
               <ul className="space-y-2">
                 <li><Link to="/features" className="text-xs text-gray-400 hover:text-gray-600">Features</Link></li>
-                <li><Link to="/subscription" className="text-xs text-gray-400 hover:text-gray-600">Pricing</Link></li>
+                <li><Link to="/pricing" className="text-xs text-gray-400 hover:text-gray-600">Pricing</Link></li>
                 <li><Link to="/security" className="text-xs text-gray-400 hover:text-gray-600">Security</Link></li>
               </ul>
             </div>

@@ -425,7 +425,7 @@ export default function Jobs() {
                Discover exciting job opportunities
              </p>
            </div>
-           <div className="flex items-center gap-3">
+           {/* <div className="flex items-center gap-3">
              <Link to="/jobs/create">
                <Button className="bg-primary-600 hover:bg-primary-700">
                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -434,7 +434,7 @@ export default function Jobs() {
                  Create Job
                </Button>
              </Link>
-           </div>
+           </div> */}
          </div>
 
         {/* Search and Filter Bar */}

@@ -11,7 +11,7 @@ import toast from 'react-hot-toast'
 import { APP_NAME } from '../utils/config'
 import { 
   CheckIcon, 
-  ArrowLeftIcon,
+  ChevronLeftIcon,
   EnvelopeIcon,
   LockClosedIcon,
   UserIcon,
@@ -131,11 +131,11 @@ export default function Register() {
       {/* Right Panel - Clean form, premium feel */}
       <div className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-8 bg-white">
         <div className="w-full max-w-md">
-          {/* Mobile back link */}
-          <div className="lg:hidden mb-6">
-            <Link to="/" className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-900 transition-colors">
-              <ArrowLeftIcon className="w-4 h-4" />
-              Back
+          {/* Back to Home (like sign-in page) */}
+          <div className="mb-8">
+            <Link to="/" className="inline-flex items-center gap-1.5 text-sm text-gray-400 hover:text-gray-600 transition-colors group">
+              <ChevronLeftIcon className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
+              Back to home
             </Link>
           </div>
 

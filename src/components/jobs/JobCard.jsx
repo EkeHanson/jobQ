@@ -6,11 +6,11 @@ export default function JobCard({ job }) {
   return (
     <Link
       to={`/jobs/${job.id}`}
-      className="block bg-white border border-gray-200 rounded-md p-3 hover:bg-gray-50 hover:border-gray-300 transition-colors"
+      className="group block bg-white rounded-2xl border border-gray-100 p-4 transition-all duration-200 transform hover:-translate-y-1 hover:shadow-lg"
     >
       <div className="flex items-center gap-3">
         {/* Company Logo */}
-        <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-md flex items-center justify-center flex-shrink-0">
+        <div className="w-10 h-10 bg-gradient-to-br from-gray-900 to-gray-700 rounded-lg flex items-center justify-center flex-shrink-0">
           <span className="text-white text-sm font-bold">
             {job.company?.name?.charAt(0) || 'J'}
           </span>
@@ -20,7 +20,7 @@ export default function JobCard({ job }) {
           <h3 className="text-sm font-semibold text-gray-900 truncate">
             {job.title}
           </h3>
-          <p className="text-xs text-gray-600 truncate">
+          <p className="text-xs text-gray-500 truncate">
             {job.company?.name}
           </p>
         </div>
@@ -37,7 +37,7 @@ export default function JobCard({ job }) {
           <span className="text-xs text-gray-400">
             {formatDate(job.posted_date)}
           </span>
-          <span className="px-2 py-1 bg-blue-600 text-white text-xs font-medium rounded hover:bg-blue-700">
+          <span className="px-2 py-1 bg-gray-900 text-white text-xs font-medium rounded">
             Apply
           </span>
         </div>

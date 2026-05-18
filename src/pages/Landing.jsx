@@ -2,6 +2,9 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { useEffect, useState, useRef } from 'react'
 import Button from '../components/common/Button'
+import Spinner from '../components/common/Spinner'
+import JobList from '../components/jobs/JobList'
+import { useJobs } from '../hooks/useJobs'
 import { subscriptionService } from '../services/subscription'
 import { APP_NAME } from '../utils/config'
 import { 
@@ -166,6 +169,34 @@ export default function Landing() {
     { value: '892', label: 'offers landed', detail: 'using our platform' },
     { value: '31 min', label: 'daily time saved', detail: 'per active user' }
   ]
+
+  // Recent jobs preview component
+  function RecentJobs() {
+    const { jobs: recentJobs, loading: recentLoading } = useJobs({ page: 1, page_size: 6, ordering: '-posted_at', approval_status: 'approved' })
+
+    return (
+      <div>
+        {recentLoading ? (
+          <div className="py-8 text-center">
+            <Spinner />
+          </div>
+        ) : (
+          <JobList jobs={recentJobs || []} />
+        )}
+
+        {!isAuthenticated && (
+          <div className="mt-6 text-center">
+            <Link to="/register">
+              <button className="bg-gray-900 text-white px-6 py-3 rounded-lg text-base font-medium hover:bg-gray-800 transition-colors inline-flex items-center gap-2">
+                Create an account to apply
+                <ChevronRightIcon className="w-4 h-4" />
+              </button>
+            </Link>
+          </div>
+        )}
+      </div>
+    )
+  }
 
   return (
     <div className="bg-white">
@@ -373,6 +404,8 @@ export default function Landing() {
         </div>
       </section>
 
+    
+
       {/* Feature section - 3 columns, editorial feel */}
       <section className="py-20 bg-gray-50/40 border-y border-gray-100">
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
@@ -427,6 +460,21 @@ export default function Landing() {
               </div>
             </div>
           ))}
+        </div>
+      </section>
+
+      {/* Jobs preview - show recent jobs to unauthenticated users */}
+      <section className="py-16 bg-white border-t border-gray-100">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-semibold text-gray-900">Latest jobs</h2>
+            <Link to="/jobs" className="text-sm text-gray-500 hover:text-gray-900">View all</Link>
+          </div>
+
+          <div className="bg-white border border-gray-100 rounded-xl p-6">
+            {/** Fetch recent jobs */}
+            <RecentJobs />
+          </div>
         </div>
       </section>
 

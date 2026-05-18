@@ -171,7 +171,7 @@ export default function Landing() {
   ]
 
   // Recent jobs preview component
-  function RecentJobs() {
+  function RecentJobs({ columns = 1 }) {
     const { jobs: recentJobs, loading: recentLoading } = useJobs({ page: 1, page_size: 6, ordering: '-posted_at', approval_status: 'approved' })
 
     return (
@@ -181,16 +181,16 @@ export default function Landing() {
             <Spinner />
           </div>
         ) : (
-          <JobList jobs={recentJobs || []} />
+          <JobList jobs={recentJobs || []} columns={columns} />
         )}
 
         {!isAuthenticated && (
           <div className="mt-6 text-center">
             <Link to="/register">
-              <button className="bg-gray-900 text-white px-6 py-3 rounded-lg text-base font-medium hover:bg-gray-800 transition-colors inline-flex items-center gap-2">
+              <Button size="lg" className="inline-flex items-center gap-2">
                 Create an account to apply
                 <ChevronRightIcon className="w-4 h-4" />
-              </button>
+              </Button>
             </Link>
           </div>
         )}
@@ -287,7 +287,7 @@ export default function Landing() {
                     Sign in
                   </Link>
                   <Link to="/register">
-                    <Button className="bg-gray-900 text-white px-4 py-1.5 rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors">
+                    <Button size="sm" className="rounded-lg">
                       Get started
                     </Button>
                   </Link>
@@ -321,10 +321,10 @@ export default function Landing() {
 
               <div className="flex flex-col sm:flex-row gap-4 mb-12">
                 <Link to={isAuthenticated ? "/dashboard" : "/register"}>
-                  <button className="bg-gray-900 text-white px-6 py-3 rounded-lg text-base font-medium hover:bg-gray-800 transition-colors inline-flex items-center gap-2">
+                  <Button size="lg" className="inline-flex items-center gap-2">
                     Start free
                     <ChevronRightIcon className="w-4 h-4" />
-                  </button>
+                  </Button>
                 </Link>
                 {!isAuthenticated && (
                   <button 
@@ -404,7 +404,22 @@ export default function Landing() {
         </div>
       </section>
 
-    
+      {/* Jobs preview - show recent jobs to unauthenticated users */}
+      <section className="py-16 bg-gray-50 border-t border-gray-100">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between mb-6">
+            <div>
+              <p className="text-sm font-semibold uppercase tracking-[0.2em] text-primary-600">Featured opportunities</p>
+              <h2 className="mt-2 text-3xl font-semibold text-gray-900">Latest jobs ready to apply</h2>
+            </div>
+            <Link to="/jobs" className="text-sm text-gray-500 hover:text-gray-900">View all jobs</Link>
+          </div>
+
+          <div className="bg-white border border-gray-100 rounded-3xl p-6 shadow-sm">
+            <RecentJobs columns={2} />
+          </div>
+        </div>
+      </section>
 
       {/* Feature section - 3 columns, editorial feel */}
       <section className="py-20 bg-gray-50/40 border-y border-gray-100">
@@ -460,21 +475,6 @@ export default function Landing() {
               </div>
             </div>
           ))}
-        </div>
-      </section>
-
-      {/* Jobs preview - show recent jobs to unauthenticated users */}
-      <section className="py-16 bg-white border-t border-gray-100">
-        <div className="max-w-7xl mx-auto px-6 lg:px-8">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-semibold text-gray-900">Latest jobs</h2>
-            <Link to="/jobs" className="text-sm text-gray-500 hover:text-gray-900">View all</Link>
-          </div>
-
-          <div className="bg-white border border-gray-100 rounded-xl p-6">
-            {/** Fetch recent jobs */}
-            <RecentJobs />
-          </div>
         </div>
       </section>
 

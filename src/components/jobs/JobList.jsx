@@ -1,6 +1,6 @@
 import JobCard from './JobCard'
 
-export default function JobList({ jobs = [] }) {
+export default function JobList({ jobs = [], columns = 1, className = '' }) {
   if (jobs.length === 0) {
     return (
       <div className="text-center py-8">
@@ -9,8 +9,12 @@ export default function JobList({ jobs = [] }) {
     )
   }
 
+  const containerClass = columns > 1
+    ? `grid gap-6 sm:grid-cols-2 ${className}`
+    : `space-y-2 ${className}`
+
   return (
-    <div className="space-y-2">
+    <div className={containerClass}>
       {jobs.map((job) => (
         <JobCard key={job.id} job={job} />
       ))}
